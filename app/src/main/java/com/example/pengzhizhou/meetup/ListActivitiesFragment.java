@@ -83,7 +83,6 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         });
         progressDialog = new ProgressDialog(getActivity());
 
-
         if (_rootView == null) {
                 // Inflate the layout for this fragment
                 _rootView = inflater.inflate(R.layout.list_activities_view, container, false);
@@ -125,8 +124,6 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                 itemsList = new ArrayList<ActivityItem>();
                 initAdapter();
 
-                //footer = getActivity().getLayoutInflater().inflate(R.layout.list_footer, null);
-                //list.addFooterView(footer);
                 if (city != null){
                     new LoadMoreItemsTask(getActivity()).execute();
                 }
@@ -159,7 +156,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
     @Override
     public void onScrollStateChanged(AbsListView absListView, int scrollState) {
         final int currentFirstVisibleItem1 = list.getFirstVisiblePosition();
-            if (currentFirstVisibleItem > myLastVisiblePos) {
+             if (currentFirstVisibleItem > myLastVisiblePos) {
                 if (this.currentVisibleItemCount > 0 && scrollState == SCROLL_STATE_IDLE && this.totalItemCount == (currentFirstVisibleItem + currentVisibleItemCount)) {
                     /*** In this way I detect if there's been a scroll which has completed ***/
                     /*** do the work for load more date! ***/
@@ -313,7 +310,9 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         protected void onPreExecute() {
             super.onPreExecute();
             list.addFooterView(footer);
-            list.setAdapter(adapter);
+            if (list.getAdapter() == null) {
+                list.setAdapter(adapter);
+            }
         }
 
         @Override

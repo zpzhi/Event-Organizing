@@ -15,7 +15,7 @@ import java.net.URL;
  * Class to hold static string and methods to be used by all class
  */
 public class Utility {
-    private final static String serverUrl = "http://129.16.74.169";
+    private final static String serverUrl = "http://172.20.10.8";
     public static String getServerUrl(){
         return serverUrl;
     }
