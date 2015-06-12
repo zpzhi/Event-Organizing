@@ -71,7 +71,7 @@ public class ListAdapter extends ArrayAdapter<ActivityItem> {
             String imageNameA = p.getActivityImage();
 
             String imageUrl;
-            if (!imageNameA.isEmpty() && imageNameA != null) {
+            if (!imageNameA.isEmpty() && imageNameA != null && !imageNameA.equals("null")) {
                 imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + imageNameA;
                 ImageOptions options = new ImageOptions();
                 aq.id(R.id.activityImage).image(imageUrl, options);
@@ -86,11 +86,11 @@ public class ListAdapter extends ArrayAdapter<ActivityItem> {
             else{
 
                 Bitmap icon = BitmapFactory.decodeResource(cont.getResources(),
-                        R.drawable.ic_launcher);
+                        R.drawable.default_activity);
                 icon = ir.getCircledBitmap(icon);
 
                 thumbN.setImageBitmap(icon);
-                image.setImageResource(R.drawable.ic_launcher);
+                image.setImageResource(R.drawable.default_activity);
 
             }
 

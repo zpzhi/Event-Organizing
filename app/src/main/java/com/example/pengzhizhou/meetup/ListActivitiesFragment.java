@@ -2,7 +2,6 @@ package com.example.pengzhizhou.meetup;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -46,7 +45,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
     private String loginUser = null;
 
     ProgressDialog progressDialog;
-    private int mLastFirstVisibleItem;
+    private int myLastVisiblePos;
     int currentFirstVisibleItem = 0;
     int currentVisibleItemCount = 0;
     int totalItemCount = 0;
@@ -58,6 +57,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
     double latitude, longitude;
     String city;
     TextView noActivity;
+    public View footer;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -81,6 +81,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                 startActivity(myIntent);
             }
         });
+        progressDialog = new ProgressDialog(getActivity());
 
 
         if (_rootView == null) {
@@ -118,12 +119,14 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                         startActivity(i);
                     }
                 });
+                myLastVisiblePos = list.getFirstVisiblePosition();
                 list.setOnScrollListener(this);
-                footerView = ((LayoutInflater)getActivity().getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-                        .inflate(R.layout.list_footer, null, false);
 
+                itemsList = new ArrayList<ActivityItem>();
                 initAdapter();
 
+                //footer = getActivity().getLayoutInflater().inflate(R.layout.list_footer, null);
+                //list.addFooterView(footer);
                 if (city != null){
                     new LoadMoreItemsTask(getActivity()).execute();
                 }
@@ -141,7 +144,6 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
     }
 
     public void initAdapter(){
-        itemsList = new ArrayList<ActivityItem>();
         adapter = new ListAdapter(getActivity(), R.layout.list_row, itemsList);
     }
 
@@ -150,29 +152,156 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         this.currentFirstVisibleItem = firstVisibleItem;
         this.currentVisibleItemCount = visibleItemCount;
         this.totalItemCount = totalItemCount;
+
+        //currentFirstVisPos = absListView.getFirstVisiblePosition();
     }
 
     @Override
     public void onScrollStateChanged(AbsListView absListView, int scrollState) {
-        this.currentScrollState = scrollState;
-        this.isScrollCompleted();
+        final int currentFirstVisibleItem1 = list.getFirstVisiblePosition();
+            if (currentFirstVisibleItem > myLastVisiblePos) {
+                if (this.currentVisibleItemCount > 0 && scrollState == SCROLL_STATE_IDLE && this.totalItemCount == (currentFirstVisibleItem + currentVisibleItemCount)) {
+                    /*** In this way I detect if there's been a scroll which has completed ***/
+                    /*** do the work for load more date! ***/
+                    if (!loadingMore) {
+                        loadingMore = true;
+                        new LoadMoreItemsTask(getActivity()).execute();
+                    }
+                }
+            } else if (currentFirstVisibleItem == 0 && currentFirstVisibleItem < myLastVisiblePos) {
+                //scroll up and refresh
+                new RefreshListTask().execute();
+            }
+
+            myLastVisiblePos = currentFirstVisibleItem;
     }
 
-    private void isScrollCompleted() {
-        if (this.currentVisibleItemCount > 0 && this.currentScrollState == SCROLL_STATE_IDLE && this.totalItemCount == (currentFirstVisibleItem + currentVisibleItemCount)) {
-            /*** In this way I detect if there's been a scroll which has completed ***/
-            /*** do the work for load more date! ***/
-            if (!loadingMore) {
-                loadingMore = true;
-                new LoadMoreItemsTask(getActivity()).execute();
+    private class RefreshListTask extends AsyncTask<Void, Void, String> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+                progressDialog.setMessage("Refresh...");
+                progressDialog.setCancelable(true);
+                progressDialog.show();
+
+
+        }
+        @Override
+        protected String doInBackground(Void... voids) {
+            HttpClient httpclient = new DefaultHttpClient();
+            String jsonResult = null;
+
+            HttpGet request = new HttpGet();
+            try {
+                URI website = new URI(Utility.getServerUrl()+"/signin/get_activities_android.php?start="+0
+                        +"&limit="+startIndex+"&city="+city);
+                request.setURI(website);
             }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            try {
+                HttpResponse response = httpclient.execute(request);
+                jsonResult = Utility.inputStreamToString(
+                        response.getEntity().getContent()).toString();
+            }
+
+            catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return jsonResult;
+        }
+
+        @Override
+        protected void onPostExecute(String jsonResult) {
+            if (jsonResult == null)
+            {
+                adapter.notifyDataSetChanged();
+                return;
+            }
+            else if (jsonResult.equals("[]") && startIndex != 0){
+                Toast.makeText(getActivity().getApplicationContext(), "NO MORE DATA",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+            else if (jsonResult.equals("[]") && startIndex == 0){
+                noActivity.setVisibility(View.VISIBLE);
+                noActivity.setText("There is no activity in " + city);
+                return;
+            }
+            try {
+                itemsList = new ArrayList<ActivityItem>();
+
+                JSONObject jsonResponse = new JSONObject(jsonResult);
+                JSONArray jsonMainNode = jsonResponse.optJSONArray("act_info");
+
+                for (int i = 0; i < jsonMainNode.length(); i++) {
+                    JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
+                    ActivityItem item = new ActivityItem();
+                    String id = jsonChildNode.optString("id");
+                    String title = jsonChildNode.optString("title");
+                    String address = jsonChildNode.optString("activity_address");
+                    String activityTime = jsonChildNode.optString("activity_time");
+                    String postTime = jsonChildNode.optString("post_time");
+                    String duration = jsonChildNode.optString("activity_duration");
+                    String pNumber = jsonChildNode.optString("phone_number");
+                    String detail = jsonChildNode.optString("activity_detail");
+                    String city = jsonChildNode.optString("city");
+                    String state = jsonChildNode.optString("state");
+                    String country = jsonChildNode.optString("country");
+                    String activityImage = jsonChildNode.optString("image_name");
+                    String eventCreator = jsonChildNode.optString("event_creator");
+
+                    item.setActivityImage(activityImage);
+                    item.setAddress(address);
+                    item.setCity(city);
+                    item.setCountry(country);
+                    item.setDetail(detail);
+                    item.setId(id);
+                    item.setTitle(title);
+                    item.setPhoneNumber(pNumber);
+                    item.setState(state);
+                    item.setDuration(duration);
+                    item.setActivityTime(activityTime);
+                    item.setPostTime(postTime);
+                    item.setEventCreator(eventCreator);
+
+                    itemsList.add(item);
+                }
+            } catch (JSONException e) {
+                Toast.makeText(getActivity().getApplicationContext(), "Error" + e.toString(),
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            adapter.notifyDataSetChanged();
+
+            if (itemsList.size() > 0) {
+                startIndex = startIndex + itemsList.size();
+            }
+            super.onPostExecute(jsonResult);
+
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+            super.onCancelled();
+            progressDialog.dismiss();
+
         }
     }
 
     private class LoadMoreItemsTask extends AsyncTask<Void, Void, String> {
 
         private Activity activity;
-        private View footer;
+        //private View footer;
 
         private LoadMoreItemsTask(Activity activity) {
             this.activity = activity;
@@ -182,9 +311,9 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
         @Override
         protected void onPreExecute() {
+            super.onPreExecute();
             list.addFooterView(footer);
             list.setAdapter(adapter);
-            super.onPreExecute();
         }
 
         @Override
@@ -221,18 +350,22 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
             if (footer != null) {
                 list.removeFooterView(footer);
             }
-            list.setAdapter(adapter);
 
             loadingMore = false;
 
-            if (jsonResult == null)
-            {
+            if (jsonResult == null){
+                return;
+            }
+            else if (jsonResult.startsWith("<HTML><HEAD>")){
+                Toast.makeText(getActivity().getApplicationContext(), "No internet available",
+                        Toast.LENGTH_SHORT).show();
+
                 return;
             }
             else if (jsonResult.equals("[]") && startIndex != 0){
                 Toast.makeText(getActivity().getApplicationContext(), "NO MORE DATA",
                         Toast.LENGTH_SHORT).show();
-                adapter.notifyDataSetChanged();
+
                 return;
             }
             else if (jsonResult.equals("[]") && startIndex == 0){
@@ -285,7 +418,8 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
             adapter.notifyDataSetChanged();
 
             if (itemsList.size() > 0) {
-                startIndex = startIndex + itemsList.size();
+                //startIndex = startIndex + itemsList.size();
+                startIndex = (long)itemsList.size();
             }
             super.onPostExecute(jsonResult);
         }

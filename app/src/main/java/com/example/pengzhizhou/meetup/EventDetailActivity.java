@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -86,6 +87,7 @@ public class EventDetailActivity extends ActionBarActivity {
         TextView eventTime = (TextView) findViewById(R.id.eventTime);
         //TextView address = (TextView) findViewById(R.id)
         joinEventButton = (Button) findViewById(R.id.joinActivity);
+        ImageView eventImage = (ImageView) findViewById(R.id.eventImage);
 
         if(b!=null)
         {
@@ -97,10 +99,13 @@ public class EventDetailActivity extends ActionBarActivity {
             addressText = (String) b.get("itemAddress");
             eventID = (String) b.get("itemId");
 
-            if (imageNameText != null && !imageNameText.isEmpty()){
+            if (imageNameText != null && !imageNameText.isEmpty() && !imageNameText.equals("null")){
                 String imageUrl = url + "/signin/imgupload/" + imageNameText;
                 ImageOptions options = new ImageOptions();
                 aq.id(R.id.eventImage).image(imageUrl, options);
+            }
+            else{
+                eventImage.setImageResource(R.drawable.default_activity);
             }
 
             eventTime.setText(eventTimeText);
@@ -204,12 +209,13 @@ public class EventDetailActivity extends ActionBarActivity {
                     gridArray = new ArrayList<Item>();
 
                     for (int i = 0; i < size; i++) {
+
                         String imageUrl = url + "/signin/imgupload/" + usersList.get(i).getImageName();
                         Bitmap bt = Utility.getBitmapFromURL(imageUrl); //aq.getCachedImage(imageUrl);
                         //Bitmap bt = BitmapFactory.decodeFile(imageUrl);
                         if (bt == null) {
                             bt = BitmapFactory.decodeResource(EventDetailActivity.this.getResources(),
-                                    R.drawable.ic_launcher);
+                                    R.drawable.default_activity);
                         }
 
                         bt = ir.getCircledBitmap(bt);

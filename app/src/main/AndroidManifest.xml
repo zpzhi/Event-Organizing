@@ -51,7 +51,8 @@
         </activity>
         <activity
             android:name=".TabHostActivity"
-            android:label="@string/title_activity_afterLogin" >
+            android:label="@string/title_activity_afterLogin"
+            android:theme="@style/MyCustomTheme" >
         </activity>
         <activity
             android:name=".PostActivityDetailActivity"

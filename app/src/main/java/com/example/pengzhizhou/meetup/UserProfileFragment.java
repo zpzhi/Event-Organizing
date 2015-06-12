@@ -194,7 +194,7 @@ public class UserProfileFragment extends Fragment {
                             else{
 
                                 Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(),
-                                        R.drawable.ic_launcher);
+                                        R.drawable.default_activity);
                                 icon = ir.getCircledBitmap(icon);
 
                                 userImg.setImageBitmap(icon);

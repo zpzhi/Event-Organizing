@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v7.app.ActionBarActivity;
 import android.widget.ImageView;
+import android.widget.TabWidget;
 import android.widget.TextView;
 
 
@@ -35,6 +36,15 @@ public class TabHostActivity extends ActionBarActivity {
                 PostActivityFragment.class, null);
         mTabHost.addTab(mTabHost.newTabSpec("我的主页").setIndicator("我的主页"),
                 UserProfileFragment.class, null);
+
+        TabWidget tabWidget = (TabWidget) findViewById(android.R.id.tabs);
+        initTabsAppearance(tabWidget);
+    }
+
+    private void initTabsAppearance(TabWidget tabWidget) {
+        // Change background
+        for(int i=0; i < tabWidget.getChildCount(); i++)
+            tabWidget.getChildAt(i).setBackgroundResource(R.drawable.tab_bg);
     }
 
     public void setActionBarTitle(String title) {

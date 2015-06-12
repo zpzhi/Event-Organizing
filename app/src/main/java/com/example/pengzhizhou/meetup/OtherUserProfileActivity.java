@@ -103,7 +103,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         else{
 
             Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
-                    R.drawable.ic_launcher);
+                    R.drawable.default_activity);
             icon = ir.getCircledBitmap(icon);
 
             userImg.setImageBitmap(icon);

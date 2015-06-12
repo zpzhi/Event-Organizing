@@ -60,7 +60,7 @@ public class ListAdapterS extends ArrayAdapter<ActivityItem> {
             String timeA = p.getActivityTime();
 
             String imageUrl;
-            if (!imageNameA.isEmpty() && imageNameA != null) {
+            if (!imageNameA.isEmpty() && imageNameA != null && !imageNameA.equals("null")) {
                 imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + imageNameA;
 
                 Bitmap bt = aq.getCachedImage(imageUrl);
@@ -73,7 +73,7 @@ public class ListAdapterS extends ArrayAdapter<ActivityItem> {
             else{
 
                 Bitmap icon = BitmapFactory.decodeResource(cont.getResources(),
-                        R.drawable.ic_launcher);
+                        R.drawable.default_activity);
                 icon = ir.getCircledBitmap(icon);
 
                 thumbN.setImageBitmap(icon);
