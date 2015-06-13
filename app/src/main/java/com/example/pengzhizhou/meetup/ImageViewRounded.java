@@ -127,15 +127,13 @@ public class ImageViewRounded extends ImageView {
 
         paint.setAntiAlias(true);
         canvas.drawARGB(0, 0, 0, 0);
-        paint.setColor(color);
+        //paint.setColor(color);
 //        canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
         canvas.drawCircle(bitmap.getWidth()/2, bitmap.getHeight()/2, (bitmap.getHeight()/2) - 10, paint);
         //canvas.drawCircle(bitmap.getWidth()/2, bitmap.getHeight()/2, bitmap.getHeight()/2, paint);
 
         paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
         canvas.drawBitmap(bitmap, rect, rect, paint);
-
-
 
         return result;
     }

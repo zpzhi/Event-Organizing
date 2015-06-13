@@ -13,5 +13,6 @@
     <string name="title_activity_event_detail">EventDetailActivity</string>
     <string name="title_activity_other_user_profile">OtherUserProfileActivity</string>
     <string name="title_activity_search_city">SearchCityActivity</string>
+    <string name="title_activity_user_profile_edit">UserProfileEditActivity</string>
 
 </resources>

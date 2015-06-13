@@ -71,6 +71,10 @@
             android:name=".SearchCityActivity"
             android:label="@string/title_activity_search_city" >
         </activity>
+        <activity
+            android:name=".UserProfileEditActivity"
+            android:label="@string/title_activity_user_profile_edit" >
+        </activity>
     </application>
 
 </manifest>

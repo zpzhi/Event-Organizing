@@ -186,10 +186,10 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         });
 
     }
-
+    // duplicate codes with register when upload image
     private void openImageIntent() {
 
-// Determine Uri of camera image to save.
+        // Determine Uri of camera image to save.
         final File root = new File(Environment.getExternalStorageDirectory() + File.separator + "MyDir" + File.separator);
         root.mkdirs();
         final String fname = "img_"+ System.currentTimeMillis() + ".jpg";
@@ -222,7 +222,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         startActivityForResult(chooserIntent, RESULT_LOAD_IMG);
     }
 
-    // When Image is selected from Gallery
+    // When Image is selected from Gallery or Camera
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -379,25 +379,13 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         }
 
         if (imgPath !=null && !imgPath.isEmpty()) {
-
-                            //BitmapFactory.Options options;
-                            //options = new BitmapFactory.Options();
-                            //options.inSampleSize = 3;
-                            //bitmap = BitmapFactory.decodeFile(imgPath,
-                             //       options);
-            //final BitmapFactory.Options options = new BitmapFactory.Options();
-            //options.inSampleSize = 8;
-
-            //bm = BitmapFactory.decodeFile(imgPath,options);
-
-                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                            // Must compress the Image to reduce image size to make upload easy
-                            bm.compress(Bitmap.CompressFormat.PNG, 50, stream);
-                            byte[] byte_arr = stream.toByteArray();
-                            // Encode Image to String
-                            encodedString = Base64.encodeToString(byte_arr, 0);
-                            paramsA.put("imageString", encodedString);
-
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            // Must compress the Image to reduce image size to make upload easy
+            bm.compress(Bitmap.CompressFormat.PNG, 50, stream);
+            byte[] byte_arr = stream.toByteArray();
+            // Encode Image to String
+            encodedString = Base64.encodeToString(byte_arr, 0);
+            paramsA.put("imageString", encodedString);
         }
 
         if (cancel) {
@@ -406,7 +394,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
                 focusView.requestFocus();
         } else {
                 // Show a progress spinner, and kick off a background task to
-                // perform the user login attempt.
+                // perform the post activity attempt.
                 prgDialog.setMessage("Converting Image to Binary Data");
                 prgDialog.show();
 

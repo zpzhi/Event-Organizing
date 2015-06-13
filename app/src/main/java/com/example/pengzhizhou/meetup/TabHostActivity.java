@@ -23,6 +23,10 @@ public class TabHostActivity extends ActionBarActivity {
         SharedPreferences settings = getSharedPreferences("MyPrefsFile", 0);
         loginUser = settings.getString("KEY_LOGIN_USER", null);
 
+        // in case return from userProfiledEditActivity, when cancel was clicked
+        // return back to the profile fragments
+        int startTab = getIntent().getIntExtra("tab", 0);
+
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         actionBar.setCustomView(R.layout.activity_afterlogin_actionbar);
@@ -39,6 +43,7 @@ public class TabHostActivity extends ActionBarActivity {
 
         TabWidget tabWidget = (TabWidget) findViewById(android.R.id.tabs);
         initTabsAppearance(tabWidget);
+        mTabHost.setCurrentTab(startTab);
     }
 
     private void initTabsAppearance(TabWidget tabWidget) {

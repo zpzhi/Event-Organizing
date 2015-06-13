@@ -68,7 +68,7 @@ public class ListAdapterS extends ArrayAdapter<ActivityItem> {
                     bt = ir.getCircledBitmap(bt);
 
                 }
-                aq.id(R.id.thumbImage).image(bt, 1.0f);
+                thumbN.setImageBitmap(bt);
             }
             else{
 

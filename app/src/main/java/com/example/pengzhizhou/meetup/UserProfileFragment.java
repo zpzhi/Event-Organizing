@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -19,6 +20,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.view.ViewGroup.LayoutParams;
 
 import com.androidquery.AQuery;
 
@@ -52,8 +54,10 @@ public class UserProfileFragment extends Fragment {
     private ListView eventList;
     private List<ActivityItem> itemsList;
     private ListAdapterS adapter = null;
+    private Bitmap bt;
     Long startIndex = 0L;
     Long offset = 5L;
+    private User user;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -92,6 +96,31 @@ public class UserProfileFragment extends Fragment {
             getUserDetailTask.execute(loginUser);
 
             eventList = (ListView) V.findViewById(R.id.list);
+            // function 1: when too many activities under this user, try a way to let them scroll instead
+            // of covering the button "logout"
+            eventList.setOnTouchListener(new ListView.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    int action = event.getAction();
+                    switch (action) {
+                        case MotionEvent.ACTION_DOWN:
+                            // Disallow ScrollView to intercept touch events.
+                            v.getParent().requestDisallowInterceptTouchEvent(true);
+                            break;
+
+                        case MotionEvent.ACTION_UP:
+                            // Allow ScrollView to intercept touch events.
+                            v.getParent().requestDisallowInterceptTouchEvent(false);
+                            break;
+                    }
+
+                    // Handle ListView touch events.
+                    v.onTouchEvent(event);
+                    return true;
+                }
+            });
+
+
             eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
                 public void onItemClick(AdapterView<?> parent, View view,
@@ -127,8 +156,49 @@ public class UserProfileFragment extends Fragment {
                     startActivity(myIntent);
                 }
             });
+
+            ImageView edit = (ImageView) getActivity().findViewById(R.id.editInfo);
+            edit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent myIntent;
+                    myIntent = new Intent(getActivity(), UserProfileEditActivity.class);
+                    myIntent.putExtra("userInformation", user);
+                    startActivity(myIntent);
+                }
+            });
         }
         return V;
+    }
+
+    /**** Method for Setting the Height of the ListView dynamically.
+     **** Hack to fix the issue of not showing all the items of the ListView
+     **** when placed inside a ScrollView  ****/
+    // function 2: when too many activities under this user, try a way to let them scroll instead
+    // of covering the button "logout"
+    public static void setListViewHeightBasedOnChildren(ListView listView) {
+        ListAdapterS listAdapter = (ListAdapterS)listView.getAdapter();
+        if (listAdapter == null)
+            return;
+
+        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
+        int totalHeight = 0;
+        View view = null;
+        if (listAdapter.getCount() > 5){
+            for (int i = 0; i < 5; i++) {
+                view = listAdapter.getView(i, view, listView);
+                if (i == 0)
+                    view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, LayoutParams.WRAP_CONTENT));
+
+                view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+                totalHeight += view.getMeasuredHeight();
+            }
+
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+        listView.setLayoutParams(params);
+        listView.requestLayout();
+        }
     }
 
     public class GetUserDetailTask extends AsyncTask<String,Void,String> {
@@ -173,23 +243,31 @@ public class UserProfileFragment extends Fragment {
                 try {
                     JSONObject jsonResponse = new JSONObject(response);
                     JSONArray jsonMainNode = jsonResponse.optJSONArray("user_info");
-
+                    user = new User();
                     for (int i = 0; i < jsonMainNode.length(); i++) {
                         JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
                             String id = jsonChildNode.optString("id_user");
                             String name = jsonChildNode.optString("username");
                             String image = jsonChildNode.optString("image_name");
+                            String realName = jsonChildNode.optString("name");
+                            String phone = jsonChildNode.optString("phone_number");
+                            user.setImageName(image);
+                            user.setName(name);
+                            user.setRealName(realName);
+                            user.setId(id);
+                            user.setPhoneNumber(phone);
 
+                            ImageView userImage = (ImageView)getActivity().findViewById(R.id.userImg);
                             String imageUrl;
                             if (!image.isEmpty() && image != null) {
                                 imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + image;
 
-                                Bitmap bt = Utility.getBitmapFromURL(imageUrl);
+                                bt = Utility.getBitmapFromURL(imageUrl);
                                 if(bt!=null) {
                                     bt = ir.getCircledBitmap(bt);
 
                                 }
-                                aq.id(R.id.userImg).image(bt, 1.0f);
+                                userImage.setImageBitmap(bt);
                             }
                             else{
 
@@ -253,13 +331,8 @@ public class UserProfileFragment extends Fragment {
         protected void onPostExecute(String jsonResult) {
 
             eventList.setAdapter(adapter);
-            if (jsonResult == null)
-            {
-                return;
-            }
-            else if (jsonResult.equals("[]")){
-                Toast.makeText(getActivity().getApplicationContext(), "NO MORE DATA",
-                        Toast.LENGTH_SHORT).show();
+            if (jsonResult == null || jsonResult.equals("[]")){
+
                 return;
             }
             try {
@@ -313,7 +386,10 @@ public class UserProfileFragment extends Fragment {
             if (itemsList.size() > 0) {
                 startIndex = startIndex + itemsList.size();
             }
+
+
             super.onPostExecute(jsonResult);
+            setListViewHeightBasedOnChildren(eventList);
         }
 
 

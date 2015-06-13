@@ -19,8 +19,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.androidquery.AQuery;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -43,8 +41,6 @@ public class OtherUserProfileActivity extends ActionBarActivity {
 
     private String loginUser = null, user = null, imageName = null;
     private String url = Utility.getServerUrl();
-    private User item;
-    private AQuery aq;
     private ImageViewRounded ir;
     private ImageView userImg;
     private ListView eventList;
@@ -81,7 +77,6 @@ public class OtherUserProfileActivity extends ActionBarActivity {
             addFriendButton.setVisibility(View.GONE);
         }
 
-        aq = new AQuery(this);
         ir = new ImageViewRounded(this);
 
         TextView title = (TextView) findViewById(R.id.actionbarTitle);
@@ -90,25 +85,15 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         userImg = (ImageView)findViewById(R.id.userImg);
 
         String imageUrl;
-        if (!imageName.isEmpty() && imageName != null) {
-            imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + imageName;
 
-            Bitmap bt = Utility.getBitmapFromURL(imageUrl);
-            if(bt!=null) {
-                bt = ir.getCircledBitmap(bt);
-
-            }
-            aq.id(R.id.userImg).image(bt, 1.0f);
-        }
-        else{
-
-            Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
+        imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + imageName;
+        Bitmap bt = Utility.getBitmapFromURL(imageUrl);
+        if( bt== null ) {
+            bt =  BitmapFactory.decodeResource(this.getResources(),
                     R.drawable.default_activity);
-            icon = ir.getCircledBitmap(icon);
-
-            userImg.setImageBitmap(icon);
         }
-
+        bt = ir.getCircledBitmap(bt);
+        userImg.setImageBitmap(bt);
 
         eventList = (ListView) findViewById(R.id.list);
         eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
