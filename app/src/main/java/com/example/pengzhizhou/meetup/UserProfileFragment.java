@@ -12,15 +12,16 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.view.ViewGroup.LayoutParams;
 
 import com.androidquery.AQuery;
 
@@ -52,12 +53,16 @@ public class UserProfileFragment extends Fragment {
     private ImageViewRounded ir;
     private ImageView userImg;
     private ListView eventList;
+    private ListView friendsListView;
     private List<ActivityItem> itemsList;
+    private List<User> friendsList;
+    private FriendListAdapter fAdapter = null;
     private ListAdapterS adapter = null;
     private Bitmap bt;
     Long startIndex = 0L;
     Long offset = 5L;
     private User user;
+    private LinearLayout friendsListRoot;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -72,13 +77,7 @@ public class UserProfileFragment extends Fragment {
             startActivity(myIntent);
 
         }else {
-
-            // Inflate the layout for this fragment
             V = inflater.inflate(R.layout.user_profile_view, container, false);
-
-            //android.support.v7.app.ActionBar actionBar = ((TabHostActivity) getActivity()).getSupportActionBar();
-            //actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
-            //actionBar.setCustomView(R.layout.fragment_user_profile_actionbar);
 
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
@@ -96,31 +95,6 @@ public class UserProfileFragment extends Fragment {
             getUserDetailTask.execute(loginUser);
 
             eventList = (ListView) V.findViewById(R.id.list);
-            // function 1: when too many activities under this user, try a way to let them scroll instead
-            // of covering the button "logout"
-            eventList.setOnTouchListener(new ListView.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    int action = event.getAction();
-                    switch (action) {
-                        case MotionEvent.ACTION_DOWN:
-                            // Disallow ScrollView to intercept touch events.
-                            v.getParent().requestDisallowInterceptTouchEvent(true);
-                            break;
-
-                        case MotionEvent.ACTION_UP:
-                            // Allow ScrollView to intercept touch events.
-                            v.getParent().requestDisallowInterceptTouchEvent(false);
-                            break;
-                    }
-
-                    // Handle ListView touch events.
-                    v.onTouchEvent(event);
-                    return true;
-                }
-            });
-
-
             eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
                 public void onItemClick(AdapterView<?> parent, View view,
@@ -143,7 +117,7 @@ public class UserProfileFragment extends Fragment {
 
             Button logout = (Button) V.findViewById(R.id.logout);
             logout.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
-            logout.setOnClickListener(new Button.OnClickListener() {
+            logout.setOnClickListener(new Button.OnClickListener()  {
                 public void onClick(View v) {
                     SharedPreferences preferences = getActivity().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = preferences.edit();
@@ -167,6 +141,11 @@ public class UserProfileFragment extends Fragment {
                     startActivity(myIntent);
                 }
             });
+
+            initFriendListAdapter();
+            friendsListView = (ListView) V.findViewById(R.id.list1);
+            new FetchFriendsList().execute();
+
         }
         return V;
     }
@@ -177,28 +156,35 @@ public class UserProfileFragment extends Fragment {
     // function 2: when too many activities under this user, try a way to let them scroll instead
     // of covering the button "logout"
     public static void setListViewHeightBasedOnChildren(ListView listView) {
-        ListAdapterS listAdapter = (ListAdapterS)listView.getAdapter();
+        Adapter listAdapter = null;
+        if(listView.getAdapter() instanceof ListAdapterS){
+            listAdapter = (ListAdapterS)listView.getAdapter();
+        }
+        else if (listView.getAdapter() instanceof FriendListAdapter){
+            listAdapter = (FriendListAdapter)listView.getAdapter();
+        }
         if (listAdapter == null)
             return;
 
         int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
         int totalHeight = 0;
         View view = null;
-        if (listAdapter.getCount() > 5){
-            for (int i = 0; i < 5; i++) {
+
+        for (int i = 0; i < listAdapter.getCount(); i++) {
                 view = listAdapter.getView(i, view, listView);
                 if (i == 0)
                     view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, LayoutParams.WRAP_CONTENT));
 
                 view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
                 totalHeight += view.getMeasuredHeight();
-            }
+                if (i == 3) break;
+         }
 
         ViewGroup.LayoutParams params = listView.getLayoutParams();
         params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
         listView.setLayoutParams(params);
         listView.requestLayout();
-        }
+
     }
 
     public class GetUserDetailTask extends AsyncTask<String,Void,String> {
@@ -213,7 +199,7 @@ public class UserProfileFragment extends Fragment {
                     // Add your data
                     List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
                     nameValuePairs.add(new BasicNameValuePair("userName", params[0]));
-                    httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                    httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
 
                     // Execute HTTP Post Request
                     HttpResponse response = httpclient.execute(httppost);
@@ -307,7 +293,7 @@ public class UserProfileFragment extends Fragment {
             nameValuePairs.add(new BasicNameValuePair("username",String.valueOf(loginUser)));
 
             try {
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -359,6 +345,23 @@ public class UserProfileFragment extends Fragment {
                         String activityImage = jsonChildNode.optString("image_name");
                         String eventCreator = jsonChildNode.optString("event_creator");
 
+                        Bitmap bitmap = null;
+
+                        if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
+                            String imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
+                            bitmap = Utility.getBitmapFromURL(imageUrl);
+                            if(bitmap!=null) {
+                                bitmap = ir.getCircledBitmap(bitmap);
+                            }
+                        }
+                        else{
+
+                            bitmap = BitmapFactory.decodeResource(getActivity().getResources(),
+                                    R.drawable.default_activity);
+                            bitmap = ir.getCircledBitmap(bitmap);
+                        }
+
+                        item.setBitmap(bitmap);
                         item.setActivityImage(activityImage);
                         item.setAddress(address);
                         item.setCity(city);
@@ -392,11 +395,105 @@ public class UserProfileFragment extends Fragment {
             setListViewHeightBasedOnChildren(eventList);
         }
 
-
     }
     public void initAdapter(){
         itemsList = new ArrayList<ActivityItem>();
         adapter = new ListAdapterS(getActivity(), R.layout.list_event_row, itemsList);
     }
 
+    private class FetchFriendsList extends AsyncTask<Void, Void, String> {
+        @Override
+        protected String doInBackground(Void... params) {
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost(url+"/signin/get_user_friends.php");
+            String jsonResult = null;
+            //add name value pair for the country code
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+            nameValuePairs.add(new BasicNameValuePair("username",String.valueOf(loginUser)));
+
+            try {
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                HttpResponse response = httpclient.execute(httppost);
+                jsonResult = Utility.inputStreamToString(
+                        response.getEntity().getContent()).toString();
+            }
+
+            catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return jsonResult;
+        }
+
+        @Override
+        protected void onPostExecute(String jsonResult) {
+
+            friendsListView.setAdapter(fAdapter);
+            if (jsonResult == null || jsonResult.equals("[]")){
+
+                return;
+            }
+            try {
+                JSONObject jsonResponse = new JSONObject(jsonResult);
+                JSONArray jsonMainNode = jsonResponse.optJSONArray("friends_info");
+
+                for (int i = 0; i < jsonMainNode.length(); i++) {
+                    JSONArray innerArray = jsonMainNode.optJSONArray(i);
+
+                    for (int j = 0; j < innerArray.length(); j++) {
+                        JSONObject jsonChildNode = innerArray.getJSONObject(j);
+                        User user = new User();
+                        String id = jsonChildNode.optString("id_user");
+                        String userName = jsonChildNode.optString("username");
+                        String imageName = jsonChildNode.optString("image_name");
+                        String userDescription = jsonChildNode.optString("user_description");
+                        Bitmap bitmap = null;
+
+                        if (!imageName.isEmpty() && imageName != null && !imageName.equals("null")) {
+                            String imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + imageName;
+                            bitmap = Utility.getBitmapFromURL(imageUrl);
+                            if(bitmap!=null) {
+                                bitmap = ir.getCircledBitmap(bitmap);
+                            }
+                        }
+                        else{
+
+                            bitmap = BitmapFactory.decodeResource(getActivity().getResources(),
+                                    R.drawable.default_activity);
+                            bitmap = ir.getCircledBitmap(bitmap);
+                        }
+
+                        user.setId(id);
+                        user.setName(userName);
+                        user.setImageName(imageName);
+                        user.setDescription(userDescription);
+                        user.setBitmap(bitmap);
+
+                        friendsList.add(user);
+                    }
+                }
+            } catch (JSONException e) {
+                Toast.makeText(getActivity().getApplicationContext(), "Error" + e.toString(),
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            adapter.notifyDataSetChanged();
+
+            super.onPostExecute(jsonResult);
+            setListViewHeightBasedOnChildren(friendsListView);
+        }
+
+    }
+
+    public void initFriendListAdapter(){
+        friendsList = new ArrayList<User>();
+        fAdapter = new FriendListAdapter(getActivity(), R.layout.list_friends_row, friendsList);
+    }
 }

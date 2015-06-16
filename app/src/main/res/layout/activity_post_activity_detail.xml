@@ -27,8 +27,7 @@
             android:paddingBottom="10dp"
             android:paddingTop="10dp"
             android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/post_content_border"/>
+            android:layout_marginTop="10dp"/>
 
 
         <LinearLayout
@@ -36,61 +35,53 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:id="@+id/timeLayout"
-            android:background="@drawable/post_content_border"
             android:layout_below="@+id/postTitle"
+            android:gravity="center"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_marginBottom="10dp" >
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:paddingBottom="10dp"
-                android:paddingTop="10dp"
-                android:gravity="center">
+                android:text="选择时间:"
+                android:textSize="18dp"
+                />
 
             <TextView
                 android:id="@+id/activityDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="今天"
-                android:gravity="right"
-                android:layout_marginLeft="21dp"
-                android:layout_marginStart="21dp"
+                android:textColor="#00B8F5"
+                android:textSize="18dp"
                 />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="#00B8F5"
                 android:text="Today"
                 android:id="@+id/currentTime"
-                android:gravity="left"
+                android:textSize="18dp"
                 android:layout_marginLeft="19dp"
                 android:layout_marginStart="19dp"/>
-            </LinearLayout>
-
-            <View
-                android:layout_width="0.5dp"
-                android:id="@+id/view1"
-                android:layout_height="fill_parent"
-                android:background="#000000"/>
+        </LinearLayout>
 
         <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:id="@+id/durationLayout"
             android:gravity="center"
-            android:paddingLeft="20dp"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp">
-
+            android:layout_below="@+id/timeLayout">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Duration"
-                android:id="@+id/textView4"
-                android:gravity="right"/>
+                android:text="持续"
+                android:textSize="18dp"
+                android:id="@+id/textView4"/>
 
             <EditText
                 android:layout_width="wrap_content"
@@ -98,7 +89,6 @@
                 android:paddingLeft="8dp"
                 android:inputType="number"
                 android:text="8"
-                android:gravity="center"
                 android:id="@+id/actDuration"/>
 
             <TextView
@@ -106,32 +96,30 @@
                 android:layout_height="wrap_content"
                 android:paddingLeft="8dp"
                 android:text="小时"
-                android:gravity="right"
+                android:textSize="18dp"
                 android:id="@+id/textView6"/>
-        </LinearLayout>
-
          </LinearLayout>
 
          <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_below="@+id/timeLayout"
+                android:layout_below="@+id/durationLayout"
                 android:id="@+id/locationLayout"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/post_content_border">
+                android:gravity="center"
+                android:layout_marginBottom="10dp">
 
                 <ImageView
                     android:id="@+id/locateImage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/locate_32"
-                    android:layout_weight="1"
+                    android:layout_weight="2"
                     android:paddingBottom="10dp"
                     android:paddingTop="10dp"/>
 
                 <View
-                    android:layout_width="0.5dp"
+                    android:layout_width="1dp"
                     android:id="@+id/view2"
                     android:layout_height="fill_parent"
                     android:background="#000000"/>
@@ -140,7 +128,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/locationText"
-                    android:text="Please input your activity location"
+                    android:hint="Please input your activity location"
                     android:layout_weight="6"
                     android:paddingBottom="10dp"
                     android:paddingTop="10dp"/>
@@ -158,8 +146,43 @@
             android:layout_below="@id/locationLayout"
             android:paddingBottom="10dp"
             android:layout_marginBottom="10dp"
-            android:background="@drawable/post_content_border"
             android:paddingTop="10dp"/>
+
+        <TextView
+            android:id="@+id/insertImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="添加图片 （选填）"
+            android:textSize="18dp"
+            android:gravity="center"
+            android:layout_below="@id/contactPhoneNumber"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
+            android:layout_marginBottom="10dp"/>
+
+        <ImageView
+            android:id="@+id/imgView"
+            android:layout_below="@id/insertImage"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+        </ImageView>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/descriptionTitle"
+            android:layout_below="@id/insertImage"
+            android:layout_marginTop="20dp"
+            android:textSize="16dp"
+            android:text="请填写活动描述"/>
+
+        <View
+        android:layout_width="fill_parent"
+        android:id="@+id/gap"
+        android:layout_below="@id/descriptionTitle"
+        android:layout_height="0.5dp"
+        android:background="#000000"/>
 
         <EditText
             android:id="@+id/activityDescription"
@@ -169,31 +192,11 @@
             android:gravity="left|top"
             android:inputType="textMultiLine"
             android:text="一起来参加这个超级好玩的活动"
-            android:layout_below="@id/contactPhoneNumber"
+            android:layout_below="@id/gap"
             android:paddingBottom="10dp"
             android:paddingTop="10dp"
             android:layout_marginBottom="10dp"
             android:background="@drawable/post_content_border"/>
-
-        <TextView
-            android:id="@+id/insertImage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="添加图片 （选填）"
-            android:gravity="center"
-            android:layout_below="@id/activityDescription"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp"
-            android:layout_marginBottom="10dp"
-            android:background="@drawable/post_content_border"/>
-
-        <ImageView
-            android:id="@+id/imgView"
-            android:layout_below="@id/insertImage"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-        </ImageView>
-
 
 </RelativeLayout>
 </ScrollView>

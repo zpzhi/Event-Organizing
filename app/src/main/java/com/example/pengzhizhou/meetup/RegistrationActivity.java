@@ -19,6 +19,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -437,6 +438,11 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
                 showProgress(true);
 
                 if (imgfileName != null && !imgfileName.isEmpty()) {
+
+                    int dimension = Utility.getSquareCropDimensionForBitmap(bm);
+                    bm = ThumbnailUtils.extractThumbnail(bm, dimension, dimension);
+
+
                     params.put("imgSelectedStatus", "1");
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     // Must compress the Image to reduce image size to make upload easy

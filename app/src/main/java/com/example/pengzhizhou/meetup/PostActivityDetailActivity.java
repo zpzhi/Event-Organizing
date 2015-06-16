@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.ExifInterface;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -132,7 +133,23 @@ public class PostActivityDetailActivity extends ActionBarActivity{
 
         String timetodb = sdf.format(c.getTime());
         paramsA.put("activityTime", timetodb);
+        mActDate.setOnClickListener(new View.OnClickListener() {
 
+            @Override
+            public void onClick(View v)
+            {
+                new SlideDateTimePicker.Builder(getSupportFragmentManager())
+                        .setListener(listener)
+                        .setInitialDate(new Date())
+                        .setMinDate(Calendar.getInstance().getTime())
+                                //.setMaxDate(maxDate)
+                                //.setIs24HourTime(true)
+                        .setTheme(SlideDateTimePicker.HOLO_LIGHT)
+                        .setIndicatorColor(Color.parseColor("#990000"))
+                        .build()
+                        .show();
+            }
+        });
         mActTime.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -186,6 +203,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         });
 
     }
+
     // duplicate codes with register when upload image
     private void openImageIntent() {
 
@@ -379,9 +397,12 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         }
 
         if (imgPath !=null && !imgPath.isEmpty()) {
+            int dimension = Utility.getSquareCropDimensionForBitmap(bm);
+            bm = ThumbnailUtils.extractThumbnail(bm, dimension, dimension);
+
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             // Must compress the Image to reduce image size to make upload easy
-            bm.compress(Bitmap.CompressFormat.PNG, 50, stream);
+            bm.compress(Bitmap.CompressFormat.PNG, 10, stream);
             byte[] byte_arr = stream.toByteArray();
             // Encode Image to String
             encodedString = Base64.encodeToString(byte_arr, 0);

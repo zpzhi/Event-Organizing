@@ -1,5 +1,7 @@
 package com.example.pengzhizhou.meetup;
 
+import android.graphics.Bitmap;
+
 import java.io.Serializable;
 
 /**
@@ -11,6 +13,8 @@ public class User implements Serializable {
     private String realName;
     private String id;
     private String phoneNumber;
+    private String description;
+    private Bitmap bitmap;
 
     public void setName(String n){ name = n; }
     public String getName() { return name; }
@@ -22,5 +26,10 @@ public class User implements Serializable {
     public void setRealName(String r) { realName = r; }
     public String getPhoneNumber() { return phoneNumber; }
     public void setPhoneNumber(String p) { phoneNumber = p; }
+    public String getDescription() { return description; }
+    public void setDescription(String d) { description = d; }
+
+    public Bitmap getBitmap() { return bitmap; }
+    public void setBitmap(Bitmap b) { bitmap = b; }
 
 }

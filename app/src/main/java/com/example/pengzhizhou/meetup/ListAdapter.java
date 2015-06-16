@@ -2,17 +2,12 @@ package com.example.pengzhizhou.meetup;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import com.androidquery.AQuery;
-import com.androidquery.callback.ImageOptions;
 
 import java.util.List;
 
@@ -20,10 +15,7 @@ import java.util.List;
  * Created by pengzhizhou on 4/17/15.
  */
 public class ListAdapter extends ArrayAdapter<ActivityItem> {
-
-    private AQuery aq;
     private Context cont;
-    private ImageViewRounded ir;
 
     public ListAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
@@ -32,7 +24,6 @@ public class ListAdapter extends ArrayAdapter<ActivityItem> {
     public ListAdapter(Context context, int resource, List<ActivityItem> items) {
         super(context, resource, items);
         cont = context;
-        ir = new ImageViewRounded(cont);
     }
 
     @Override
@@ -47,8 +38,6 @@ public class ListAdapter extends ArrayAdapter<ActivityItem> {
             v = vi.inflate(R.layout.list_row, null);
 
         }
-
-        aq = new AQuery(v);
         ActivityItem p = getItem(position);
 
         if (p != null) {
@@ -60,40 +49,16 @@ public class ListAdapter extends ArrayAdapter<ActivityItem> {
             ImageView image = (ImageView) v.findViewById(R.id.activityImage);
             ImageView thumbN = (ImageView) v.findViewById(R.id.thumbImage);
 
-            RelativeLayout rl = (RelativeLayout)v.findViewById(R.id.list_row);
-            //change the color of the list view, for example when need to gray out activities
-            //rl.setBackgroundColor(Color.RED);
-
             String titleA = p.getTitle();
             String timeA = p.getActivityTime();
             String addressA = p.getAddress();
             String cityA = p.getCity();
-            String imageNameA = p.getActivityImage();
+            Bitmap bitmap = p.getBitmap();
+            Bitmap thumbBitmap = p.getThumbBitmap();
 
-            String imageUrl;
-            if (!imageNameA.isEmpty() && imageNameA != null && !imageNameA.equals("null")) {
-                imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + imageNameA;
-                ImageOptions options = new ImageOptions();
-                aq.id(R.id.activityImage).image(imageUrl, options);
 
-                Bitmap bt = aq.getCachedImage(imageUrl);
-                if(bt!=null) {
-                    bt = ir.getCircledBitmap(bt);
-
-                }
-                thumbN.setImageBitmap(bt);
-            }
-            else{
-
-                Bitmap icon = BitmapFactory.decodeResource(cont.getResources(),
-                        R.drawable.default_activity);
-                icon = ir.getCircledBitmap(icon);
-
-                thumbN.setImageBitmap(icon);
-                image.setImageResource(R.drawable.default_activity);
-
-            }
-
+            image.setImageBitmap(bitmap);
+            thumbN.setImageBitmap(thumbBitmap);
             if (title != null) {
                 title.setText(titleA);
             }

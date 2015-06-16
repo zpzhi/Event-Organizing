@@ -48,4 +48,24 @@ public class Utility {
         }
         return answer;
     }
+
+    //to calculate the dimensions of the bitmap...see comments below
+    public static int getSquareCropDimensionForBitmap(Bitmap bitmap)
+    {
+        int dimension;
+        //If the bitmap is wider than it is tall
+        //use the height as the square crop dimension
+        if (bitmap.getWidth() >= bitmap.getHeight())
+        {
+            dimension = bitmap.getHeight();
+        }
+        //If the bitmap is taller than it is wide
+        //use the width as the square crop dimension
+        else
+        {
+            dimension = bitmap.getWidth();
+        }
+
+        return dimension;
+    }
 }

@@ -2,6 +2,7 @@ package com.example.pengzhizhou.meetup;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,22 +15,24 @@ import com.androidquery.AQuery;
 import java.util.List;
 
 /**
- * Created by pengzhizhou on 4/17/15.
+ * Created by pengzhizhou on 6/15/15.
  */
-public class ListAdapterS extends ArrayAdapter<ActivityItem> {
+public class FriendListAdapter extends ArrayAdapter<User> {
 
     private AQuery aq;
     private Context cont;
     private ImageViewRounded ir;
+    private Uri imageUri;
 
-    public ListAdapterS(Context context, int textViewResourceId) {
+    public FriendListAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
     }
 
-    public ListAdapterS(Context context, int resource, List<ActivityItem> items) {
+    public FriendListAdapter(Context context, int resource, List<User> items) {
         super(context, resource, items);
         cont = context;
         ir = new ImageViewRounded(cont);
+        aq = new AQuery(cont);
     }
 
     @Override
@@ -38,34 +41,31 @@ public class ListAdapterS extends ArrayAdapter<ActivityItem> {
         View v = convertView;
 
         if (v == null) {
-
             LayoutInflater vi;
             vi = LayoutInflater.from(getContext());
-            v = vi.inflate(R.layout.list_event_row, null);
-
+            v = vi.inflate(R.layout.list_friends_row, null);
         }
 
-        aq = new AQuery(v);
-        ActivityItem p = getItem(position);
+        User user = getItem(position);
 
-        if (p != null) {
+        if (user != null) {
 
-            TextView title = (TextView)v.findViewById(R.id.activityTitle);
+            TextView name = (TextView)v.findViewById(R.id.userName);
             ImageView thumbN = (ImageView) v.findViewById(R.id.thumbImage);
-            TextView time = (TextView)v.findViewById(R.id.activityTime);
+            TextView description = (TextView)v.findViewById(R.id.userDescription);
 
-            String titleA = p.getTitle();
-            String imageNameA = p.getActivityImage();
-            String timeA = p.getActivityTime();
-            Bitmap bitmap = p.getBitmap();
+            String nameA = user.getName();
+            String descriptionA = user.getDescription();
 
+            Bitmap bitmap = user.getBitmap();
             thumbN.setImageBitmap(bitmap);
-            if (title != null) {
-                title.setText(titleA);
+
+            if (name != null) {
+                name.setText(nameA);
             }
 
-            if (time != null) {
-                time.setText(timeA);
+            if (description != null) {
+                description.setText(descriptionA);
             }
         }
 

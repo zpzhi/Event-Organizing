@@ -66,6 +66,4 @@ public class TabHostActivity extends ActionBarActivity {
         TextView searchCity = (TextView)findViewById(R.id.searchCity);
         searchCity.setVisibility(i);
     }
-
-
 }

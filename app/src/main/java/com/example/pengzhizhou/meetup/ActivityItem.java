@@ -1,5 +1,7 @@
 package com.example.pengzhizhou.meetup;
 
+import android.graphics.Bitmap;
+
 /**
  * Created by pengzhizhou on 4/17/15.
  */
@@ -19,6 +21,8 @@ class ActivityItem {
     private String country;
     private String activityImage;
     private String eventCreator;
+    private Bitmap bitmap;
+    private Bitmap thumbBitmap;
 
     public ActivityItem(){}
 
@@ -123,5 +127,9 @@ class ActivityItem {
 
     public String getEventCreator() { return eventCreator; }
 
+    public Bitmap getBitmap() { return bitmap; }
+    public void setBitmap(Bitmap b) { bitmap = b; }
 
+    public Bitmap getThumbBitmap() { return thumbBitmap; }
+    public void setThumbBitmap(Bitmap b) { thumbBitmap = b; }
 }

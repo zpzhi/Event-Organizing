@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -18,6 +20,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.androidquery.AQuery;
+import com.androidquery.callback.ImageOptions;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -43,6 +48,8 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
     ListView list;
     ListAdapter adapter = null;
     private String loginUser = null;
+    private AQuery aq;
+    private ImageViewRounded ir;
 
     ProgressDialog progressDialog;
     private int myLastVisiblePos;
@@ -67,6 +74,8 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         loginUser = settings.getString("KEY_LOGIN_USER", null);
         city = settings.getString("KEY_CITY", null);
 
+        aq = new AQuery(getActivity());
+        ir = new ImageViewRounded(getActivity());
         ((TabHostActivity) getActivity())
                 .setActionBarTitle("活动主题");
         ((TabHostActivity) getActivity()).setImageViewable(View.GONE);
@@ -253,6 +262,28 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                     String activityImage = jsonChildNode.optString("image_name");
                     String eventCreator = jsonChildNode.optString("event_creator");
 
+                    String imageUrl;
+                    Bitmap bitmap = null;
+                    Bitmap thumbBitmap = null;
+                    if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
+                        imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
+                        ImageOptions options = new ImageOptions();
+
+                        bitmap = aq.getCachedImage(imageUrl);
+                        if(bitmap!=null) {
+                            thumbBitmap = ir.getCircledBitmap(bitmap);
+
+                        }
+                    }
+                    else{
+
+                        bitmap = BitmapFactory.decodeResource(getActivity().getResources(),
+                                R.drawable.default_activity);
+                        thumbBitmap = ir.getCircledBitmap(bitmap);
+                    }
+
+                    item.setBitmap(bitmap);
+                    item.setThumbBitmap(thumbBitmap);
                     item.setActivityImage(activityImage);
                     item.setAddress(address);
                     item.setCity(city);
@@ -392,6 +423,29 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                     String country = jsonChildNode.optString("country");
                     String activityImage = jsonChildNode.optString("image_name");
                     String eventCreator = jsonChildNode.optString("event_creator");
+
+                    Bitmap bitmap = null;
+                    Bitmap thumbBitmap = null;
+                    String imageUrl = null;
+                    if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
+                        imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
+                        ImageOptions options = new ImageOptions();
+
+                        bitmap = aq.getCachedImage(imageUrl);
+                        if(bitmap!=null) {
+                            thumbBitmap = ir.getCircledBitmap(bitmap);
+
+                        }
+                    }
+                    else{
+
+                        bitmap = BitmapFactory.decodeResource(getActivity().getResources(),
+                                R.drawable.default_activity);
+                        thumbBitmap = ir.getCircledBitmap(bitmap);
+                    }
+
+                    item.setBitmap(bitmap);
+                    item.setThumbBitmap(thumbBitmap);
 
                     item.setActivityImage(activityImage);
                     item.setAddress(address);

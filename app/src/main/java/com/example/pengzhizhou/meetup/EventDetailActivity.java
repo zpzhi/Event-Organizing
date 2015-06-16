@@ -267,12 +267,12 @@ public class EventDetailActivity extends ActionBarActivity {
                 List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
                 nameValuePairs.add(new BasicNameValuePair("userName", userName));
                 nameValuePairs.add(new BasicNameValuePair("eventID", eventID));
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
 
                 // Execute HTTP Post Request
                 HttpResponse response = httpclient.execute(httppost);
                 BufferedReader in = new BufferedReader
-                        (new InputStreamReader(response.getEntity().getContent()));
+                        (new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
 
                 StringBuffer sb = new StringBuffer("");
                 String line = "";

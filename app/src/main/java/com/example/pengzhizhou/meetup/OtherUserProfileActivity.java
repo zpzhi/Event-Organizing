@@ -153,7 +153,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
             nameValuePairs.add(new BasicNameValuePair("username",String.valueOf(user)));
 
             try {
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -209,6 +209,24 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                         String country = jsonChildNode.optString("country");
                         String activityImage = jsonChildNode.optString("image_name");
                         String eventCreator = jsonChildNode.optString("event_creator");
+
+                        Bitmap bitmap = null;
+
+                        if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
+                            String imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
+                            bitmap = Utility.getBitmapFromURL(imageUrl);
+                            if(bitmap!=null) {
+                                bitmap = ir.getCircledBitmap(bitmap);
+                            }
+                        }
+                        else{
+
+                            bitmap = BitmapFactory.decodeResource(getResources(),
+                                    R.drawable.default_activity);
+                            bitmap = ir.getCircledBitmap(bitmap);
+                        }
+
+                        item.setBitmap(bitmap);
 
                         item.setActivityImage(activityImage);
                         item.setAddress(address);
@@ -268,7 +286,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
 
             // Execute HTTP Post Request
             try {
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -324,7 +342,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
             nameValuePairs.add(new BasicNameValuePair("userName",String.valueOf(loginUser)));
             nameValuePairs.add(new BasicNameValuePair("otherUserName",String.valueOf(user)));
             try {
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -390,7 +408,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
 
             // Execute HTTP Post Request
             try {
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
