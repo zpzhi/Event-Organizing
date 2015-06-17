@@ -83,6 +83,8 @@ class ActivityItem {
         return activityTime;
     }
 
+    public String getActivityDate() { return activityTime.substring(0, 10); }
+
     public void setDetail(String d){
         detail = d;
     }

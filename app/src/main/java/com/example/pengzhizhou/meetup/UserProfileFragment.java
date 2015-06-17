@@ -253,7 +253,7 @@ public class UserProfileFragment extends Fragment {
                                     bt = ir.getCircledBitmap(bt);
 
                                 }
-                                userImage.setImageBitmap(bt);
+                                if(bt!=null) userImage.setImageBitmap(bt);
                             }
                             else{
 

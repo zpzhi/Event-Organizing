@@ -30,4 +30,5 @@ dependencies {
     compile files('libs/baidumapapi_v3_3_0.jar')
     compile files('libs/BaiduLBS_Android.jar')
     compile files('libs/picasso-2.5.2.jar')
+    compile files('libs/ssa-20120716.jar')
 }

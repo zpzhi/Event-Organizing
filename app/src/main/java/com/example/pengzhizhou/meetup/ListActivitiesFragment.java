@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
@@ -23,6 +24,8 @@ import android.widget.Toast;
 
 import com.androidquery.AQuery;
 import com.androidquery.callback.ImageOptions;
+import com.mobsandgeeks.adapters.Sectionizer;
+import com.mobsandgeeks.adapters.SimpleSectionAdapter;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -43,10 +46,10 @@ import java.util.List;
 public class ListActivitiesFragment extends Fragment implements OnScrollListener {
 
     List<ActivityItem> itemsList;
-    View footerView;
 
     ListView list;
     ListAdapter adapter = null;
+    SimpleSectionAdapter<ActivityItem> sectionAdapter = null;
     private String loginUser = null;
     private AQuery aq;
     private ImageViewRounded ir;
@@ -59,12 +62,13 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
     int currentScrollState = 0;
     boolean loadingMore = false;
     Long startIndex = 0L;
-    Long offset = 5L;
+    Long offset = 10L;
     View _rootView;
     double latitude, longitude;
     String city;
     TextView noActivity;
-    public View footer;
+    private Bitmap bitmap = null;
+    //public View footer;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -91,6 +95,9 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
             }
         });
         progressDialog = new ProgressDialog(getActivity());
+        // ignore NetworkOnMainThreadException currently, will try to fix it later
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
 
         if (_rootView == null) {
                 // Inflate the layout for this fragment
@@ -117,13 +124,14 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
                     public void onItemClick(AdapterView<?> parent, View view,
                                             int position, long id) {
+                        ActivityItem ai = (ActivityItem) sectionAdapter.getItem(position);
 
                         Intent i = new Intent(getActivity(),EventDetailActivity.class);
-                        i.putExtra("itemTitle",itemsList.get(position).getTitle());
-                        i.putExtra("itemImage", itemsList.get(position).getActivityImage());
-                        i.putExtra("eventTime", itemsList.get(position).getActivityTime());
-                        i.putExtra("itemAddress", itemsList.get(position).getAddress());
-                        i.putExtra("itemId", itemsList.get(position).getId());
+                        i.putExtra("itemTitle",ai.getTitle());
+                        i.putExtra("itemImage", ai.getActivityImage());
+                        i.putExtra("eventTime", ai.getActivityTime());
+                        i.putExtra("itemAddress", ai.getAddress());
+                        i.putExtra("itemId", ai.getId());
                         startActivity(i);
                     }
                 });
@@ -135,6 +143,11 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
                 if (city != null){
                     new LoadMoreItemsTask(getActivity()).execute();
+                }
+
+                if (bitmap != null){
+                    bitmap.recycle();
+                    bitmap = null;
                 }
 
             } else {
@@ -151,6 +164,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
     public void initAdapter(){
         adapter = new ListAdapter(getActivity(), R.layout.list_row, itemsList);
+
     }
 
     @Override
@@ -164,7 +178,6 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
     @Override
     public void onScrollStateChanged(AbsListView absListView, int scrollState) {
-        final int currentFirstVisibleItem1 = list.getFirstVisiblePosition();
              if (currentFirstVisibleItem > myLastVisiblePos) {
                 if (this.currentVisibleItemCount > 0 && scrollState == SCROLL_STATE_IDLE && this.totalItemCount == (currentFirstVisibleItem + currentVisibleItemCount)) {
                     /*** In this way I detect if there's been a scroll which has completed ***/
@@ -308,7 +321,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
             adapter.notifyDataSetChanged();
 
             if (itemsList.size() > 0) {
-                startIndex = startIndex + itemsList.size();
+                startIndex = (long)itemsList.size();
             }
             super.onPostExecute(jsonResult);
 
@@ -327,12 +340,9 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
     }
 
     private class LoadMoreItemsTask extends AsyncTask<Void, Void, String> {
-
-        private Activity activity;
-        //private View footer;
+        private View footer;
 
         private LoadMoreItemsTask(Activity activity) {
-            this.activity = activity;
             loadingMore = true;
             footer = activity.getLayoutInflater().inflate(R.layout.list_footer, null);
         }
@@ -341,9 +351,6 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         protected void onPreExecute() {
             super.onPreExecute();
             list.addFooterView(footer);
-            if (list.getAdapter() == null) {
-                list.setAdapter(adapter);
-            }
         }
 
         @Override
@@ -377,11 +384,11 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
         @Override
         protected void onPostExecute(String jsonResult) {
+
+            loadingMore = false;
             if (footer != null) {
                 list.removeFooterView(footer);
             }
-
-            loadingMore = false;
 
             if (jsonResult == null){
                 return;
@@ -424,29 +431,19 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                     String activityImage = jsonChildNode.optString("image_name");
                     String eventCreator = jsonChildNode.optString("event_creator");
 
-                    Bitmap bitmap = null;
-                    Bitmap thumbBitmap = null;
-                    String imageUrl = null;
                     if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
-                        imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
-                        ImageOptions options = new ImageOptions();
-
-                        bitmap = aq.getCachedImage(imageUrl);
-                        if(bitmap!=null) {
-                            thumbBitmap = ir.getCircledBitmap(bitmap);
-
-                        }
+                        String imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
+                        //bitmap = aq.getCachedImage(imageUrl);
+                        bitmap = Utility.getBitmapFromURL(imageUrl);
+                        bitmap=Bitmap.createScaledBitmap(bitmap, 100,100, true);
                     }
                     else{
 
                         bitmap = BitmapFactory.decodeResource(getActivity().getResources(),
                                 R.drawable.default_activity);
-                        thumbBitmap = ir.getCircledBitmap(bitmap);
                     }
 
                     item.setBitmap(bitmap);
-                    item.setThumbBitmap(thumbBitmap);
-
                     item.setActivityImage(activityImage);
                     item.setAddress(address);
                     item.setCity(city);
@@ -467,8 +464,19 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                 Toast.makeText(getActivity().getApplicationContext(), "Error" + e.toString(),
                         Toast.LENGTH_SHORT).show();
             }
-
             adapter.notifyDataSetChanged();
+            if (sectionAdapter == null) {
+                sectionAdapter = new SimpleSectionAdapter<ActivityItem>(getActivity(),
+                        adapter, R.layout.section_header, R.id.title,
+                        new ActivitySectionizer());
+            }
+
+            if (list.getAdapter() == null) {
+                //list.setAdapter(adapter);
+                list.setAdapter(sectionAdapter);
+            }
+
+            sectionAdapter.notifyDataSetChanged();
 
             if (itemsList.size() > 0) {
                 //startIndex = startIndex + itemsList.size();
@@ -612,5 +620,13 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
         return jsonObject;
     }
+}
 
+
+class ActivitySectionizer implements Sectionizer<ActivityItem> {
+
+    @Override
+    public String getSectionTitleForItem(ActivityItem activity) {
+        return activity.getActivityDate();
+    }
 }

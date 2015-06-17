@@ -16,9 +16,11 @@ import java.net.URL;
  */
 public class Utility {
     private final static String serverUrl = "http://192.168.0.12";
+
     public static String getServerUrl(){
         return serverUrl;
     }
+
     public static Bitmap getBitmapFromURL(String src) {
         try {
             URL url = new URL(src);
@@ -33,6 +35,7 @@ public class Utility {
             return null;
         }
     }
+
     public static StringBuilder inputStreamToString(InputStream is) {
         String rLine = "";
         StringBuilder answer = new StringBuilder();

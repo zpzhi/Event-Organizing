@@ -44,31 +44,20 @@ public class ListAdapter extends ArrayAdapter<ActivityItem> {
 
             TextView title = (TextView)v.findViewById(R.id.activityTitle);
             TextView time = (TextView)v.findViewById(R.id.activityTime);
-            TextView address = (TextView)v.findViewById(R.id.activityAddress);
             TextView city = (TextView)v.findViewById(R.id.activityCity);
-            ImageView image = (ImageView) v.findViewById(R.id.activityImage);
             ImageView thumbN = (ImageView) v.findViewById(R.id.thumbImage);
 
             String titleA = p.getTitle();
-            String timeA = p.getActivityTime();
-            String addressA = p.getAddress();
+            String timeA = p.getActivityTime().substring(11, 16);
             String cityA = p.getCity();
             Bitmap bitmap = p.getBitmap();
-            Bitmap thumbBitmap = p.getThumbBitmap();
-
-
-            image.setImageBitmap(bitmap);
-            thumbN.setImageBitmap(thumbBitmap);
+            thumbN.setImageBitmap(bitmap);
             if (title != null) {
                 title.setText(titleA);
             }
             if (time != null) {
 
                 time.setText(timeA);
-            }
-            if (address != null) {
-
-                address.setText(addressA);
             }
             if (city != null){
                 city.setText(cityA);
