@@ -15,7 +15,6 @@
 
         <TextView
             android:id="@+id/activityTime"
-            android:layout_marginLeft="@dimen/abc_text_size_body_1_material"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#7E040404"
@@ -24,8 +23,7 @@
         <ImageView
             android:id="@+id/thumbImage"
             android:layout_width="100dp"
-            android:layout_height="80dp"
-            android:scaleType="fitCenter"
+            android:layout_height="100dp"
             android:src="@drawable/ic_launcher"/>
     </LinearLayout>
 

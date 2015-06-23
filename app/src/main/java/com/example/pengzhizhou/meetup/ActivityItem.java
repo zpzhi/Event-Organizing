@@ -23,6 +23,7 @@ class ActivityItem {
     private String eventCreator;
     private Bitmap bitmap;
     private Bitmap thumbBitmap;
+    private String activityType;
 
     public ActivityItem(){}
 
@@ -134,4 +135,7 @@ class ActivityItem {
 
     public Bitmap getThumbBitmap() { return thumbBitmap; }
     public void setThumbBitmap(Bitmap b) { thumbBitmap = b; }
+
+    public String getActivityType() { return activityType; }
+    public void setActivityType(String a) { activityType = a; }
 }

@@ -1,5 +1,6 @@
 package com.example.pengzhizhou.meetup;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -15,7 +16,7 @@ import java.net.URL;
  * Class to hold static string and methods to be used by all class
  */
 public class Utility {
-    private final static String serverUrl = "http://192.168.0.12";
+    private final static String serverUrl = "http://172.20.10.8";
 
     public static String getServerUrl(){
         return serverUrl;
@@ -71,4 +72,35 @@ public class Utility {
 
         return dimension;
     }
+
+    public static Bitmap getBitmapByType(Resources rs, String type){
+        Bitmap bitmap = null;
+        int iType = Integer.parseInt(type);
+        if (iType == 0){
+            bitmap = BitmapFactory.decodeResource(rs, R.drawable.festival_);
+        }
+        else if (iType == 1){
+            bitmap = BitmapFactory.decodeResource(rs, R.drawable.board_);
+        }
+        else if (iType == 2){
+            bitmap = BitmapFactory.decodeResource(rs, R.drawable.room_);
+        }
+        else if (iType == 3){
+            bitmap = BitmapFactory.decodeResource(rs, R.drawable.creative_);
+        }
+        else if (iType == 4){
+            bitmap = BitmapFactory.decodeResource(rs, R.drawable.seminar_);
+        }
+        else if (iType == 5){
+            bitmap = BitmapFactory.decodeResource(rs, R.drawable.movie_);
+        }
+        else if (iType == 6){
+            bitmap = BitmapFactory.decodeResource(rs, R.drawable.sports_);
+        }
+        else{
+            bitmap = BitmapFactory.decodeResource(rs, R.drawable.others_);
+        }
+        return bitmap;
+    }
+
 }

@@ -44,17 +44,24 @@ public class PostActivityFragment extends Fragment {
             ((TabHostActivity) getActivity()).setSearchCityViewable(View.GONE);
             //set grid view item
             Bitmap zhuoyouIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.zhuoyou);
+            Bitmap jieriIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.jieri);
+            Bitmap dianyingIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.dianying);
+            Bitmap chuangyeIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.chuangye);
+            Bitmap mishiIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.mishi);
+            Bitmap tiyuIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.tiyu);
+            Bitmap jiangzuoIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.jiangzuo);
+            Bitmap qitaIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.qita);
+
             //Bitmap userIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.zhuoyou);
             gridArray = new ArrayList<Item>();
-            gridArray.add(new Item(zhuoyouIcon, "自定义"));
-            gridArray.add(new Item(zhuoyouIcon, "历史记录"));
-            gridArray.add(new Item(zhuoyouIcon, "节目派对"));
+            gridArray.add(new Item(jieriIcon, "节日派对"));
             gridArray.add(new Item(zhuoyouIcon, "桌游聚会"));
-            gridArray.add(new Item(zhuoyouIcon, "密室逃脱"));
-            gridArray.add(new Item(zhuoyouIcon, "创意展览"));
-            gridArray.add(new Item(zhuoyouIcon, "行业讲座"));
-            gridArray.add(new Item(zhuoyouIcon, "电影鉴赏"));
-            gridArray.add(new Item(zhuoyouIcon, "体育活动"));
+            gridArray.add(new Item(mishiIcon, "密室逃脱"));
+            gridArray.add(new Item(chuangyeIcon, "创意展览"));
+            gridArray.add(new Item(jiangzuoIcon, "行业讲座"));
+            gridArray.add(new Item(dianyingIcon, "电影鉴赏"));
+            gridArray.add(new Item(tiyuIcon, "体育活动"));
+            gridArray.add(new Item(qitaIcon, "其他类别"));
 
             gridView = (GridView) V.findViewById(R.id.gridView1);
             customGridAdapter = new CustomGridViewAdapter(getActivity(), R.layout.grid_single, gridArray);
@@ -66,7 +73,8 @@ public class PostActivityFragment extends Fragment {
                                         int position, long id) {
                     Intent myIntent;
                     myIntent = new Intent(getActivity(), PostActivityDetailActivity.class);
-                    myIntent.putExtra("activity", position);
+                    myIntent.putExtra("activityTypes", gridArray.get(position).getTitle());
+                    myIntent.putExtra("activityTypesId", Integer.toString(position));
                     startActivity(myIntent);
                 }
             });

@@ -37,11 +37,14 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.text.*;
+import java.util.Date;
 
 
-public class EventDetailActivity extends ActionBarActivity {
+public class EventDetailActivity extends ActionBarActivity{
 
     private AQuery aq;
     List<User> usersList;
@@ -54,12 +57,16 @@ public class EventDetailActivity extends ActionBarActivity {
 
     private Button joinEventButton;
 
-    public String titleText = null;
-    public String imageNameText = null;
-    public String eventTimeText = null;
-    public String addressText = null;
-    public String eventID = null;
-    public String loginUser = null;
+    private String titleText = null;
+    private String imageNameText = null;
+    private String eventTimeText = null;
+    private String addressText = null;
+    private String eventID = null;
+    private String loginUser = null;
+    private String type = null;
+    private String detail = null;
+    private String city = null;
+    private String state = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +95,8 @@ public class EventDetailActivity extends ActionBarActivity {
         //TextView address = (TextView) findViewById(R.id)
         joinEventButton = (Button) findViewById(R.id.joinActivity);
         ImageView eventImage = (ImageView) findViewById(R.id.eventImage);
+        TextView description = (TextView) findViewById(R.id.eventDescription);
+        TextView eventAddress = (TextView) findViewById(R.id.eventAddress);
 
         if(b!=null)
         {
@@ -98,6 +107,14 @@ public class EventDetailActivity extends ActionBarActivity {
             eventTimeText = (String) b.get("eventTime");
             addressText = (String) b.get("itemAddress");
             eventID = (String) b.get("itemId");
+            type = (String) b.get("itemType");
+            detail = (String) b.get("itemDetail");
+            city = (String) b.get("itemCity");
+            state = (String) b.get("itemState");
+
+            if (detail != null){
+                description.setText(detail);
+            }
 
             if (imageNameText != null && !imageNameText.isEmpty() && !imageNameText.equals("null")){
                 String imageUrl = url + "/signin/imgupload/" + imageNameText;
@@ -105,10 +122,43 @@ public class EventDetailActivity extends ActionBarActivity {
                 aq.id(R.id.eventImage).image(imageUrl, options);
             }
             else{
-                eventImage.setImageResource(R.drawable.default_activity);
+                int iType = Integer.parseInt(type);
+                if (iType == 0){
+                    eventImage.setImageResource(R.drawable.festival_);
+                }
+                else if (iType == 1){
+                    eventImage.setImageResource(R.drawable.board_);
+                }
+                else if (iType == 2){
+                    eventImage.setImageResource(R.drawable.room_);
+                }
+                else if (iType == 3){
+                    eventImage.setImageResource(R.drawable.creative_);
+                }
+                else if (iType == 4){
+                    eventImage.setImageResource(R.drawable.seminar_);
+                }
+                else if (iType == 5){
+                    eventImage.setImageResource(R.drawable.movie_);
+                }
+                else if (iType == 6){
+                    eventImage.setImageResource(R.drawable.sports_);
+                }
+                else{
+                    eventImage.setImageResource(R.drawable.others_);
+                }
+
             }
 
-            eventTime.setText(eventTimeText);
+            DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm");
+            try {
+                Date date = formatter.parse(eventTimeText.substring(0, eventTimeText.length()-3));
+                eventTime.setText(date.toString());
+            }
+            catch(Exception e){
+            }
+
+            eventAddress.setText(state+city+addressText);
 
             getUserImageNamesTask = new GetUserImageNames();
             getUserImageNamesTask.execute(eventID);
@@ -134,7 +184,6 @@ public class EventDetailActivity extends ActionBarActivity {
 
             }
         });
-
     }
 
     public class GetUserImageNames extends AsyncTask<String,Void,String>{
@@ -168,10 +217,12 @@ public class EventDetailActivity extends ActionBarActivity {
 
         @Override
         protected void onPostExecute(final String response) {
-
+            int flag = 0;
             if (response == null){
+                joinEventButton.setVisibility(View.VISIBLE);
                 return;
             }else if(response.equals("[]")){
+                joinEventButton.setVisibility(View.VISIBLE);
                 return;
             }else {
 
@@ -191,6 +242,7 @@ public class EventDetailActivity extends ActionBarActivity {
 
                             if (name.equals(loginUser)) {
                                 joinEventButton.setVisibility(View.GONE);
+                                flag = 1;
                             }
                             item.setName(name);
                             item.setImageName(image);
@@ -204,6 +256,7 @@ public class EventDetailActivity extends ActionBarActivity {
                             Toast.LENGTH_SHORT).show();
                 }
 
+
                 int size = usersList.size();
                 if (size > 0) {
                     gridArray = new ArrayList<Item>();
@@ -215,7 +268,7 @@ public class EventDetailActivity extends ActionBarActivity {
                         //Bitmap bt = BitmapFactory.decodeFile(imageUrl);
                         if (bt == null) {
                             bt = BitmapFactory.decodeResource(EventDetailActivity.this.getResources(),
-                                    R.drawable.default_activity);
+                                    R.drawable.default_user);
                         }
 
                         bt = ir.getCircledBitmap(bt);
@@ -239,7 +292,12 @@ public class EventDetailActivity extends ActionBarActivity {
 
                         }
                     });
+
                 }
+            }
+
+            if (flag == 0){
+                joinEventButton.setVisibility(View.VISIBLE);
             }
         }
 

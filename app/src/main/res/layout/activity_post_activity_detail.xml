@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/postTitle"
-            android:hint="请输入活动标题"
+            android:hint="请输入活动标题（必填）"
             android:gravity="center"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
@@ -109,31 +109,45 @@
                 android:gravity="center"
                 android:layout_marginBottom="10dp">
 
-                <ImageView
-                    android:id="@+id/locateImage"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/locate_32"
-                    android:layout_weight="2"
-                    android:paddingBottom="10dp"
-                    android:paddingTop="10dp"/>
+                <TextView
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:text="省:"
+                 android:textSize="18dp"
+                 />
 
-                <View
-                    android:layout_width="1dp"
-                    android:id="@+id/view2"
-                    android:layout_height="fill_parent"
-                    android:background="#000000"/>
+                <Spinner
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:id="@+id/spinner1"
+                 android:layout_weight="1"
+                 android:textSize="18dp"
+                 />
 
-                <EditText
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/locationText"
-                    android:hint="Please input your activity location"
-                    android:layout_weight="6"
-                    android:paddingBottom="10dp"
-                    android:paddingTop="10dp"/>
+                <TextView
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:text="市:"
+                    android:textSize="18dp"
+                 />
 
+                <Spinner
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:id="@+id/spinner2"
+                 android:layout_weight="1"
+                    android:textSize="18dp"/>
             </LinearLayout>
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/locationText"
+            android:hint="请输入详细地址 (必填)"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:layout_below="@id/locationLayout"/>
+
 
 
         <EditText
@@ -143,8 +157,9 @@
             android:hint="联系电话 （必填）"
             android:inputType="phone"
             android:gravity="center"
-            android:layout_below="@id/locationLayout"
+            android:layout_below="@id/locationText"
             android:paddingBottom="10dp"
+            android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
             android:paddingTop="10dp"/>
 
@@ -156,9 +171,7 @@
             android:textSize="18dp"
             android:gravity="center"
             android:layout_below="@id/contactPhoneNumber"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp"
-            android:layout_marginBottom="10dp"/>
+            android:paddingTop="10dp"/>
 
         <ImageView
             android:id="@+id/imgView"
@@ -172,17 +185,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/descriptionTitle"
-            android:layout_below="@id/insertImage"
-            android:layout_marginTop="20dp"
+            android:layout_below="@id/imgView"
             android:textSize="16dp"
             android:text="请填写活动描述"/>
 
         <View
-        android:layout_width="fill_parent"
-        android:id="@+id/gap"
-        android:layout_below="@id/descriptionTitle"
-        android:layout_height="0.5dp"
-        android:background="#000000"/>
+            android:layout_width="fill_parent"
+            android:id="@+id/gap"
+            android:layout_below="@id/descriptionTitle"
+            android:layout_height="0.5dp"
+            android:background="#000000"/>
 
         <EditText
             android:id="@+id/activityDescription"

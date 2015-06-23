@@ -65,6 +65,9 @@ public class FriendListAdapter extends ArrayAdapter<User> {
             }
 
             if (description != null) {
+                if (descriptionA != null){
+                    description.setVisibility(View.VISIBLE);
+                }
                 description.setText(descriptionA);
             }
         }

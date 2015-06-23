@@ -55,11 +55,41 @@ public class ListAdapterS extends ArrayAdapter<ActivityItem> {
             TextView time = (TextView)v.findViewById(R.id.activityTime);
 
             String titleA = p.getTitle();
-            String imageNameA = p.getActivityImage();
             String timeA = p.getActivityTime();
             Bitmap bitmap = p.getBitmap();
 
-            thumbN.setImageBitmap(bitmap);
+            if (bitmap != null){
+                thumbN.setImageBitmap(bitmap);
+            }
+            else{
+                int iType = Integer.parseInt(p.getActivityType());
+
+                if (iType == 0){
+                    thumbN.setImageResource(R.drawable.festival_);
+                }
+                else if (iType == 1){
+                    thumbN.setImageResource(R.drawable.board_);
+                }
+                else if (iType == 2){
+                    thumbN.setImageResource(R.drawable.room_);
+                }
+                else if (iType == 3){
+                    thumbN.setImageResource(R.drawable.creative_);
+                }
+                else if (iType == 4){
+                    thumbN.setImageResource(R.drawable.seminar_);
+                }
+                else if (iType == 5){
+                    thumbN.setImageResource(R.drawable.movie_);
+                }
+                else if (iType == 6){
+                    thumbN.setImageResource(R.drawable.sports_);
+                }
+                else{
+                    thumbN.setImageResource(R.drawable.others_);
+                }
+            }
+
             if (title != null) {
                 title.setText(titleA);
             }

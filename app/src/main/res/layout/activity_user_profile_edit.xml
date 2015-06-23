@@ -37,7 +37,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/realName"
-        android:hint="Name" />
+        android:hint="真实姓名" />
 
     <EditText
         android:layout_width="match_parent"
@@ -45,7 +45,34 @@
         android:inputType="phone"
         android:ems="10"
         android:id="@+id/phoneNumber"
-        android:hint="Phone number" />
+        android:hint="电话号码" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/descriptionTitle"
+        android:layout_marginTop="20dp"
+        android:textSize="16dp"
+        android:text="添加个人描述"/>
+
+    <View
+        android:layout_width="fill_parent"
+        android:id="@+id/gap"
+        android:layout_height="0.5dp"
+        android:background="#000000"/>
+
+    <EditText
+        android:id="@+id/userDescription"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:ems="10"
+        android:gravity="left|top"
+        android:inputType="textMultiLine"
+        android:text=""
+        android:layout_below="@id/gap"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/post_content_border"/>
 
 </LinearLayout>

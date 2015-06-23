@@ -12,6 +12,8 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -58,7 +60,6 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         actionBar.setCustomView(R.layout.activity_other_user_profile_actionbar);
-        actionBar.setDisplayHomeAsUpEnabled(true);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -90,7 +91,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         Bitmap bt = Utility.getBitmapFromURL(imageUrl);
         if( bt== null ) {
             bt =  BitmapFactory.decodeResource(this.getResources(),
-                    R.drawable.default_activity);
+                    R.drawable.default_user);
         }
         bt = ir.getCircledBitmap(bt);
         userImg.setImageBitmap(bt);
@@ -107,6 +108,10 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                 i.putExtra("eventTime", itemsList.get(position).getActivityTime());
                 i.putExtra("itemAddress", itemsList.get(position).getAddress());
                 i.putExtra("itemId", itemsList.get(position).getId());
+                i.putExtra("itemType", itemsList.get(position).getActivityType());
+                i.putExtra("itemDetail", itemsList.get(position).getDetail());
+                i.putExtra("itemCity", itemsList.get(position).getCity());
+                i.putExtra("itemState", itemsList.get(position).getState());
 
                 startActivity(i);
             }
@@ -204,6 +209,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                         String duration = jsonChildNode.optString("activity_duration");
                         String pNumber = jsonChildNode.optString("phone_number");
                         String detail = jsonChildNode.optString("activity_detail");
+                        String type = jsonChildNode.optString("activity_type");
                         String city = jsonChildNode.optString("city");
                         String state = jsonChildNode.optString("state");
                         String country = jsonChildNode.optString("country");
@@ -215,15 +221,6 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                         if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
                             String imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
                             bitmap = Utility.getBitmapFromURL(imageUrl);
-                            if(bitmap!=null) {
-                                bitmap = ir.getCircledBitmap(bitmap);
-                            }
-                        }
-                        else{
-
-                            bitmap = BitmapFactory.decodeResource(getResources(),
-                                    R.drawable.default_activity);
-                            bitmap = ir.getCircledBitmap(bitmap);
                         }
 
                         item.setBitmap(bitmap);
@@ -233,6 +230,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                         item.setCity(city);
                         item.setCountry(country);
                         item.setDetail(detail);
+                        item.setActivityType(type);
                         item.setId(id);
                         item.setTitle(title);
                         item.setPhoneNumber(pNumber);
@@ -256,6 +254,8 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                 startIndex = startIndex + itemsList.size();
             }
             super.onPostExecute(jsonResult);
+
+            setListViewHeightBasedOnChildren(eventList);
         }
 
 
@@ -451,5 +451,42 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                         Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    /**** Method for Setting the Height of the ListView dynamically.
+     **** Hack to fix the issue of not showing all the items of the ListView
+     **** when placed inside a ScrollView  ****/
+    // function 2: when too many activities under this user, try a way to let them scroll instead
+    // of covering the button "logout"
+    public static void setListViewHeightBasedOnChildren(ListView listView) {
+        Adapter listAdapter = null;
+        if(listView.getAdapter() instanceof ListAdapterS){
+            listAdapter = (ListAdapterS)listView.getAdapter();
+        }
+        else if (listView.getAdapter() instanceof FriendListAdapter){
+            listAdapter = (FriendListAdapter)listView.getAdapter();
+        }
+        if (listAdapter == null)
+            return;
+
+        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
+        int totalHeight = 0;
+        View view = null;
+
+        for (int i = 0; i < listAdapter.getCount(); i++) {
+            view = listAdapter.getView(i, view, listView);
+            if (i == 0)
+                view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+            view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+            totalHeight += view.getMeasuredHeight();
+            if (i == 3) break;
+        }
+
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+        listView.setLayoutParams(params);
+        listView.requestLayout();
+
     }
 }

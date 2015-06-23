@@ -41,15 +41,23 @@ public class TabHostActivity extends ActionBarActivity {
         mTabHost.addTab(mTabHost.newTabSpec("我的主页").setIndicator("我的主页"),
                 UserProfileFragment.class, null);
 
+        //for (int i = 0; i < mTabHost.getTabWidget().getTabCount(); i++) {
+        //    mTabHost.getTabWidget().getChildAt(i).getLayoutParams().height = 60;
+        //}
+
         TabWidget tabWidget = (TabWidget) findViewById(android.R.id.tabs);
         initTabsAppearance(tabWidget);
         mTabHost.setCurrentTab(startTab);
     }
 
+
+
     private void initTabsAppearance(TabWidget tabWidget) {
         // Change background
-        for(int i=0; i < tabWidget.getChildCount(); i++)
+        for(int i=0; i < tabWidget.getChildCount(); i++) {
+            tabWidget.getChildAt(i).getLayoutParams().height = 80;
             tabWidget.getChildAt(i).setBackgroundResource(R.drawable.tab_bg);
+        }
     }
 
     public void setActionBarTitle(String title) {

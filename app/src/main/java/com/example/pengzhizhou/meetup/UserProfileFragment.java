@@ -62,6 +62,7 @@ public class UserProfileFragment extends Fragment {
     Long startIndex = 0L;
     Long offset = 5L;
     private User user;
+    private Bitmap mIcon;
     private LinearLayout friendsListRoot;
 
     @Override
@@ -84,6 +85,9 @@ public class UserProfileFragment extends Fragment {
 
             aq = new AQuery(V);
             ir = new ImageViewRounded(getActivity());
+            mIcon = BitmapFactory.decodeResource(getActivity().getResources(),
+                    R.drawable.default_user);
+            mIcon = ir.getCircledBitmap(mIcon);
 
             ((TabHostActivity) getActivity())
                     .setActionBarTitle(loginUser + "的主页");
@@ -106,7 +110,10 @@ public class UserProfileFragment extends Fragment {
                     i.putExtra("eventTime", itemsList.get(position).getActivityTime());
                     i.putExtra("itemAddress", itemsList.get(position).getAddress());
                     i.putExtra("itemId", itemsList.get(position).getId());
-
+                    i.putExtra("itemType", itemsList.get(position).getActivityType());
+                    i.putExtra("itemDetail", itemsList.get(position).getDetail());
+                    i.putExtra("itemCity", itemsList.get(position).getCity());
+                    i.putExtra("itemState", itemsList.get(position).getState());
                     startActivity(i);
                 }
             });
@@ -144,6 +151,18 @@ public class UserProfileFragment extends Fragment {
 
             initFriendListAdapter();
             friendsListView = (ListView) V.findViewById(R.id.list1);
+            friendsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                public void onItemClick(AdapterView<?> parent, View view,
+                                        int position, long id) {
+                    Intent i = null;
+                    i = new Intent(getActivity(), OtherUserProfileActivity.class);
+                    i.putExtra("userImg", friendsList.get(position).getImageName());
+                    i.putExtra("userName", friendsList.get(position).getName());
+                    startActivity(i);
+                }
+            });
+
             new FetchFriendsList().execute();
 
         }
@@ -237,31 +256,31 @@ public class UserProfileFragment extends Fragment {
                             String image = jsonChildNode.optString("image_name");
                             String realName = jsonChildNode.optString("name");
                             String phone = jsonChildNode.optString("phone_number");
+                            String userDescription = jsonChildNode.optString("user_description");
                             user.setImageName(image);
                             user.setName(name);
                             user.setRealName(realName);
                             user.setId(id);
                             user.setPhoneNumber(phone);
+                            user.setDescription(userDescription);
 
-                            ImageView userImage = (ImageView)getActivity().findViewById(R.id.userImg);
                             String imageUrl;
+                            int flag = 1;
                             if (!image.isEmpty() && image != null) {
                                 imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + image;
 
                                 bt = Utility.getBitmapFromURL(imageUrl);
                                 if(bt!=null) {
                                     bt = ir.getCircledBitmap(bt);
-
+                                    if (bt!=null){
+                                        flag = 0;
+                                        userImg.setImageBitmap(bt);
+                                    }
                                 }
-                                if(bt!=null) userImage.setImageBitmap(bt);
+
                             }
-                            else{
-
-                                Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(),
-                                        R.drawable.default_activity);
-                                icon = ir.getCircledBitmap(icon);
-
-                                userImg.setImageBitmap(icon);
+                            if (flag == 1){
+                                userImg.setImageBitmap(mIcon);
                             }
                         }
 
@@ -339,6 +358,7 @@ public class UserProfileFragment extends Fragment {
                         String duration = jsonChildNode.optString("activity_duration");
                         String pNumber = jsonChildNode.optString("phone_number");
                         String detail = jsonChildNode.optString("activity_detail");
+                        String type = jsonChildNode.optString("activity_type");
                         String city = jsonChildNode.optString("city");
                         String state = jsonChildNode.optString("state");
                         String country = jsonChildNode.optString("country");
@@ -350,21 +370,13 @@ public class UserProfileFragment extends Fragment {
                         if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
                             String imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
                             bitmap = Utility.getBitmapFromURL(imageUrl);
-                            if(bitmap!=null) {
-                                bitmap = ir.getCircledBitmap(bitmap);
-                            }
-                        }
-                        else{
-
-                            bitmap = BitmapFactory.decodeResource(getActivity().getResources(),
-                                    R.drawable.default_activity);
-                            bitmap = ir.getCircledBitmap(bitmap);
                         }
 
                         item.setBitmap(bitmap);
                         item.setActivityImage(activityImage);
                         item.setAddress(address);
                         item.setCity(city);
+                        item.setActivityType(type);
                         item.setCountry(country);
                         item.setDetail(detail);
                         item.setId(id);
@@ -466,7 +478,7 @@ public class UserProfileFragment extends Fragment {
                         else{
 
                             bitmap = BitmapFactory.decodeResource(getActivity().getResources(),
-                                    R.drawable.default_activity);
+                                    R.drawable.default_user);
                             bitmap = ir.getCircledBitmap(bitmap);
                         }
 

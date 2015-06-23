@@ -5,7 +5,6 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -23,7 +22,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.androidquery.AQuery;
-import com.androidquery.callback.ImageOptions;
 import com.mobsandgeeks.adapters.Sectionizer;
 import com.mobsandgeeks.adapters.SimpleSectionAdapter;
 
@@ -132,6 +130,10 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                         i.putExtra("eventTime", ai.getActivityTime());
                         i.putExtra("itemAddress", ai.getAddress());
                         i.putExtra("itemId", ai.getId());
+                        i.putExtra("itemType", ai.getActivityType());
+                        i.putExtra("itemDetail", ai.getDetail());
+                        i.putExtra("itemCity", ai.getCity());
+                        i.putExtra("itemState", ai.getState());
                         startActivity(i);
                     }
                 });
@@ -269,6 +271,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                     String duration = jsonChildNode.optString("activity_duration");
                     String pNumber = jsonChildNode.optString("phone_number");
                     String detail = jsonChildNode.optString("activity_detail");
+                    String type = jsonChildNode.optString("activity_type");
                     String city = jsonChildNode.optString("city");
                     String state = jsonChildNode.optString("state");
                     String country = jsonChildNode.optString("country");
@@ -276,30 +279,20 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                     String eventCreator = jsonChildNode.optString("event_creator");
 
                     String imageUrl;
-                    Bitmap bitmap = null;
-                    Bitmap thumbBitmap = null;
+                    Bitmap bitmap;
                     if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
                         imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
-                        ImageOptions options = new ImageOptions();
-
                         bitmap = aq.getCachedImage(imageUrl);
-                        if(bitmap!=null) {
-                            thumbBitmap = ir.getCircledBitmap(bitmap);
-
-                        }
                     }
                     else{
-
-                        bitmap = BitmapFactory.decodeResource(getActivity().getResources(),
-                                R.drawable.default_activity);
-                        thumbBitmap = ir.getCircledBitmap(bitmap);
+                        bitmap = null;
                     }
 
                     item.setBitmap(bitmap);
-                    item.setThumbBitmap(thumbBitmap);
                     item.setActivityImage(activityImage);
                     item.setAddress(address);
                     item.setCity(city);
+                    item.setActivityType(type);
                     item.setCountry(country);
                     item.setDetail(detail);
                     item.setId(id);
@@ -425,6 +418,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                     String duration = jsonChildNode.optString("activity_duration");
                     String pNumber = jsonChildNode.optString("phone_number");
                     String detail = jsonChildNode.optString("activity_detail");
+                    String type = jsonChildNode.optString("activity_type");
                     String city = jsonChildNode.optString("city");
                     String state = jsonChildNode.optString("state");
                     String country = jsonChildNode.optString("country");
@@ -433,19 +427,17 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
                     if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
                         String imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
-                        //bitmap = aq.getCachedImage(imageUrl);
                         bitmap = Utility.getBitmapFromURL(imageUrl);
-                        bitmap=Bitmap.createScaledBitmap(bitmap, 100,100, true);
+                        //bitmap=Bitmap.createScaledBitmap(bitmap, 100,100, true);
                     }
                     else{
-
-                        bitmap = BitmapFactory.decodeResource(getActivity().getResources(),
-                                R.drawable.default_activity);
+                        bitmap = null;
                     }
 
                     item.setBitmap(bitmap);
                     item.setActivityImage(activityImage);
                     item.setAddress(address);
+                    item.setActivityType(type);
                     item.setCity(city);
                     item.setCountry(country);
                     item.setDetail(detail);

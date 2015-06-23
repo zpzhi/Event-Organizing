@@ -2,16 +2,18 @@ package com.example.pengzhizhou.meetup;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -19,6 +21,7 @@ import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -31,6 +34,7 @@ import com.loopj.android.http.RequestParams;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,14 +43,17 @@ public class UserProfileEditActivity extends ActionBarActivity {
     private ImageViewRounded ir;
     private ImageView imgV;
     private EditText realN, phone;
+    private EditText userD;
     private RequestParams params = new RequestParams();
     private Bitmap bm = null;
     private Uri outputFileUri;
-    private static int RESULT_LOAD_IMG = 1;
     private String imgPath, imgfileName;
     private String encodedString;
     private ProgressDialog prgDialog;
     private String url = Utility.getServerUrl() + "/signin/update-user-from-android.php";
+
+    private static int RESULT_LOAD_IMG = 1;
+    private static final int CROP_FROM_CAMERA = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,11 +76,13 @@ public class UserProfileEditActivity extends ActionBarActivity {
             String userName = user.getName();
             String id = user.getId();
             String phoneNumber = user.getPhoneNumber();
+            String userDescription = user.getDescription();
             params.put("user", userName);
 
             imgV = (ImageView) findViewById(R.id.userImg);
             realN = (EditText) findViewById(R.id.realName);
             phone = (EditText) findViewById(R.id.phoneNumber);
+            userD = (EditText) findViewById(R.id.userDescription);
 
             String imageUrl;
             if (!imageName.isEmpty() && imageName != null) {
@@ -89,7 +98,7 @@ public class UserProfileEditActivity extends ActionBarActivity {
             else{
 
                 Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
-                        R.drawable.default_activity);
+                        R.drawable.default_user);
                 icon = ir.getCircledBitmap(icon);
 
                 imgV.setImageBitmap(icon);
@@ -100,6 +109,9 @@ public class UserProfileEditActivity extends ActionBarActivity {
             }
             if (phoneNumber != null && !phoneNumber.equals("null")){
                 phone.setText(phoneNumber);
+            }
+            if (userDescription != null && !userDescription.equals("null")){
+                userD.setText(userDescription);
             }
         }
 
@@ -197,16 +209,15 @@ public class UserProfileEditActivity extends ActionBarActivity {
                     }
                 }
 
-                Uri selectedImage;
                 String[] filePathColumn;
                 if (isCamera) {
                     imgPath = outputFileUri.getPath();
                     //filePathColumn = new String[]{ MediaStore.Images.Media.DATA };
                 } else {
-                    selectedImage = data == null ? null : data.getData();
+                    outputFileUri = data == null ? null : data.getData();
                     filePathColumn = new String[]{ MediaStore.Images.Media.DATA };
                     // Get the cursor
-                    Cursor cursor = this.getContentResolver().query(selectedImage,
+                    Cursor cursor = this.getContentResolver().query(outputFileUri,
                             filePathColumn, null, null, null);
                     // Move to first row
                     cursor.moveToFirst();
@@ -216,29 +227,29 @@ public class UserProfileEditActivity extends ActionBarActivity {
                     cursor.close();
 
                 }
+                doCrop();
 
-                // Set the Image in ImageView
-                final BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inSampleSize = 6;
+            }
+            else if (requestCode == CROP_FROM_CAMERA){
+                Bundle extras = data.getExtras();
+                /**
+                 * After cropping the image, get the bitmap of the cropped image and
+                 * display it on imageview.
+                 */
+                if (extras != null) {
+                    //bm = extras.getParcelable("data");
 
-                bm = BitmapFactory.decodeFile(imgPath,options);
-                ExifInterface exif = new ExifInterface(imgPath);
-                int rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-                int rotationInDegrees = exifToDegrees(rotation);
-                Matrix matrix = new Matrix();
-                if (rotation != 0f) {
-                    matrix.preRotate(rotationInDegrees);
-                    bm = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
+                    String filePath = Environment.getExternalStorageDirectory()
+                            + "/temporary_holder.jpg";
+
+                    bm = BitmapFactory.decodeFile(filePath);
+                    imgV.setImageBitmap(bm);
+                    // Get the Image's file name
+                    String fileNameSegments[] = imgPath.split("/");
+                    imgfileName = fileNameSegments[fileNameSegments.length - 1];
                 }
-                Bitmap bt = bm;
-                bt = ir.getCircledBitmap(bt);
-                imgV.setImageBitmap(bt);
-                //if (bt!=null)bt.recycle();
-                // Get the Image's file name
-                String fileNameSegments[] = imgPath.split("/");
-                imgfileName = fileNameSegments[fileNameSegments.length - 1];
-
-            } else {
+            }
+            else {
                 Toast.makeText(this, "You haven't picked Image",
                         Toast.LENGTH_LONG).show();
             }
@@ -259,13 +270,15 @@ public class UserProfileEditActivity extends ActionBarActivity {
     public void attemptUpdate(){
         params.put("realName", realN.getText().toString());
         params.put("phoneNumber", phone.getText().toString());
+        params.put("userDescription", userD.getText().toString());
         params.put("filename", imgfileName);
         // Show a progress spinner, and kick off a background task to
         // perform the user login attempt.
         prgDialog.setMessage("Converting Image to Binary Data");
         prgDialog.show();
 
-        if (imgPath !=null && !imgPath.isEmpty()) {
+        if (imgfileName !=null && !imgfileName.isEmpty()) {
+            bm = ThumbnailUtils.extractThumbnail(bm, bm.getWidth() / 2, bm.getHeight() / 2);
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             // Must compress the Image to reduce image size to make upload easy
             bm.compress(Bitmap.CompressFormat.PNG, 50, stream);
@@ -352,6 +365,129 @@ public class UserProfileEditActivity extends ActionBarActivity {
         // Dismiss the progress bar when application is closed
         if (prgDialog != null) {
             prgDialog.dismiss();
+        }
+    }
+
+    private void doCrop() {
+        final ArrayList<CropOption> cropOptions = new ArrayList<CropOption>();
+        /**
+         * Open image crop app by starting an intent
+         * ‘com.android.camera.action.CROP‘.
+         */
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setType("image/*");
+
+        /**
+         * Check if there is image cropper app installed.
+         */
+        List<ResolveInfo> list = getPackageManager().queryIntentActivities(
+                intent, 0);
+
+        int size = list.size();
+
+        /**
+         * If there is no image cropper app, display warning message
+         */
+        if (size == 0) {
+
+            Toast.makeText(this, "Can not find image crop app",
+                    Toast.LENGTH_SHORT).show();
+
+            return;
+        } else {
+            /**
+             * Specify the image path, crop dimension and scale
+             */
+            //intent.setData(outputFileUri);
+
+            intent.setDataAndType(outputFileUri, "image/*");
+
+            intent.putExtra("crop", "true");
+
+            intent.putExtra("aspectX", 1);
+            intent.putExtra("aspectY", 1);
+
+            intent.putExtra("outputX", 400);
+            intent.putExtra("outputY", 400);
+
+            //intent.putExtra("return-data", true);
+            File f = new File(Environment.getExternalStorageDirectory(),
+                    "/temporary_holder.jpg");
+            try {
+                f.createNewFile();
+            } catch (IOException ex) {
+                Log.e("io", ex.getMessage());
+            }
+
+            Uri uri = Uri.fromFile(f);
+
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            /**
+             * There is posibility when more than one image cropper app exist,
+             * so we have to check for it first. If there is only one app, open
+             * then app.
+             */
+
+            if (size == 1) {
+                Intent i = new Intent(intent);
+                ResolveInfo res = list.get(0);
+
+                i.setComponent(new ComponentName(res.activityInfo.packageName,
+                        res.activityInfo.name));
+
+                startActivityForResult(i, CROP_FROM_CAMERA);
+            } else {
+                /**
+                 * If there are several app exist, create a custom chooser to
+                 * let user selects the app.
+                 */
+                for (ResolveInfo res : list) {
+                    final CropOption co = new CropOption();
+
+                    co.title = getPackageManager().getApplicationLabel(
+                            res.activityInfo.applicationInfo);
+                    co.icon = getPackageManager().getApplicationIcon(
+                            res.activityInfo.applicationInfo);
+                    co.appIntent = new Intent(intent);
+
+                    co.appIntent
+                            .setComponent(new ComponentName(
+                                    res.activityInfo.packageName,
+                                    res.activityInfo.name));
+
+                    cropOptions.add(co);
+                }
+
+                CropOptionAdapter adapter = new CropOptionAdapter(
+                        getApplicationContext(), cropOptions);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Choose Crop App");
+                builder.setAdapter(adapter,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int item) {
+                                startActivityForResult(
+                                        cropOptions.get(item).appIntent,
+                                        CROP_FROM_CAMERA);
+                            }
+                        });
+
+                builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+
+                        if (outputFileUri != null) {
+                            //getContentResolver().delete(outputFileUri, null,
+                            //        null);
+                            outputFileUri = null;
+                        }
+                    }
+                });
+
+                AlertDialog alert = builder.create();
+
+                alert.show();
+            }
         }
     }
 

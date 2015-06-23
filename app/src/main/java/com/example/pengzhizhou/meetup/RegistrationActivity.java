@@ -5,10 +5,12 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
@@ -17,7 +19,6 @@ import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
@@ -29,6 +30,7 @@ import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,6 +50,7 @@ import com.loopj.android.http.RequestParams;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,7 +63,6 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
-    private static int RESULT_LOAD_IMG = 1;
     public String url = Utility.getServerUrl() + "/signin/register-from-android.php";
     RequestParams params = new RequestParams();
     String imgPath, imgfileName;
@@ -69,6 +71,10 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
     Bitmap bm = null;
     private Uri outputFileUri;
     ImageView imgView;
+
+    private static int RESULT_LOAD_IMG = 1;
+    private static final int CROP_FROM_CAMERA = 2;
+
     @Override
     protected void onPlusClientRevokeAccess() {
 
@@ -216,16 +222,15 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
                     }
                 }
 
-                Uri selectedImage;
                 String[] filePathColumn;
                 if (isCamera) {
                     imgPath = outputFileUri.getPath();
                     //filePathColumn = new String[]{ MediaStore.Images.Media.DATA };
                 } else {
-                    selectedImage = data == null ? null : data.getData();
+                    outputFileUri = data == null ? null : data.getData();
                     filePathColumn = new String[]{ MediaStore.Images.Media.DATA };
                     // Get the cursor
-                    Cursor cursor = this.getContentResolver().query(selectedImage,
+                    Cursor cursor = this.getContentResolver().query(outputFileUri,
                             filePathColumn, null, null, null);
                     // Move to first row
                     cursor.moveToFirst();
@@ -235,27 +240,29 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
                     cursor.close();
 
                 }
+                doCrop();
 
-                // Set the Image in ImageView
-                final BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inSampleSize = 6;
+            }
+            else if (requestCode == CROP_FROM_CAMERA){
+                Bundle extras = data.getExtras();
+                /**
+                 * After cropping the image, get the bitmap of the cropped image and
+                 * display it on imageview.
+                 */
+                if (extras != null) {
+                    //bm = extras.getParcelable("data");
 
-                bm = BitmapFactory.decodeFile(imgPath,options);
-                ExifInterface exif = new ExifInterface(imgPath);
-                int rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-                int rotationInDegrees = exifToDegrees(rotation);
-                Matrix matrix = new Matrix();
-                if (rotation != 0f) {
-                    matrix.preRotate(rotationInDegrees);
-                    bm = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
+                    String filePath = Environment.getExternalStorageDirectory()
+                            + "/temporary_holder.jpg";
+
+                    bm = BitmapFactory.decodeFile(filePath);
+                    imgView.setImageBitmap(bm);
+                    // Get the Image's file name
+                    String fileNameSegments[] = imgPath.split("/");
+                    imgfileName = fileNameSegments[fileNameSegments.length - 1];
                 }
-                imgView.setImageBitmap(bm);
-                // Get the Image's file name
-                String fileNameSegments[] = imgPath.split("/");
-                imgfileName = fileNameSegments[fileNameSegments.length - 1];
-                // Put file name in Async Http Post Param which will used in Php web app
-
-            } else {
+            }
+            else {
                 Toast.makeText(this, "You haven't picked Image",
                         Toast.LENGTH_LONG).show();
             }
@@ -439,8 +446,7 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
 
                 if (imgfileName != null && !imgfileName.isEmpty()) {
 
-                    int dimension = Utility.getSquareCropDimensionForBitmap(bm);
-                    bm = ThumbnailUtils.extractThumbnail(bm, dimension, dimension);
+                    bm = ThumbnailUtils.extractThumbnail(bm, bm.getWidth()/2, bm.getHeight()/2);
 
 
                     params.put("imgSelectedStatus", "1");
@@ -571,5 +577,128 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    private void doCrop() {
+        final ArrayList<CropOption> cropOptions = new ArrayList<CropOption>();
+        /**
+         * Open image crop app by starting an intent
+         * ‘com.android.camera.action.CROP‘.
+         */
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setType("image/*");
+
+        /**
+         * Check if there is image cropper app installed.
+         */
+        List<ResolveInfo> list = getPackageManager().queryIntentActivities(
+                intent, 0);
+
+        int size = list.size();
+
+        /**
+         * If there is no image cropper app, display warning message
+         */
+        if (size == 0) {
+
+            Toast.makeText(this, "Can not find image crop app",
+                    Toast.LENGTH_SHORT).show();
+
+            return;
+        } else {
+            /**
+             * Specify the image path, crop dimension and scale
+             */
+            //intent.setData(outputFileUri);
+
+            intent.setDataAndType(outputFileUri, "image/*");
+
+            intent.putExtra("crop", "true");
+
+            intent.putExtra("aspectX", 1);
+            intent.putExtra("aspectY", 1);
+
+            intent.putExtra("outputX", 400);
+            intent.putExtra("outputY", 400);
+
+            //intent.putExtra("return-data", true);
+            File f = new File(Environment.getExternalStorageDirectory(),
+                    "/temporary_holder.jpg");
+            try {
+                f.createNewFile();
+            } catch (IOException ex) {
+                Log.e("io", ex.getMessage());
+            }
+
+            Uri uri = Uri.fromFile(f);
+
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            /**
+             * There is posibility when more than one image cropper app exist,
+             * so we have to check for it first. If there is only one app, open
+             * then app.
+             */
+
+            if (size == 1) {
+                Intent i = new Intent(intent);
+                ResolveInfo res = list.get(0);
+
+                i.setComponent(new ComponentName(res.activityInfo.packageName,
+                        res.activityInfo.name));
+
+                startActivityForResult(i, CROP_FROM_CAMERA);
+            } else {
+                /**
+                 * If there are several app exist, create a custom chooser to
+                 * let user selects the app.
+                 */
+                for (ResolveInfo res : list) {
+                    final CropOption co = new CropOption();
+
+                    co.title = getPackageManager().getApplicationLabel(
+                            res.activityInfo.applicationInfo);
+                    co.icon = getPackageManager().getApplicationIcon(
+                            res.activityInfo.applicationInfo);
+                    co.appIntent = new Intent(intent);
+
+                    co.appIntent
+                            .setComponent(new ComponentName(
+                                    res.activityInfo.packageName,
+                                    res.activityInfo.name));
+
+                    cropOptions.add(co);
+                }
+
+                CropOptionAdapter adapter = new CropOptionAdapter(
+                        getApplicationContext(), cropOptions);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Choose Crop App");
+                builder.setAdapter(adapter,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int item) {
+                                startActivityForResult(
+                                        cropOptions.get(item).appIntent,
+                                        CROP_FROM_CAMERA);
+                            }
+                        });
+
+                builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+
+                        if (outputFileUri != null) {
+                            //getContentResolver().delete(outputFileUri, null,
+                            //        null);
+                            outputFileUri = null;
+                        }
+                    }
+                });
+
+                AlertDialog alert = builder.create();
+
+                alert.show();
+            }
+        }
     }
 }

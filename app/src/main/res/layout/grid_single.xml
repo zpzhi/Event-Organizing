@@ -11,7 +11,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginRight="10dp"
-        android:src="@drawable/zhuoyou">
+        android:src="@drawable/zhuoyou1">
     </ImageView>
 
     <TextView
