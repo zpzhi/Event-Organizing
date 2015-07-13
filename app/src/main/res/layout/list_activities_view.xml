@@ -6,6 +6,28 @@
     android:orientation="vertical"
     tools:context=".DeviceFragment" >
 
+    <GridView
+        android:id="@+id/gridFilter"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:columnWidth="50dp"
+        android:gravity="center"
+        android:numColumns="5"
+        android:stretchMode="columnWidth"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:visibility="gone">
+    </GridView>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/close_line"
+        android:id="@+id/closeFilter"
+        android:visibility="gone"
+        />
+
     <ListView
         android:id="@+id/list"
         android:layout_width="fill_parent"

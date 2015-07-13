@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -12,11 +13,14 @@ import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
+import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,31 +47,34 @@ import java.util.List;
 
 public class ListActivitiesFragment extends Fragment implements OnScrollListener {
 
-    List<ActivityItem> itemsList;
-
-    ListView list;
-    ListAdapter adapter = null;
-    SimpleSectionAdapter<ActivityItem> sectionAdapter = null;
+    private List<ActivityItem> itemsList;
+    private ListView list;
+    private ListAdapter adapter = null;
+    private SimpleSectionAdapter<ActivityItem> sectionAdapter = null;
     private String loginUser = null;
     private AQuery aq;
     private ImageViewRounded ir;
 
-    ProgressDialog progressDialog;
+    private ProgressDialog progressDialog;
     private int myLastVisiblePos;
-    int currentFirstVisibleItem = 0;
-    int currentVisibleItemCount = 0;
-    int totalItemCount = 0;
-    int currentScrollState = 0;
+    private int currentFirstVisibleItem = 0;
+    private int currentVisibleItemCount = 0;
+    private int totalItemCount = 0;
     boolean loadingMore = false;
-    Long startIndex = 0L;
-    Long offset = 10L;
-    View _rootView;
-    double latitude, longitude;
-    String city;
-    TextView noActivity;
+    private Long startIndex = 0L;
+    private Long offset = 10L;
+    private View _rootView;
+    private double latitude, longitude;
+    private String city;
+    private TextView noActivity;
     private Bitmap bitmap = null;
-    //public View footer;
+    private ArrayList<Item> gridArray;
+    private GridView gridViewFilter;
+    private CustomGridViewAdapter customGridAdapter;
+    private ImageView closeFilter;
 
+    private String activityTypeId = null;
+    private String activityTitle = null;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -78,12 +85,26 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
         aq = new AQuery(getActivity());
         ir = new ImageViewRounded(getActivity());
-        ((TabHostActivity) getActivity())
-                .setActionBarTitle("活动主题");
+
+        Bundle b = getActivity().getIntent().getExtras();
+        if (b != null) {
+            activityTitle = b.getString("activityTypes");
+            activityTypeId = b.getString("activityTypesId");
+        }
+
+        if (activityTitle == null) {
+            ((TabHostActivity) getActivity())
+                    .setActionBarTitle("全部活动");
+        }
+        else{
+            ((TabHostActivity) getActivity())
+                    .setActionBarTitle(activityTitle);
+        }
+
         ((TabHostActivity) getActivity()).setImageViewable(View.GONE);
         ((TabHostActivity) getActivity()).setSearchCityViewable(View.VISIBLE);
 
-        TextView otherCity = (TextView) getActivity().findViewById(R.id.searchCity);
+        ImageView otherCity = (ImageView) getActivity().findViewById(R.id.searchCity);
         otherCity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -96,6 +117,8 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         // ignore NetworkOnMainThreadException currently, will try to fix it later
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+
+
 
         if (_rootView == null) {
                 // Inflate the layout for this fragment
@@ -113,7 +136,6 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                     }
                     new MatchingNearByLocationTask().execute();
                 }
-
 
                 noActivity = (TextView) _rootView.findViewById(R.id.noActivities);
                 noActivity.setVisibility(View.GONE);
@@ -134,6 +156,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                         i.putExtra("itemDetail", ai.getDetail());
                         i.putExtra("itemCity", ai.getCity());
                         i.putExtra("itemState", ai.getState());
+                        i.putExtra("eventCreator", ai.getEventCreator());
                         startActivity(i);
                     }
                 });
@@ -160,7 +183,54 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                 // (it will be added back).
                 ((ViewGroup)_rootView.getParent()).removeView(_rootView);
             }
-            return _rootView;
+
+        TextView actionbarTitle = (TextView)getActivity().findViewById(R.id.actionbarTitle);
+        ImageView pullDownIcon = (ImageView)getActivity().findViewById(R.id.pulldown);
+        pullDownIcon.setVisibility(View.VISIBLE);
+        createGridArray();
+        gridViewFilter = (GridView) _rootView.findViewById(R.id.gridFilter);
+        customGridAdapter = new CustomGridViewAdapter(getActivity(), R.layout.grid_single_1, gridArray);
+        gridViewFilter.setAdapter(customGridAdapter);
+        closeFilter = (ImageView)_rootView.findViewById(R.id.closeFilter);
+
+        actionbarTitle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gridViewFilter.setVisibility(View.VISIBLE);
+                closeFilter.setVisibility(View.VISIBLE);
+            }
+        });
+        pullDownIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gridViewFilter.setVisibility(View.VISIBLE);
+                closeFilter.setVisibility(View.VISIBLE);
+            }
+        });
+
+
+        gridViewFilter.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                Intent i = getActivity().getIntent();
+                i.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                i.putExtra("activityTypes", gridArray.get(position).getTitle());
+                i.putExtra("activityTypesId", Integer.toString(position));
+                startActivity(i);
+            }
+        });
+
+
+        closeFilter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gridViewFilter.setVisibility(View.GONE);
+                closeFilter.setVisibility(View.GONE);
+            }
+        });
+
+        return _rootView;
 
     }
 
@@ -196,13 +266,24 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
             myLastVisiblePos = currentFirstVisibleItem;
     }
+    public String getRefactorUrl(String url){
+        if (activityTypeId != null) {
+            int activityType = Integer.parseInt(activityTypeId);
+            if (activityType != 0) {
+                activityType = activityType - 1;
+                //"get-events.php?start="+0+"&limit="+startIndex+"&city="+city;
+                url = url + "&type=" + activityType;
+            }
+        }
+        return url;
+    }
 
     private class RefreshListTask extends AsyncTask<Void, Void, String> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
 
-                progressDialog.setMessage("Refresh...");
+                progressDialog.setMessage("刷新...");
                 progressDialog.setCancelable(true);
                 progressDialog.show();
 
@@ -215,8 +296,10 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
             HttpGet request = new HttpGet();
             try {
-                URI website = new URI(Utility.getServerUrl()+"/signin/get_activities_android.php?start="+0
-                        +"&limit="+startIndex+"&city="+city);
+                String url = "get-events.php?start="+0
+                        +"&limit="+startIndex+"&city="+city;
+                url = getRefactorUrl(url);
+                URI website = new URI(Utility.getServerUrl()+url);
                 request.setURI(website);
             }
             catch (Exception e){
@@ -245,13 +328,19 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                 return;
             }
             else if (jsonResult.equals("[]") && startIndex != 0){
-                Toast.makeText(getActivity().getApplicationContext(), "NO MORE DATA",
+                Toast.makeText(getActivity().getApplicationContext(), "没有更多活动了",
                         Toast.LENGTH_SHORT).show();
                 return;
             }
             else if (jsonResult.equals("[]") && startIndex == 0){
                 noActivity.setVisibility(View.VISIBLE);
-                noActivity.setText("There is no activity in " + city);
+                if (activityTitle != null) {
+                    noActivity.setText(city + "暂时没有"+activityTitle);
+                }else{
+                    if (activityTitle != null) {
+                        noActivity.setText(city + "暂时没有活动");
+                    }
+                }
                 return;
             }
             try {
@@ -281,7 +370,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                     String imageUrl;
                     Bitmap bitmap;
                     if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
-                        imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
+                        imageUrl = Utility.getServerUrl() + "imgupload/" + activityImage;
                         bitmap = aq.getCachedImage(imageUrl);
                     }
                     else{
@@ -353,8 +442,10 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
             HttpGet request = new HttpGet();
             try {
-                URI website = new URI(Utility.getServerUrl()+"/signin/get_activities_android.php?start="+startIndex
-                        +"&limit="+offset+"&city="+city);
+                String url = "get-events.php?start="+startIndex
+                        +"&limit="+offset+"&city="+city;
+                url = getRefactorUrl(url);
+                URI website = new URI(Utility.getServerUrl()+url);
                 request.setURI(website);
             }
             catch (Exception e){
@@ -379,102 +470,108 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         protected void onPostExecute(String jsonResult) {
 
             loadingMore = false;
-            if (footer != null) {
-                list.removeFooterView(footer);
-            }
-
             if (jsonResult == null){
-                return;
+                // do nothing
             }
             else if (jsonResult.startsWith("<HTML><HEAD>")){
                 Toast.makeText(getActivity().getApplicationContext(), "No internet available",
                         Toast.LENGTH_SHORT).show();
-
-                return;
             }
             else if (jsonResult.equals("[]") && startIndex != 0){
-                Toast.makeText(getActivity().getApplicationContext(), "NO MORE DATA",
+                Toast.makeText(getActivity().getApplicationContext(), "没有更多活动了",
                         Toast.LENGTH_SHORT).show();
-
-                return;
             }
             else if (jsonResult.equals("[]") && startIndex == 0){
                 noActivity.setVisibility(View.VISIBLE);
-                noActivity.setText("There is no activity in " + city);
-                return;
-            }
-            try {
-                JSONObject jsonResponse = new JSONObject(jsonResult);
-                JSONArray jsonMainNode = jsonResponse.optJSONArray("act_info");
-
-                for (int i = 0; i < jsonMainNode.length(); i++) {
-                    JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
-                    ActivityItem item = new ActivityItem();
-                    String id = jsonChildNode.optString("id");
-                    String title = jsonChildNode.optString("title");
-                    String address = jsonChildNode.optString("activity_address");
-                    String activityTime = jsonChildNode.optString("activity_time");
-                    String postTime = jsonChildNode.optString("post_time");
-                    String duration = jsonChildNode.optString("activity_duration");
-                    String pNumber = jsonChildNode.optString("phone_number");
-                    String detail = jsonChildNode.optString("activity_detail");
-                    String type = jsonChildNode.optString("activity_type");
-                    String city = jsonChildNode.optString("city");
-                    String state = jsonChildNode.optString("state");
-                    String country = jsonChildNode.optString("country");
-                    String activityImage = jsonChildNode.optString("image_name");
-                    String eventCreator = jsonChildNode.optString("event_creator");
-
-                    if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
-                        String imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
-                        bitmap = Utility.getBitmapFromURL(imageUrl);
-                        //bitmap=Bitmap.createScaledBitmap(bitmap, 100,100, true);
+                if (activityTitle != null) {
+                    noActivity.setText(city + "暂时没有"+activityTitle);
+                }else{
+                    if (activityTitle != null) {
+                        noActivity.setText(city + "暂时没有活动");
                     }
-                    else{
-                        bitmap = null;
-                    }
-
-                    item.setBitmap(bitmap);
-                    item.setActivityImage(activityImage);
-                    item.setAddress(address);
-                    item.setActivityType(type);
-                    item.setCity(city);
-                    item.setCountry(country);
-                    item.setDetail(detail);
-                    item.setId(id);
-                    item.setTitle(title);
-                    item.setPhoneNumber(pNumber);
-                    item.setState(state);
-                    item.setDuration(duration);
-                    item.setActivityTime(activityTime);
-                    item.setPostTime(postTime);
-                    item.setEventCreator(eventCreator);
-
-                    itemsList.add(item);
                 }
-            } catch (JSONException e) {
-                Toast.makeText(getActivity().getApplicationContext(), "Error" + e.toString(),
-                        Toast.LENGTH_SHORT).show();
             }
-            adapter.notifyDataSetChanged();
-            if (sectionAdapter == null) {
-                sectionAdapter = new SimpleSectionAdapter<ActivityItem>(getActivity(),
-                        adapter, R.layout.section_header, R.id.title,
-                        new ActivitySectionizer());
+            else {
+                try {
+                    JSONObject jsonResponse = new JSONObject(jsonResult);
+                    JSONArray jsonMainNode = jsonResponse.optJSONArray("act_info");
+
+                    for (int i = 0; i < jsonMainNode.length(); i++) {
+                        JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
+                        ActivityItem item = new ActivityItem();
+                        String id = jsonChildNode.optString("id");
+                        String title = jsonChildNode.optString("title");
+                        String address = jsonChildNode.optString("activity_address");
+                        String activityTime = jsonChildNode.optString("activity_time");
+                        String postTime = jsonChildNode.optString("post_time");
+                        String duration = jsonChildNode.optString("activity_duration");
+                        String pNumber = jsonChildNode.optString("phone_number");
+                        String detail = jsonChildNode.optString("activity_detail");
+                        String type = jsonChildNode.optString("activity_type");
+                        String city = jsonChildNode.optString("city");
+                        String state = jsonChildNode.optString("state");
+                        String country = jsonChildNode.optString("country");
+                        String activityImage = jsonChildNode.optString("image_name");
+                        String eventCreator = jsonChildNode.optString("event_creator");
+
+                        if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
+                            String imageUrl = Utility.getServerUrl() + "imgupload/" + activityImage;
+                            bitmap = Utility.getBitmapFromURL(imageUrl);
+                            //bitmap=Bitmap.createScaledBitmap(bitmap, 100,100, true);
+                        } else {
+                            bitmap = null;
+                        }
+
+                        item.setBitmap(bitmap);
+                        item.setActivityImage(activityImage);
+                        item.setAddress(address);
+                        item.setActivityType(type);
+                        item.setCity(city);
+                        item.setCountry(country);
+                        item.setDetail(detail);
+                        item.setId(id);
+                        item.setTitle(title);
+                        item.setPhoneNumber(pNumber);
+                        item.setState(state);
+                        item.setDuration(duration);
+                        item.setActivityTime(activityTime);
+                        item.setPostTime(postTime);
+                        item.setEventCreator(eventCreator);
+
+                        itemsList.add(item);
+                    }
+                } catch (JSONException e) {
+                    Toast.makeText(getActivity().getApplicationContext(), "Error" + e.toString(),
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                adapter.notifyDataSetChanged();
+                if (sectionAdapter == null) {
+                    sectionAdapter = new SimpleSectionAdapter<ActivityItem>(getActivity(),
+                            adapter, R.layout.section_header, R.id.title,
+                            new ActivitySectionizer());
+                }
+
+                if (list.getAdapter() == null) {
+                    //list.setAdapter(adapter);
+                    list.setAdapter(sectionAdapter);
+                }
+
+                sectionAdapter.notifyDataSetChanged();
+
+                if (itemsList.size() > 0) {
+                    //startIndex = startIndex + itemsList.size();
+                    startIndex = (long)itemsList.size();
+                }
+                super.onPostExecute(jsonResult);
             }
 
-            if (list.getAdapter() == null) {
-                //list.setAdapter(adapter);
-                list.setAdapter(sectionAdapter);
+            if (footer != null) {
+                list.removeFooterView(footer);
+
             }
 
-            sectionAdapter.notifyDataSetChanged();
 
-            if (itemsList.size() > 0) {
-                //startIndex = startIndex + itemsList.size();
-                startIndex = (long)itemsList.size();
-            }
-            super.onPostExecute(jsonResult);
         }
 
 
@@ -560,8 +657,8 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-
-            Toast.makeText(getActivity().getApplicationContext(), "City is: " + city,
+            city = "襄阳市";
+            Toast.makeText(getActivity().getApplicationContext(), "城市: " + city,
                     Toast.LENGTH_SHORT).show();
             new LoadMoreItemsTask(getActivity()).execute();
             // Dismiss the progress dialog
@@ -612,6 +709,48 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
         return jsonObject;
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // When the user clicks START ALARM, set the alarm.
+            case R.id.start_action:
+                return true;
+            // When the user clicks CANCEL ALARM, cancel the alarm.
+            case R.id.cancel_action:
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void createGridArray(){
+        Bitmap quanbuIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.quanbu);
+        Bitmap zhuoyouIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.zhuoyou);
+        Bitmap jieriIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.jieri);
+        Bitmap dianyingIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.dianying);
+        Bitmap chuangyeIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.chuangye);
+        Bitmap mishiIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.mishi);
+        Bitmap tiyuIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.tiyu);
+        Bitmap jiangzuoIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.jiangzuo);
+        Bitmap zijiayouIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.zijiayou);
+        Bitmap qitaIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.qita);
+
+        //Bitmap userIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.zhuoyou);
+        gridArray = new ArrayList<Item>();
+        gridArray.add(new Item(quanbuIcon, "全部活动"));
+        gridArray.add(new Item(jieriIcon, "节日派对"));
+        gridArray.add(new Item(zhuoyouIcon, "桌游聚会"));
+        gridArray.add(new Item(mishiIcon, "密室逃脱"));
+        gridArray.add(new Item(chuangyeIcon, "创意展览"));
+        gridArray.add(new Item(jiangzuoIcon, "行业讲座"));
+        gridArray.add(new Item(dianyingIcon, "电影鉴赏"));
+        gridArray.add(new Item(tiyuIcon, "体育活动"));
+        gridArray.add(new Item(zijiayouIcon, "旅游同行"));
+        gridArray.add(new Item(qitaIcon, "其他类别"));
+    }
+
 }
 
 

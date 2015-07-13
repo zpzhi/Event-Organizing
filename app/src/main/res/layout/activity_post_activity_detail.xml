@@ -187,7 +187,7 @@
             android:id="@+id/descriptionTitle"
             android:layout_below="@id/imgView"
             android:textSize="16dp"
-            android:text="请填写活动描述"/>
+            android:text="请填写活动描述(不多于200字)"/>
 
         <View
             android:layout_width="fill_parent"

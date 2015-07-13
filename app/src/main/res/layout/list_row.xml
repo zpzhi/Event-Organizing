@@ -17,13 +17,14 @@
             android:id="@+id/activityTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingLeft="5dip"
             android:textColor="#7E040404"
             android:textSize="12dip" />
 
         <ImageView
             android:id="@+id/thumbImage"
             android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_height="70dp"
             android:src="@drawable/ic_launcher"/>
     </LinearLayout>
 
@@ -38,7 +39,6 @@
             android:textColor="#040404"
             android:typeface="sans"
             android:textSize="15dip"
-            android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
@@ -48,7 +48,6 @@
             android:layout_height="wrap_content"
             android:textColor="#7E040404"
             android:textSize="12dip"/>
-
     </LinearLayout>
 
 </LinearLayout>

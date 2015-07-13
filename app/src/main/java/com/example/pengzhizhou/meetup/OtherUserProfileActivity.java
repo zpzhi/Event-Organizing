@@ -11,9 +11,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.ActionBarActivity;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -48,10 +47,13 @@ public class OtherUserProfileActivity extends ActionBarActivity {
     private ListView eventList;
     private List<ActivityItem> itemsList;
     private ListAdapterS adapter = null;
-    Long startIndex = 0L;
-    Long offset = 5L;
-    Button addFriendButton;
-    Button removeFriendButton;
+    private Long startIndex = 0L;
+    private Long offset = 5L;
+    private Button addFriendButton;
+    private Button removeFriendButton;
+
+    private boolean doubleBackToExitPressedOnce;
+    private android.os.Handler mHandler = new android.os.Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +62,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         actionBar.setCustomView(R.layout.activity_other_user_profile_actionbar);
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -87,7 +90,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
 
         String imageUrl;
 
-        imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + imageName;
+        imageUrl = Utility.getServerUrl() + "imgupload/" + imageName;
         Bitmap bt = Utility.getBitmapFromURL(imageUrl);
         if( bt== null ) {
             bt =  BitmapFactory.decodeResource(this.getResources(),
@@ -112,7 +115,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                 i.putExtra("itemDetail", itemsList.get(position).getDetail());
                 i.putExtra("itemCity", itemsList.get(position).getCity());
                 i.putExtra("itemState", itemsList.get(position).getState());
-
+                i.putExtra("eventCreator", itemsList.get(position).getEventCreator());
                 startActivity(i);
             }
         });
@@ -149,7 +152,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         @Override
         protected String doInBackground(Void... params) {
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(url+"/signin/get_activities_by_user.php");
+            HttpPost httppost = new HttpPost(url+"get-events-by-user.php");
             String jsonResult = null;
             //add name value pair for the country code
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
@@ -219,7 +222,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                         Bitmap bitmap = null;
 
                         if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
-                            String imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
+                            String imageUrl = Utility.getServerUrl() + "imgupload/" + activityImage;
                             bitmap = Utility.getBitmapFromURL(imageUrl);
                         }
 
@@ -255,7 +258,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
             }
             super.onPostExecute(jsonResult);
 
-            setListViewHeightBasedOnChildren(eventList);
+            Utility.setListViewHeightBasedOnChildren(eventList);
         }
 
 
@@ -276,7 +279,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         @Override
         protected String doInBackground(String... params) {
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(url + "/signin/add-friend-android.php");
+            HttpPost httppost = new HttpPost(url + "add-friend.php");
             String result = null;
 
             // Add your data
@@ -335,7 +338,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         @Override
         protected String doInBackground(Void... params) {
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(url+"/signin/check-friend-android.php");
+            HttpPost httppost = new HttpPost(url+"check-friend.php");
             String result = null;
             //add name value pair for the country code
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
@@ -398,7 +401,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         @Override
         protected String doInBackground(String... params) {
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(url + "/signin/remove-friend-android.php");
+            HttpPost httppost = new HttpPost(url + "remove-friend.php");
             String result = null;
 
             // Add your data
@@ -453,40 +456,47 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         }
     }
 
-    /**** Method for Setting the Height of the ListView dynamically.
-     **** Hack to fix the issue of not showing all the items of the ListView
-     **** when placed inside a ScrollView  ****/
-    // function 2: when too many activities under this user, try a way to let them scroll instead
-    // of covering the button "logout"
-    public static void setListViewHeightBasedOnChildren(ListView listView) {
-        Adapter listAdapter = null;
-        if(listView.getAdapter() instanceof ListAdapterS){
-            listAdapter = (ListAdapterS)listView.getAdapter();
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                finish();
+                return true;
         }
-        else if (listView.getAdapter() instanceof FriendListAdapter){
-            listAdapter = (FriendListAdapter)listView.getAdapter();
-        }
-        if (listAdapter == null)
-            return;
-
-        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
-        int totalHeight = 0;
-        View view = null;
-
-        for (int i = 0; i < listAdapter.getCount(); i++) {
-            view = listAdapter.getView(i, view, listView);
-            if (i == 0)
-                view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-            view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
-            totalHeight += view.getMeasuredHeight();
-            if (i == 3) break;
-        }
-
-        ViewGroup.LayoutParams params = listView.getLayoutParams();
-        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
-        listView.setLayoutParams(params);
-        listView.requestLayout();
-
+        return super.onOptionsItemSelected(item);
     }
+
+    // double click to quit the app, and disable the back button in this activity
+    private final Runnable mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            doubleBackToExitPressedOnce = false;
+        }
+    };
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+
+        if (mHandler != null) { mHandler.removeCallbacks(mRunnable); }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        mHandler.postDelayed(mRunnable, 2000);
+    }
+
 }

@@ -23,18 +23,19 @@ import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemSelectedListener;
 
 import com.github.jjobes.slidedatetimepicker.SlideDateTimeListener;
 import com.github.jjobes.slidedatetimepicker.SlideDateTimePicker;
@@ -91,6 +92,9 @@ public class PostActivityDetailActivity extends ActionBarActivity{
     private static final int RESULT_LOAD_IMG = 1;
     private static final int CROP_FROM_CAMERA = 2;
 
+    private boolean doubleBackToExitPressedOnce;
+    private android.os.Handler mHandler = new android.os.Handler();
+
     private SlideDateTimeListener listener = new SlideDateTimeListener() {
         @Override
         public void onDateTimeSet(Date date)
@@ -139,7 +143,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
             activityTypeId = extras.getString("activityTypesId");
         }else{
             activityTitle = "活动内容";
-            activityTypeId = "7";
+            activityTypeId = "8";
         }
         paramsA.put("activityType", activityTypeId);
 
@@ -159,10 +163,14 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         Calendar c = Calendar.getInstance();
         int minutes = c.get(Calendar.MINUTE);
         int hours = c.get(Calendar.HOUR_OF_DAY);
+        String s_minutes = Integer.toString(minutes);
+        if (minutes < 10){
+            s_minutes = "0"+s_minutes;
+        }
 
         mActDate = (TextView) findViewById(R.id.activityDate);
         mActTime = (TextView) findViewById(R.id.currentTime);
-        mActTime.setText(hours+":"+minutes);
+        mActTime.setText(hours+":"+s_minutes);
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -207,6 +215,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         mActAddress = (EditText) findViewById(R.id.locationText);
         mActPhoneNum = (EditText) findViewById(R.id.contactPhoneNumber);
         mActDescription = (EditText) findViewById(R.id.activityDescription);
+        mActDescription.setFilters(new InputFilter[] { new InputFilter.LengthFilter(200) });
 
         imgView = (ImageView) findViewById(R.id.imgView);
 
@@ -266,11 +275,23 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         });
 
 
-        TextView postActivity = (TextView) findViewById(R.id.postActivity);
+        ImageView postActivity = (ImageView) findViewById(R.id.postActivity);
         postActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptPostActivity();
+            }
+        });
+
+        // do not use setDisplayHomeAsUpEnabled here, because the title in action bar can not be centered.
+        ImageView backAction = (ImageView) findViewById(R.id.backButton);
+        backAction.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent myIntent;
+                myIntent = new Intent(PostActivityDetailActivity.this, TabHostActivity.class);
+                myIntent.putExtra("tab", 1);
+                startActivity(myIntent);
             }
         });
 
@@ -532,7 +553,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         prgDialog.setMessage("Invoking Php");
         AsyncHttpClient client = new AsyncHttpClient();
         // Don't forget to change the IP address to your LAN address. Port no as well.
-        client.post(url+"/signin/post-activity-from-android.php", paramsA, new AsyncHttpResponseHandler() {
+        client.post(url+"post-event.php", paramsA, new AsyncHttpResponseHandler() {
                     // When the response returned by REST has Http
                     // response code '200'
                     @Override
@@ -542,7 +563,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
                         //showProgress(false);
 
                         if (response.equals("success")) {
-                            Toast.makeText(getApplicationContext(), response,
+                            Toast.makeText(getApplicationContext(), "成功",
                                     Toast.LENGTH_LONG).show();
 
                             Intent myIntent;
@@ -604,6 +625,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         if (prgDialog != null) {
             prgDialog.dismiss();
         }
+        if (mHandler != null) { mHandler.removeCallbacks(mRunnable); }
     }
 
     private void doCrop() {
@@ -738,7 +760,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         @Override
         protected String doInBackground(Void... params) {
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(url+"/signin/get_cities.php");
+            HttpPost httppost = new HttpPost(url+"get-cities.php");
             String jsonResult = null;
             //add name value pair for the country code
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
@@ -794,5 +816,28 @@ public class PostActivityDetailActivity extends ActionBarActivity{
 
     }
 
+    // double click to quit the app, and disable the back button in this activity
+    private final Runnable mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            doubleBackToExitPressedOnce = false;
+        }
+    };
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        mHandler.postDelayed(mRunnable, 2000);
+    }
 
 }

@@ -358,7 +358,7 @@ public class LoginActivity extends PlusBaseActivity implements LoaderCallbacks<C
         @Override
         protected String doInBackground(String... params) {
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(Utility.getServerUrl() + "/signin/login-from-android.php");
+            HttpPost httppost = new HttpPost(Utility.getServerUrl() + "login-meetup.php");
             String result = null;
             //add name value pair for the country code
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);

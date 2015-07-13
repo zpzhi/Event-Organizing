@@ -76,18 +76,15 @@
     </ScrollView>
 
 
-    <EditText
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textMultiLine"
         android:ems="10"
-        android:id="@+id/editText2"
-        android:layout_gravity="center_horizontal"
+        android:id="@+id/loginDescription"
         android:text="By using this app, you agree to our Terms of Service and Privacy Policy"
-        android:textAlignment="center"
         android:textColor="@android:color/darker_gray"
-        android:editable="false"
-        android:focusable="false"/>
+        android:layout_marginTop="30dip"
+        android:layout_marginBottom="30dip"/>
 
 </LinearLayout>
 

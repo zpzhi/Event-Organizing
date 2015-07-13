@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="注册"
-        android:textColor="#000000"
+        android:textColor="#1a4a71"
         android:id="@+id/mytext"
         android:textSize="18sp" />
 

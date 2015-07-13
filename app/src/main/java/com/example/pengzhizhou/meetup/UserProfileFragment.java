@@ -14,8 +14,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -53,11 +51,13 @@ public class UserProfileFragment extends Fragment {
     private ImageViewRounded ir;
     private ImageView userImg;
     private ListView eventList;
+    private ListView eventListView1;
     private ListView friendsListView;
     private List<ActivityItem> itemsList;
+    private List<ActivityItem> itemsList1;
     private List<User> friendsList;
-    private FriendListAdapter fAdapter = null;
-    private ListAdapterS adapter = null;
+    private UserListAdapter uAdapter = null;
+    private ListAdapterS adapter = null, adapter1 = null;
     private Bitmap bt;
     Long startIndex = 0L;
     Long offset = 5L;
@@ -71,6 +71,9 @@ public class UserProfileFragment extends Fragment {
         SharedPreferences settings = this.getActivity().getSharedPreferences("MyPrefsFile", 0);
         loginUser = settings.getString("KEY_LOGIN_USER", null);
         View V = null;
+
+        ImageView pullDownIcon = (ImageView)getActivity().findViewById(R.id.pulldown);
+        pullDownIcon.setVisibility(View.GONE);
 
         if (loginUser == null){
             Intent myIntent;
@@ -98,6 +101,30 @@ public class UserProfileFragment extends Fragment {
             getUserDetailTask = new GetUserDetailTask();
             getUserDetailTask.execute(loginUser);
 
+            eventListView1 = (ListView) V.findViewById(R.id.list2);
+            eventListView1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                public void onItemClick(AdapterView<?> parent, View view,
+                                        int position, long id) {
+
+                    Intent i = new Intent(getActivity(), EventDetailActivity.class);
+                    i.putExtra("itemTitle", itemsList1.get(position).getTitle());
+                    i.putExtra("itemImage", itemsList1.get(position).getActivityImage());
+                    i.putExtra("eventTime", itemsList1.get(position).getActivityTime());
+                    i.putExtra("itemAddress", itemsList1.get(position).getAddress());
+                    i.putExtra("itemId", itemsList1.get(position).getId());
+                    i.putExtra("itemType", itemsList1.get(position).getActivityType());
+                    i.putExtra("itemDetail", itemsList1.get(position).getDetail());
+                    i.putExtra("itemCity", itemsList1.get(position).getCity());
+                    i.putExtra("itemState", itemsList1.get(position).getState());
+                    i.putExtra("eventCreator", itemsList1.get(position).getEventCreator());
+                    startActivity(i);
+                }
+            });
+            initAdapter1();
+            new ListHostingEventsTask().execute();
+
+
             eventList = (ListView) V.findViewById(R.id.list);
             eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -114,12 +141,11 @@ public class UserProfileFragment extends Fragment {
                     i.putExtra("itemDetail", itemsList.get(position).getDetail());
                     i.putExtra("itemCity", itemsList.get(position).getCity());
                     i.putExtra("itemState", itemsList.get(position).getState());
+                    i.putExtra("eventCreator", itemsList.get(position).getEventCreator());
                     startActivity(i);
                 }
             });
-
             initAdapter();
-
             new LoadItemsTask(getActivity()).execute();
 
             Button logout = (Button) V.findViewById(R.id.logout);
@@ -169,42 +195,6 @@ public class UserProfileFragment extends Fragment {
         return V;
     }
 
-    /**** Method for Setting the Height of the ListView dynamically.
-     **** Hack to fix the issue of not showing all the items of the ListView
-     **** when placed inside a ScrollView  ****/
-    // function 2: when too many activities under this user, try a way to let them scroll instead
-    // of covering the button "logout"
-    public static void setListViewHeightBasedOnChildren(ListView listView) {
-        Adapter listAdapter = null;
-        if(listView.getAdapter() instanceof ListAdapterS){
-            listAdapter = (ListAdapterS)listView.getAdapter();
-        }
-        else if (listView.getAdapter() instanceof FriendListAdapter){
-            listAdapter = (FriendListAdapter)listView.getAdapter();
-        }
-        if (listAdapter == null)
-            return;
-
-        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
-        int totalHeight = 0;
-        View view = null;
-
-        for (int i = 0; i < listAdapter.getCount(); i++) {
-                view = listAdapter.getView(i, view, listView);
-                if (i == 0)
-                    view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, LayoutParams.WRAP_CONTENT));
-
-                view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
-                totalHeight += view.getMeasuredHeight();
-                if (i == 3) break;
-         }
-
-        ViewGroup.LayoutParams params = listView.getLayoutParams();
-        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
-        listView.setLayoutParams(params);
-        listView.requestLayout();
-
-    }
 
     public class GetUserDetailTask extends AsyncTask<String,Void,String> {
 
@@ -212,7 +202,7 @@ public class UserProfileFragment extends Fragment {
         protected String doInBackground(String... params) {
 
                 HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(url + "/signin/getUserDetail.php");
+                HttpPost httppost = new HttpPost(url + "get-user-detail.php");
 
                 try {
                     // Add your data
@@ -267,7 +257,7 @@ public class UserProfileFragment extends Fragment {
                             String imageUrl;
                             int flag = 1;
                             if (!image.isEmpty() && image != null) {
-                                imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + image;
+                                imageUrl = Utility.getServerUrl() + "imgupload/" + image;
 
                                 bt = Utility.getBitmapFromURL(imageUrl);
                                 if(bt!=null) {
@@ -293,6 +283,110 @@ public class UserProfileFragment extends Fragment {
         }
     }
 
+    private class ListHostingEventsTask extends AsyncTask<Void, Void, String> {
+        private Activity activity;
+
+        @Override
+        protected String doInBackground(Void... params) {
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost(url+"list-hosting-events-by-user.php");
+            String jsonResult = null;
+            //add name value pair for the country code
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+            nameValuePairs.add(new BasicNameValuePair("username",String.valueOf(loginUser)));
+
+            try {
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                HttpResponse response = httpclient.execute(httppost);
+                jsonResult = Utility.inputStreamToString(
+                        response.getEntity().getContent()).toString();
+            }
+
+            catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return jsonResult;
+        }
+
+        @Override
+        protected void onPostExecute(String jsonResult) {
+
+            eventListView1.setAdapter(adapter1);
+            if (jsonResult == null || jsonResult.equals("[]")){
+
+                return;
+            }
+            try {
+                JSONObject jsonResponse = new JSONObject(jsonResult);
+                JSONArray jsonMainNode = jsonResponse.optJSONArray("activity_info");
+
+                for (int i = 0; i < jsonMainNode.length(); i++) {
+                        JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
+                        ActivityItem item = new ActivityItem();
+                        String id = jsonChildNode.optString("id");
+                        String title = jsonChildNode.optString("title");
+                        String address = jsonChildNode.optString("activity_address");
+                        String activityTime = jsonChildNode.optString("activity_time");
+                        String postTime = jsonChildNode.optString("post_time");
+                        String duration = jsonChildNode.optString("activity_duration");
+                        String pNumber = jsonChildNode.optString("phone_number");
+                        String detail = jsonChildNode.optString("activity_detail");
+                        String type = jsonChildNode.optString("activity_type");
+                        String city = jsonChildNode.optString("city");
+                        String state = jsonChildNode.optString("state");
+                        String country = jsonChildNode.optString("country");
+                        String activityImage = jsonChildNode.optString("image_name");
+                        String eventCreator = jsonChildNode.optString("event_creator");
+
+                        Bitmap bitmap = null;
+
+                        if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
+                            String imageUrl = Utility.getServerUrl() + "imgupload/" + activityImage;
+                            bitmap = Utility.getBitmapFromURL(imageUrl);
+                        }
+
+                        item.setBitmap(bitmap);
+                        item.setActivityImage(activityImage);
+                        item.setAddress(address);
+                        item.setCity(city);
+                        item.setActivityType(type);
+                        item.setCountry(country);
+                        item.setDetail(detail);
+                        item.setId(id);
+                        item.setTitle(title);
+                        item.setPhoneNumber(pNumber);
+                        item.setState(state);
+                        item.setDuration(duration);
+                        item.setActivityTime(activityTime);
+                        item.setPostTime(postTime);
+                        item.setEventCreator(eventCreator);
+
+                        itemsList1.add(item);
+                }
+            } catch (JSONException e) {
+                Toast.makeText(getActivity().getApplicationContext(), "Error" + e.toString(),
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            adapter1.notifyDataSetChanged();
+
+            super.onPostExecute(jsonResult);
+            Utility.setListViewHeightBasedOnChildren(eventListView1);
+        }
+
+    }
+    public void initAdapter1(){
+        itemsList1 = new ArrayList<ActivityItem>();
+        adapter1 = new ListAdapterS(getActivity(), R.layout.list_event_row, itemsList1);
+    }
 
     private class LoadItemsTask extends AsyncTask<Void, Void, String> {
         private Activity activity;
@@ -303,7 +397,7 @@ public class UserProfileFragment extends Fragment {
         @Override
         protected String doInBackground(Void... params) {
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(url+"/signin/get_activities_by_user.php");
+            HttpPost httppost = new HttpPost(url+"get-events-by-user.php");
             String jsonResult = null;
             //add name value pair for the country code
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
@@ -368,7 +462,7 @@ public class UserProfileFragment extends Fragment {
                         Bitmap bitmap = null;
 
                         if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
-                            String imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + activityImage;
+                            String imageUrl = Utility.getServerUrl() + "imgupload/" + activityImage;
                             bitmap = Utility.getBitmapFromURL(imageUrl);
                         }
 
@@ -404,7 +498,7 @@ public class UserProfileFragment extends Fragment {
 
 
             super.onPostExecute(jsonResult);
-            setListViewHeightBasedOnChildren(eventList);
+            Utility.setListViewHeightBasedOnChildren(eventList);
         }
 
     }
@@ -417,7 +511,7 @@ public class UserProfileFragment extends Fragment {
         @Override
         protected String doInBackground(Void... params) {
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(url+"/signin/get_user_friends.php");
+            HttpPost httppost = new HttpPost(url+"get-user-friends.php");
             String jsonResult = null;
             //add name value pair for the country code
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
@@ -447,7 +541,7 @@ public class UserProfileFragment extends Fragment {
         @Override
         protected void onPostExecute(String jsonResult) {
 
-            friendsListView.setAdapter(fAdapter);
+            friendsListView.setAdapter(uAdapter);
             if (jsonResult == null || jsonResult.equals("[]")){
 
                 return;
@@ -469,7 +563,7 @@ public class UserProfileFragment extends Fragment {
                         Bitmap bitmap = null;
 
                         if (!imageName.isEmpty() && imageName != null && !imageName.equals("null")) {
-                            String imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + imageName;
+                            String imageUrl = Utility.getServerUrl() + "imgupload/" + imageName;
                             bitmap = Utility.getBitmapFromURL(imageUrl);
                             if(bitmap!=null) {
                                 bitmap = ir.getCircledBitmap(bitmap);
@@ -499,13 +593,13 @@ public class UserProfileFragment extends Fragment {
             adapter.notifyDataSetChanged();
 
             super.onPostExecute(jsonResult);
-            setListViewHeightBasedOnChildren(friendsListView);
+            Utility.setListViewHeightBasedOnChildren(friendsListView);
         }
 
     }
 
     public void initFriendListAdapter(){
         friendsList = new ArrayList<User>();
-        fAdapter = new FriendListAdapter(getActivity(), R.layout.list_friends_row, friendsList);
+        uAdapter = new UserListAdapter(getActivity(), R.layout.list_users_row, friendsList);
     }
 }

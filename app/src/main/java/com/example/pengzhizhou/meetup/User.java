@@ -14,6 +14,7 @@ public class User implements Serializable {
     private String id;
     private String phoneNumber;
     private String description;
+    private String uaDescription;
     private Bitmap bitmap;
 
     public void setName(String n){ name = n; }
@@ -28,6 +29,8 @@ public class User implements Serializable {
     public void setPhoneNumber(String p) { phoneNumber = p; }
     public String getDescription() { return description; }
     public void setDescription(String d) { description = d; }
+    public String getUaDescription() { return uaDescription; }
+    public void setUaDescription(String d) { uaDescription = d; }
 
     public Bitmap getBitmap() { return bitmap; }
     public void setBitmap(Bitmap b) { bitmap = b; }

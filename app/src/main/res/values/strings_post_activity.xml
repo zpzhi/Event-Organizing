@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="error_invalid_duration">This duration is invalid</string>
+    <string name="error_invalid_duration">时间长度不对</string>
 </resources>

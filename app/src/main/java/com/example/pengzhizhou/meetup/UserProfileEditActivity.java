@@ -25,7 +25,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -50,10 +49,13 @@ public class UserProfileEditActivity extends ActionBarActivity {
     private String imgPath, imgfileName;
     private String encodedString;
     private ProgressDialog prgDialog;
-    private String url = Utility.getServerUrl() + "/signin/update-user-from-android.php";
+    private String url = Utility.getServerUrl() + "/update-user.php";
 
     private static int RESULT_LOAD_IMG = 1;
     private static final int CROP_FROM_CAMERA = 2;
+
+    private boolean doubleBackToExitPressedOnce;
+    private android.os.Handler mHandler = new android.os.Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +88,7 @@ public class UserProfileEditActivity extends ActionBarActivity {
 
             String imageUrl;
             if (!imageName.isEmpty() && imageName != null) {
-                imageUrl = Utility.getServerUrl() + "/signin/imgupload/" + imageName;
+                imageUrl = Utility.getServerUrl() + "imgupload/" + imageName;
 
                 Bitmap bt = Utility.getBitmapFromURL(imageUrl);
                 if(bt!=null) {
@@ -116,8 +118,8 @@ public class UserProfileEditActivity extends ActionBarActivity {
         }
 
         //TextView changePicture = (TextView) findViewById(R.id.changePic);
-        TextView save = (TextView) findViewById(R.id.save);
-        TextView cancel = (TextView) findViewById(R.id.cancel);
+        ImageView save = (ImageView) findViewById(R.id.save);
+        ImageView cancel = (ImageView) findViewById(R.id.cancel);
 
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -310,7 +312,7 @@ public class UserProfileEditActivity extends ActionBarActivity {
                 //showProgress(false);
 
                 if (response.equals("success")) {
-                    Toast.makeText(getApplicationContext(), response,
+                    Toast.makeText(getApplicationContext(), "成功",
                             Toast.LENGTH_LONG).show();
 
                     Intent myIntent;
@@ -366,6 +368,8 @@ public class UserProfileEditActivity extends ActionBarActivity {
         if (prgDialog != null) {
             prgDialog.dismiss();
         }
+
+        if (mHandler != null) { mHandler.removeCallbacks(mRunnable); }
     }
 
     private void doCrop() {
@@ -489,6 +493,30 @@ public class UserProfileEditActivity extends ActionBarActivity {
                 alert.show();
             }
         }
+    }
+
+    // double click to quit the app, and disable the back button in tab host
+    private final Runnable mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            doubleBackToExitPressedOnce = false;
+        }
+    };
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        mHandler.postDelayed(mRunnable, 2000);
     }
 
 }

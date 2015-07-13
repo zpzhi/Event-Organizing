@@ -1,10 +1,11 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.pengzhizhou.meetup.VerticalScrollview xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/ScrollView01"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
@@ -13,9 +14,9 @@
 
     <TextView
         android:id="@+id/eventTitle"
-        android:text="@string/hello_world" android:layout_width="wrap_content"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
         android:layout_marginBottom="20dp"/>
 
     <ImageView
@@ -23,7 +24,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/eventTitle"
         />
 
     <LinearLayout
@@ -31,9 +31,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:layout_below="@id/eventImage">
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="20dp">
         <TextView
             android:id="@+id/timeLabel"
             android:text="时间："
@@ -52,9 +52,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:layout_below="@id/timeLayout">
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="5dp">
         <TextView
             android:id="@+id/addressLabel"
             android:text="地点："
@@ -68,20 +68,17 @@
             />
     </LinearLayout>
 
-
-    <GridView
-        android:id="@+id/gridView2"
+    <TextView
+        android:id="@+id/eventDescription"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:columnWidth="60dp"
-        android:gravity="center"
-        android:numColumns="6"
-        android:stretchMode="columnWidth"
-        android:layout_marginLeft="@dimen/activity_vertical_margin"
-        android:layout_marginRight="@dimen/activity_vertical_margin"
-        android:layout_marginBottom="20dp"
-        android:layout_below="@id/addressLayout">
-    </GridView>
+        android:layout_height="100px"
+        android:textColor="#ff474460"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:typeface="monospace"
+        android:textStyle="italic"/>
+
 
     <Button
         android:layout_width="fill_parent"
@@ -90,7 +87,6 @@
         android:id="@+id/joinActivity"
         android:layout_marginLeft="@dimen/activity_vertical_margin"
         android:layout_marginRight="@dimen/activity_vertical_margin"
-        android:layout_below="@+id/gridView2"
         android:layout_marginBottom="20dp"
         android:visibility="gone"
         />
@@ -99,30 +95,53 @@
         android:id="@+id/line"
         android:layout_width="fill_parent"
         android:layout_height="1dp"
-        android:background="@android:color/darker_gray"
-        android:layout_below="@id/joinActivity"/>
+        android:background="@android:color/darker_gray"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/descriptionTitle"
-        android:layout_below="@id/line"
-        android:textSize="16dp"
+        android:id="@+id/hostText"
+        android:text="活动发起者"
         android:layout_marginTop="20dp"
-        android:text="活动详情"/>
-
-    <TextView
-        android:id="@+id/eventDescription"
-        android:layout_width="fill_parent"
-        android:layout_height="100px"
-        android:layout_below="@id/descriptionTitle"
-        android:textColor="#ff474460"
-        android:textSize="18dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:typeface="serif"
-        android:textStyle="italic"/>
+        />
 
-</RelativeLayout>
-</ScrollView>
+    <ListView
+        android:id="@+id/list"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:divider="#b5b5b5"
+        android:dividerHeight="1dp"
+        android:layout_marginBottom="20dip"
+        android:listSelector="@drawable/list_selector"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/followerText"
+        android:text="参加用户"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        />
+
+
+    <ListView
+        android:id="@+id/list1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:divider="#b5b5b5"
+        android:dividerHeight="1dp"
+        android:layout_marginBottom="20dip"
+        android:listSelector="@drawable/list_selector"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+
+
+</LinearLayout>
+</com.example.pengzhizhou.meetup.VerticalScrollview>

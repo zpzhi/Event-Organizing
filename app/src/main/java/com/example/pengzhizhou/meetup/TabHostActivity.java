@@ -1,24 +1,32 @@
 package com.example.pengzhizhou.meetup;
 
 import android.app.ActionBar;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v7.app.ActionBarActivity;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TabHost;
 import android.widget.TabWidget;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class TabHostActivity extends ActionBarActivity {
 
     private FragmentTabHost mTabHost;
     private String loginUser = null;
+    private boolean doubleBackToExitPressedOnce;
+    private android.os.Handler mHandler = new android.os.Handler();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_afterlogin);
+
 
         SharedPreferences settings = getSharedPreferences("MyPrefsFile", 0);
         loginUser = settings.getString("KEY_LOGIN_USER", null);
@@ -34,23 +42,26 @@ public class TabHostActivity extends ActionBarActivity {
         mTabHost = (FragmentTabHost)findViewById(android.R.id.tabhost);
         mTabHost.setup(this, getSupportFragmentManager(), R.id.realtabcontent);
 
-        mTabHost.addTab(mTabHost.newTabSpec("活动").setIndicator("活动"),
+        mTabHost.addTab(mTabHost.newTabSpec("活动列表").setIndicator("活动列表"),
                 ListActivitiesFragment.class, null);
         mTabHost.addTab(mTabHost.newTabSpec("发布活动").setIndicator("发布活动"),
                 PostActivityFragment.class, null);
         mTabHost.addTab(mTabHost.newTabSpec("我的主页").setIndicator("我的主页"),
                 UserProfileFragment.class, null);
+        setTabIcon(mTabHost, 0, R.drawable.ic_action_device_home);
+        setTabIcon(mTabHost, 1, R.drawable.ic_action_content_add_circle);
+        setTabIcon(mTabHost, 2, R.drawable.ic_action_social_person_outline);
 
-        //for (int i = 0; i < mTabHost.getTabWidget().getTabCount(); i++) {
-        //    mTabHost.getTabWidget().getChildAt(i).getLayoutParams().height = 60;
-        //}
-
-        TabWidget tabWidget = (TabWidget) findViewById(android.R.id.tabs);
-        initTabsAppearance(tabWidget);
+        //TabWidget tabWidget = (TabWidget) findViewById(android.R.id.tabs);
+        //initTabsAppearance(tabWidget);
         mTabHost.setCurrentTab(startTab);
     }
 
-
+    public void setTabIcon(TabHost tabHost, int tabIndex, int iconResource) {
+        ImageView tabImageView = (ImageView) tabHost.getTabWidget().getChildTabViewAt(tabIndex).findViewById(android.R.id.icon);
+        tabImageView.setVisibility(View.VISIBLE);
+        tabImageView.setImageResource(iconResource);
+    }
 
     private void initTabsAppearance(TabWidget tabWidget) {
         // Change background
@@ -71,7 +82,39 @@ public class TabHostActivity extends ActionBarActivity {
     }
 
     public void setSearchCityViewable(int i){
-        TextView searchCity = (TextView)findViewById(R.id.searchCity);
+        ImageView searchCity = (ImageView)findViewById(R.id.searchCity);
         searchCity.setVisibility(i);
+    }
+
+    // double click to quit the app, and disable the back button in tab host
+    private final Runnable mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            doubleBackToExitPressedOnce = false;
+        }
+    };
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+
+        if (mHandler != null) { mHandler.removeCallbacks(mRunnable); }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        mHandler.postDelayed(mRunnable, 2000);
     }
 }

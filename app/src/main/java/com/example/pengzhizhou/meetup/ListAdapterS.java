@@ -85,6 +85,9 @@ public class ListAdapterS extends ArrayAdapter<ActivityItem> {
                 else if (iType == 6){
                     thumbN.setImageResource(R.drawable.sports_);
                 }
+                else if (iType == 7){
+                    thumbN.setImageResource(R.drawable.travel_);
+                }
                 else{
                     thumbN.setImageResource(R.drawable.others_);
                 }

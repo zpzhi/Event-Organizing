@@ -35,16 +35,11 @@ public class SearchCityActivity extends Activity implements
         SearchView.OnQueryTextListener, SearchView.OnCloseListener{
 
     private SearchView search;
-    private MyListAdapter listAdapter;
+    private CityFilterAdapter listAdapter;
     private ExpandableListView myList;
     private ArrayList<Province> continentList = new ArrayList<Province>();
-    //private ArrayList<String> provinces = new ArrayList<String>();
-    //private ArrayList<Integer> id = new ArrayList<Integer>();
     Map<String, String> provinces = new HashMap<>();
-    //private ArrayList<String> cities = new ArrayList<String>();
     Map<String, List<City>> citiesByProvinces = new HashMap<String, List<City>>();
-    //private String url = Utility.getServerUrl();
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -143,7 +138,7 @@ public class SearchCityActivity extends Activity implements
         protected String doInBackground(String... params) {
 
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(Utility.getServerUrl()+"/signin/getProvincesNames.php");
+            HttpPost httppost = new HttpPost(Utility.getServerUrl()+"get-provinces-names.php");
 
             try {
                 // Execute HTTP Post Request
@@ -197,7 +192,7 @@ public class SearchCityActivity extends Activity implements
         protected String doInBackground(String... params) {
 
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(Utility.getServerUrl()+"/signin/getCitiesDetail.php");
+            HttpPost httppost = new HttpPost(Utility.getServerUrl()+"get-cities-detail.php");
 
             try {
                 // Execute HTTP Post Request
@@ -268,11 +263,11 @@ public class SearchCityActivity extends Activity implements
 
             }
             loadDataToSearch();
-            listAdapter = new MyListAdapter(SearchCityActivity.this, continentList);
+            listAdapter = new CityFilterAdapter(SearchCityActivity.this, continentList);
             //attach the adapter to the list
             myList.setAdapter(listAdapter);
             //myList.setOnChildClickListener(this);
-            expandAll();
+            //expandAll();
 
         }
     }

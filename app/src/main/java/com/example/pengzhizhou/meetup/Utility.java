@@ -3,6 +3,10 @@ package com.example.pengzhizhou.meetup;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Adapter;
+import android.widget.ListView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,7 +20,8 @@ import java.net.URL;
  * Class to hold static string and methods to be used by all class
  */
 public class Utility {
-    private final static String serverUrl = "http://172.20.10.8";
+    //private final static String serverUrl = "http://loquimeetup.w174.mc-test.com/meetup-web/";
+    private final static String serverUrl = "http://meetup.wcpsjshxnna.com/meetup-web/";
 
     public static String getServerUrl(){
         return serverUrl;
@@ -97,10 +102,50 @@ public class Utility {
         else if (iType == 6){
             bitmap = BitmapFactory.decodeResource(rs, R.drawable.sports_);
         }
+        else if (iType == 7){
+            bitmap = BitmapFactory.decodeResource(rs, R.drawable.travel_);
+        }
         else{
             bitmap = BitmapFactory.decodeResource(rs, R.drawable.others_);
         }
         return bitmap;
+    }
+
+    /**** Method for Setting the Height of the ListView dynamically.
+     **** Hack to fix the issue of not showing all the items of the ListView
+     **** when placed inside a ScrollView  ****/
+    // function 2: when too many activities under this user, try a way to let them scroll instead
+    // of covering the button "logout"
+    public static void setListViewHeightBasedOnChildren(ListView listView) {
+        Adapter listAdapter = null;
+        if(listView.getAdapter() instanceof ListAdapterS){
+            listAdapter = (ListAdapterS)listView.getAdapter();
+        }
+        else if (listView.getAdapter() instanceof UserListAdapter){
+            listAdapter = (UserListAdapter)listView.getAdapter();
+        }
+        if (listAdapter == null)
+            return;
+
+        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
+        int totalHeight = 0;
+        View view = null;
+
+        for (int i = 0; i < listAdapter.getCount(); i++) {
+            view = listAdapter.getView(i, view, listView);
+            if (i == 0)
+                view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+            view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+            totalHeight += view.getMeasuredHeight();
+            if (i == 3) break;
+        }
+
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+        listView.setLayoutParams(params);
+        listView.requestLayout();
+
     }
 
 }

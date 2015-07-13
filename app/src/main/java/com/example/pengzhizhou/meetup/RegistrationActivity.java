@@ -63,7 +63,7 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
-    public String url = Utility.getServerUrl() + "/signin/register-from-android.php";
+    public String url = Utility.getServerUrl() + "register-meetup.php";
     RequestParams params = new RequestParams();
     String imgPath, imgfileName;
     ProgressDialog prgDialog;
@@ -263,7 +263,7 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
                 }
             }
             else {
-                Toast.makeText(this, "You haven't picked Image",
+                Toast.makeText(this, "你没有选择头像",
                         Toast.LENGTH_LONG).show();
             }
         } catch (Exception e) {
@@ -287,7 +287,6 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
 
     // Make Http call to upload Image to Php server
     public void makeHTTPCall() {
-        prgDialog.setMessage("Invoking Php");
         AsyncHttpClient client = new AsyncHttpClient();
         // Don't forget to change the IP address to your LAN address. Port no as well.
         client.post(url,  params, new AsyncHttpResponseHandler() {
@@ -300,7 +299,7 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
                         showProgress(false);
 
                         if (response.equals("success")) {
-                            Toast.makeText(getApplicationContext(), response,
+                            Toast.makeText(getApplicationContext(), "成功",
                                     Toast.LENGTH_LONG).show();
 
                             SharedPreferences settings = getSharedPreferences("MyPrefsFile", 0);

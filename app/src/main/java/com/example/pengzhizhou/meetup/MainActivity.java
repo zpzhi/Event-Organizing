@@ -41,6 +41,7 @@ public class MainActivity extends PlusBaseActivity implements LoaderManager.Load
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private UserLoginTask mAuthTask = null;
+    private String loginUser = null;
 
     @Override
     protected void onPlusClientRevokeAccess() {
@@ -69,14 +70,25 @@ public class MainActivity extends PlusBaseActivity implements LoaderManager.Load
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        SharedPreferences settings = this.getSharedPreferences("MyPrefsFile", 0);
+        loginUser = settings.getString("KEY_LOGIN_USER", null);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        TextView displayLoginForm = (TextView)findViewById(R.id.loginTrigger);
-        displayLoginForm.setPaintFlags(displayLoginForm.getPaintFlags() |   Paint.UNDERLINE_TEXT_FLAG);
+        if (loginUser != null){
+            Intent myIntent;
+            myIntent = new Intent(this, TabHostActivity.class);
+            startActivity(myIntent);
 
-        TextView registerForm = (TextView)findViewById(R.id.registerTrigger);
-        registerForm.setPaintFlags(registerForm.getPaintFlags() |   Paint.UNDERLINE_TEXT_FLAG);
+        }else {
+            setContentView(R.layout.activity_main);
+
+            TextView displayLoginForm = (TextView) findViewById(R.id.loginTrigger);
+            displayLoginForm.setPaintFlags(displayLoginForm.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+
+            TextView registerForm = (TextView) findViewById(R.id.registerTrigger);
+            registerForm.setPaintFlags(registerForm.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        }
     }
 
     public void onClick1(View v) {
@@ -225,7 +237,7 @@ public class MainActivity extends PlusBaseActivity implements LoaderManager.Load
         @Override
         protected String doInBackground(String... params) {
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(Utility.getServerUrl() + "/signin/login-from-android.php");
+            HttpPost httppost = new HttpPost(Utility.getServerUrl() + "login-meetup.php");
             String result = null;
             //add name value pair for the country code
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
