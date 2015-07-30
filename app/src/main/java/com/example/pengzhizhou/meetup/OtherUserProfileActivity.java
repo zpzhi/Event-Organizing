@@ -1,11 +1,9 @@
 package com.example.pengzhizhou.meetup;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -20,6 +18,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -32,17 +34,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class OtherUserProfileActivity extends ActionBarActivity {
 
-    private String loginUser = null, user = null, imageName = null;
+    private String loginUser = null, loginUserId = null, user = null, userId = null, imageName = null;
     private String url = Utility.getServerUrl();
-    private ImageViewRounded ir;
     private ImageView userImg;
     private ListView eventList;
     private List<ActivityItem> itemsList;
@@ -51,9 +56,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
     private Long offset = 5L;
     private Button addFriendButton;
     private Button removeFriendButton;
-
-    private boolean doubleBackToExitPressedOnce;
-    private android.os.Handler mHandler = new android.os.Handler();
+    private DisplayImageOptions options;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,13 +70,26 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
+        options = new DisplayImageOptions.Builder()
+                .displayer(new RoundedBitmapDisplayer(100))
+                .showImageOnLoading(R.drawable.ic_launcher)
+                .showImageForEmptyUri(R.drawable.default_user)
+                .showImageOnFail(R.drawable.ic_launcher)
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .considerExifParams(true)
+                .bitmapConfig(Bitmap.Config.RGB_565)
+                .build();
+
         SharedPreferences settings = getSharedPreferences("MyPrefsFile", 0);
         loginUser = settings.getString("KEY_LOGIN_USER", null);
+        loginUserId = settings.getString("KEY_LOGIN_USER_ID", null);
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             user = extras.getString("userName");
             imageName = extras.getString("userImg");
+            userId = extras.getString("userId");
         }
 
         addFriendButton = (Button) findViewById(R.id.addFriend);
@@ -81,23 +97,18 @@ public class OtherUserProfileActivity extends ActionBarActivity {
             addFriendButton.setVisibility(View.GONE);
         }
 
-        ir = new ImageViewRounded(this);
-
         TextView title = (TextView) findViewById(R.id.actionbarTitle);
         title.setText(user+"的主页");
 
         userImg = (ImageView)findViewById(R.id.userImg);
 
-        String imageUrl;
-
-        imageUrl = Utility.getServerUrl() + "imgupload/" + imageName;
-        Bitmap bt = Utility.getBitmapFromURL(imageUrl);
-        if( bt== null ) {
-            bt =  BitmapFactory.decodeResource(this.getResources(),
-                    R.drawable.default_user);
+        if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL")) {
+            String imageUrl = Utility.getServerUrl() + "imgupload/user_image/" + imageName;
+            ImageLoader.getInstance().displayImage(imageUrl, userImg, options);
         }
-        bt = ir.getCircledBitmap(bt);
-        userImg.setImageBitmap(bt);
+        else{
+            ImageLoader.getInstance().displayImage("", userImg, options);
+        }
 
         eventList = (ListView) findViewById(R.id.list);
         eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -122,7 +133,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
 
         initAdapter();
 
-        new LoadItemsTask(this).execute();
+        new ListJoinEventsTask().execute();
 
         new CheckIfFriendsTask().execute();
         addFriendButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
@@ -143,22 +154,17 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         });
     }
 
-    private class LoadItemsTask extends AsyncTask<Void, Void, String> {
-        private Activity activity;
-        private LoadItemsTask(Activity activity) {
-            this.activity = activity;
-        }
-
+    private class ListJoinEventsTask extends AsyncTask<Void, Void, String> {
         @Override
         protected String doInBackground(Void... params) {
-            HttpClient httpclient = new DefaultHttpClient();
+            /*HttpClient httpclient = new DefaultHttpClient();
             HttpPost httppost = new HttpPost(url+"get-events-by-user.php");
             String jsonResult = null;
             //add name value pair for the country code
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
             nameValuePairs.add(new BasicNameValuePair("start",String.valueOf(startIndex)));
             nameValuePairs.add(new BasicNameValuePair("limit",String.valueOf(offset)));
-            nameValuePairs.add(new BasicNameValuePair("username",String.valueOf(user)));
+            nameValuePairs.add(new BasicNameValuePair("userId",String.valueOf(userId)));
 
             try {
                 httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
@@ -178,7 +184,32 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                 e.printStackTrace();
             }
 
-            return jsonResult;
+            return jsonResult;*/
+
+            StringBuilder response  = new StringBuilder();
+            try{
+                URL url1 = new URL(url+"get-events-by-user.php?userId="+userId);
+                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
+                httpconn.setReadTimeout(10000);
+                httpconn.setConnectTimeout(15000);
+                httpconn.setRequestMethod("GET");
+                httpconn.setDoInput(true);
+                httpconn.setDoOutput(true);
+                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                {
+                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
+                    String strLine = null;
+                    while ((strLine = input.readLine()) != null)
+                    {
+                        response.append(strLine);
+                    }
+                    input.close();
+                }
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+            return response.toString();
         }
 
         @Override
@@ -190,7 +221,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                 return;
             }
             else if (jsonResult.equals("[]")){
-                Toast.makeText(OtherUserProfileActivity.this.getApplicationContext(), "NO MORE DATA",
+                Toast.makeText(OtherUserProfileActivity.this.getApplicationContext(), "没有数据",
                         Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -217,18 +248,10 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                         String state = jsonChildNode.optString("state");
                         String country = jsonChildNode.optString("country");
                         String activityImage = jsonChildNode.optString("image_name");
+                        String activityThumbImage = jsonChildNode.optString("image_name");
                         String eventCreator = jsonChildNode.optString("event_creator");
 
-                        Bitmap bitmap = null;
-
-                        if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
-                            String imageUrl = Utility.getServerUrl() + "imgupload/" + activityImage;
-                            bitmap = Utility.getBitmapFromURL(imageUrl);
-                        }
-
-                        item.setBitmap(bitmap);
-
-                        item.setActivityImage(activityImage);
+                        item.setActivityImage(activityThumbImage);
                         item.setAddress(address);
                         item.setCity(city);
                         item.setCountry(country);
@@ -465,38 +488,6 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    // double click to quit the app, and disable the back button in this activity
-    private final Runnable mRunnable = new Runnable() {
-        @Override
-        public void run() {
-            doubleBackToExitPressedOnce = false;
-        }
-    };
-
-    @Override
-    protected void onDestroy()
-    {
-        super.onDestroy();
-
-        if (mHandler != null) { mHandler.removeCallbacks(mRunnable); }
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_HOME);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            return;
-        }
-
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-
-        mHandler.postDelayed(mRunnable, 2000);
     }
 
 }

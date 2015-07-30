@@ -298,13 +298,14 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
                         prgDialog.hide();
                         showProgress(false);
 
-                        if (response.equals("success")) {
+                        if (isInteger(response)) {
                             Toast.makeText(getApplicationContext(), "成功",
                                     Toast.LENGTH_LONG).show();
 
                             SharedPreferences settings = getSharedPreferences("MyPrefsFile", 0);
                             SharedPreferences.Editor editor = settings.edit();
                             editor.putString("KEY_LOGIN_USER", getRegisteredUsername());
+                            editor.putString("KEY_LOGIN_USER_ID", response);
                             editor.commit();
 
                             Intent myIntent;
@@ -354,6 +355,17 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
                 });
     }
 
+    public static boolean isInteger(String s) {
+        try {
+            Integer.parseInt(s);
+        } catch(NumberFormatException e) {
+            return false;
+        } catch(NullPointerException e) {
+            return false;
+        }
+        // only got here if we didn't return false
+        return true;
+    }
 
     public String getRegisteredUsername(){
         if (mUserNameView != null){
@@ -439,8 +451,6 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
                 params.put("filename", imgfileName);
                 // Show a progress spinner, and kick off a background task to
                 // perform the user login attempt.
-                prgDialog.setMessage("Converting Image to Binary Data");
-                prgDialog.show();
                 showProgress(true);
 
                 if (imgfileName != null && !imgfileName.isEmpty()) {

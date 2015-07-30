@@ -1,11 +1,11 @@
 package com.example.pengzhizhou.meetup;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -13,7 +13,6 @@ import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -25,23 +24,32 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.androidquery.AQuery;
 import com.mobsandgeeks.adapters.Sectionizer;
 import com.mobsandgeeks.adapters.SimpleSectionAdapter;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,11 +59,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
     private ListView list;
     private ListAdapter adapter = null;
     private SimpleSectionAdapter<ActivityItem> sectionAdapter = null;
-    private String loginUser = null;
-    private AQuery aq;
-    private ImageViewRounded ir;
-
-    private ProgressDialog progressDialog;
+    private ProgressDialog progressRefress, progressLoading;
     private int myLastVisiblePos;
     private int currentFirstVisibleItem = 0;
     private int currentVisibleItemCount = 0;
@@ -69,22 +73,23 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
     private TextView noActivity;
     private Bitmap bitmap = null;
     private ArrayList<Item> gridArray;
+    private ArrayList<Integer> resource;
     private GridView gridViewFilter;
     private CustomGridViewAdapter customGridAdapter;
     private ImageView closeFilter;
 
     private String activityTypeId = null;
     private String activityTitle = null;
+
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         SharedPreferences settings = this.getActivity().getSharedPreferences("MyPrefsFile", 0);
-        loginUser = settings.getString("KEY_LOGIN_USER", null);
         city = settings.getString("KEY_CITY", null);
-
-        aq = new AQuery(getActivity());
-        ir = new ImageViewRounded(getActivity());
+        city = "襄阳市";
 
         Bundle b = getActivity().getIntent().getExtras();
         if (b != null) {
@@ -113,12 +118,10 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                 startActivity(myIntent);
             }
         });
-        progressDialog = new ProgressDialog(getActivity());
+
         // ignore NetworkOnMainThreadException currently, will try to fix it later
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-
-
 
         if (_rootView == null) {
                 // Inflate the layout for this fragment
@@ -135,6 +138,14 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                         gps.showSettingsAlert();
                     }
                     new MatchingNearByLocationTask().execute();
+                    timerDelayRemoveDialog(6000, progressLoading);
+                }
+
+                // create filtering pictures
+                gridArray = new ArrayList<Item>();
+                resource = new ArrayList<Integer>();
+                if (gridArray == null || gridArray.size() < 1) {
+                    Utility.createGridArray(this.getResources(), gridArray, resource, 1);
                 }
 
                 noActivity = (TextView) _rootView.findViewById(R.id.noActivities);
@@ -187,9 +198,8 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         TextView actionbarTitle = (TextView)getActivity().findViewById(R.id.actionbarTitle);
         ImageView pullDownIcon = (ImageView)getActivity().findViewById(R.id.pulldown);
         pullDownIcon.setVisibility(View.VISIBLE);
-        createGridArray();
         gridViewFilter = (GridView) _rootView.findViewById(R.id.gridFilter);
-        customGridAdapter = new CustomGridViewAdapter(getActivity(), R.layout.grid_single_1, gridArray);
+        customGridAdapter = new CustomGridViewAdapter(getActivity(), R.layout.grid_single_1, gridArray, resource);
         gridViewFilter.setAdapter(customGridAdapter);
         closeFilter = (ImageView)_rootView.findViewById(R.id.closeFilter);
 
@@ -217,6 +227,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                 i.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                 i.putExtra("activityTypes", gridArray.get(position).getTitle());
                 i.putExtra("activityTypesId", Integer.toString(position));
+                i.putExtra("tab", 0);
                 startActivity(i);
             }
         });
@@ -257,15 +268,18 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                     if (!loadingMore) {
                         loadingMore = true;
                         new LoadMoreItemsTask(getActivity()).execute();
+                        timerDelayRemoveDialog(6000, progressLoading);
                     }
                 }
             } else if (currentFirstVisibleItem == 0 && currentFirstVisibleItem < myLastVisiblePos) {
                 //scroll up and refresh
                 new RefreshListTask().execute();
+                timerDelayRemoveDialog(6000, progressRefress);
             }
 
             myLastVisiblePos = currentFirstVisibleItem;
     }
+
     public String getRefactorUrl(String url){
         if (activityTypeId != null) {
             int activityType = Integer.parseInt(activityTypeId);
@@ -282,16 +296,12 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-
-                progressDialog.setMessage("刷新...");
-                progressDialog.setCancelable(true);
-                progressDialog.show();
-
-
+            progressRefress = new ProgressDialog(getActivity());
+            progressRefress = ProgressDialog.show(getActivity(), "", "刷新...");
         }
         @Override
         protected String doInBackground(Void... voids) {
-            HttpClient httpclient = new DefaultHttpClient();
+            /*HttpClient httpclient = new DefaultHttpClient();
             String jsonResult = null;
 
             HttpGet request = new HttpGet();
@@ -317,7 +327,56 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                 e.printStackTrace();
             }
 
-            return jsonResult;
+            return jsonResult;*/
+            StringBuilder response  = new StringBuilder();
+            try {
+                String url = "get-events.php";
+                URL url1 = new URL(Utility.getServerUrl()+url);
+                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
+                httpconn.setReadTimeout(100000);
+                httpconn.setConnectTimeout(150000);
+                httpconn.setRequestMethod("GET");
+                httpconn.setDoInput(true);
+                httpconn.setDoOutput(true);
+
+                List<NameValuePair> params = new ArrayList<NameValuePair>();
+                params.add(new BasicNameValuePair("start", "0"));
+                params.add(new BasicNameValuePair("limit", String.valueOf(startIndex)));
+                params.add(new BasicNameValuePair("city", city));
+
+                if (activityTypeId != null) {
+                    int activityType = Integer.parseInt(activityTypeId);
+                    if (activityType != 0) {
+                        activityType = activityType - 1;
+                        params.add(new BasicNameValuePair("type", String.valueOf(activityType)));
+                    }
+                }
+
+                OutputStream os = httpconn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(getQuery(params));
+                writer.flush();
+                writer.close();
+                os.close();
+
+                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                {
+                    // if response code = 200 ok
+                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()));
+                    String strLine = null;
+                    while ((strLine = input.readLine()) != null)
+                    {
+                        response.append(strLine);
+                    }
+                    input.close();
+                }
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+            return response.toString();
+
         }
 
         @Override
@@ -325,12 +384,10 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
             if (jsonResult == null)
             {
                 adapter.notifyDataSetChanged();
-                return;
             }
             else if (jsonResult.equals("[]") && startIndex != 0){
                 Toast.makeText(getActivity().getApplicationContext(), "没有更多活动了",
                         Toast.LENGTH_SHORT).show();
-                return;
             }
             else if (jsonResult.equals("[]") && startIndex == 0){
                 noActivity.setVisibility(View.VISIBLE);
@@ -341,74 +398,84 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                         noActivity.setText(city + "暂时没有活动");
                     }
                 }
-                return;
             }
-            try {
-                itemsList = new ArrayList<ActivityItem>();
+            else {
+                try {
+                    itemsList = new ArrayList<ActivityItem>();
 
-                JSONObject jsonResponse = new JSONObject(jsonResult);
-                JSONArray jsonMainNode = jsonResponse.optJSONArray("act_info");
+                    JSONObject jsonResponse = new JSONObject(jsonResult);
+                    JSONArray jsonMainNode = jsonResponse.optJSONArray("act_info");
 
-                for (int i = 0; i < jsonMainNode.length(); i++) {
-                    JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
-                    ActivityItem item = new ActivityItem();
-                    String id = jsonChildNode.optString("id");
-                    String title = jsonChildNode.optString("title");
-                    String address = jsonChildNode.optString("activity_address");
-                    String activityTime = jsonChildNode.optString("activity_time");
-                    String postTime = jsonChildNode.optString("post_time");
-                    String duration = jsonChildNode.optString("activity_duration");
-                    String pNumber = jsonChildNode.optString("phone_number");
-                    String detail = jsonChildNode.optString("activity_detail");
-                    String type = jsonChildNode.optString("activity_type");
-                    String city = jsonChildNode.optString("city");
-                    String state = jsonChildNode.optString("state");
-                    String country = jsonChildNode.optString("country");
-                    String activityImage = jsonChildNode.optString("image_name");
-                    String eventCreator = jsonChildNode.optString("event_creator");
+                    for (int i = 0; i < jsonMainNode.length(); i++) {
+                        JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
+                        ActivityItem item = new ActivityItem();
+                        String id = jsonChildNode.optString("id");
+                        String title = jsonChildNode.optString("title");
+                        String address = jsonChildNode.optString("activity_address");
+                        String activityTime = jsonChildNode.optString("activity_time");
+                        String postTime = jsonChildNode.optString("post_time");
+                        String duration = jsonChildNode.optString("activity_duration");
+                        String pNumber = jsonChildNode.optString("phone_number");
+                        String detail = jsonChildNode.optString("activity_detail");
+                        String type = jsonChildNode.optString("activity_type");
+                        String city = jsonChildNode.optString("city");
+                        String state = jsonChildNode.optString("state");
+                        String country = jsonChildNode.optString("country");
+                        String activityImage = jsonChildNode.optString("image_name");
+                        String activityThumbImage = jsonChildNode.optString("image_thumb");
+                        String eventCreator = jsonChildNode.optString("event_creator");
 
-                    String imageUrl;
-                    Bitmap bitmap;
-                    if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
-                        imageUrl = Utility.getServerUrl() + "imgupload/" + activityImage;
-                        bitmap = aq.getCachedImage(imageUrl);
+                        /*String imageUrl;
+                        Bitmap bitmap;
+                        if (!activityThumbImage.isEmpty() && activityThumbImage != null && !activityThumbImage.equals("null")) {
+                            imageUrl = Utility.getServerUrl() + "imgupload/activity_thumb_image/" + activityThumbImage;
+                            bitmap = aq.getCachedImage(imageUrl);
+                        }
+                        else{
+                            bitmap = null;
+                        }
+
+                        item.setThumbBitmap(bitmap);*/
+                        item.setActivityImage(activityThumbImage);
+                        item.setAddress(address);
+                        item.setCity(city);
+                        item.setActivityType(type);
+                        item.setCountry(country);
+                        item.setDetail(detail);
+                        item.setId(id);
+                        item.setTitle(title);
+                        item.setPhoneNumber(pNumber);
+                        item.setState(state);
+                        item.setDuration(duration);
+                        item.setActivityTime(activityTime);
+                        item.setPostTime(postTime);
+                        item.setEventCreator(eventCreator);
+
+                        itemsList.add(item);
                     }
-                    else{
-                        bitmap = null;
-                    }
-
-                    item.setBitmap(bitmap);
-                    item.setActivityImage(activityImage);
-                    item.setAddress(address);
-                    item.setCity(city);
-                    item.setActivityType(type);
-                    item.setCountry(country);
-                    item.setDetail(detail);
-                    item.setId(id);
-                    item.setTitle(title);
-                    item.setPhoneNumber(pNumber);
-                    item.setState(state);
-                    item.setDuration(duration);
-                    item.setActivityTime(activityTime);
-                    item.setPostTime(postTime);
-                    item.setEventCreator(eventCreator);
-
-                    itemsList.add(item);
+                } catch (JSONException e) {
+                    Toast.makeText(getActivity().getApplicationContext(), "Error" + e.toString(),
+                            Toast.LENGTH_SHORT).show();
                 }
-            } catch (JSONException e) {
-                Toast.makeText(getActivity().getApplicationContext(), "Error" + e.toString(),
-                        Toast.LENGTH_SHORT).show();
-            }
 
-            adapter.notifyDataSetChanged();
+                adapter.notifyDataSetChanged();
 
-            if (itemsList.size() > 0) {
-                startIndex = (long)itemsList.size();
-            }
-            super.onPostExecute(jsonResult);
+                if (itemsList.size() > 0) {
+                    startIndex = (long)itemsList.size();
+                }
 
-            if (progressDialog.isShowing()) {
-                progressDialog.dismiss();
+                try{
+                    if(progressRefress.isShowing()){
+                        progressRefress.dismiss();
+                    }
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+                finally
+                {
+                    progressRefress.dismiss();
+                }
             }
         }
 
@@ -416,9 +483,19 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         protected void onCancelled() {
 
             super.onCancelled();
-            progressDialog.dismiss();
+            progressRefress.dismiss();
 
         }
+    }
+
+    public void timerDelayRemoveDialog(long time, final Dialog d){
+        new android.os.Handler().postDelayed(new Runnable() {
+            public void run() {
+                if (d!=null) {
+                    d.dismiss();
+                }
+            }
+        }, time);
     }
 
     private class LoadMoreItemsTask extends AsyncTask<Void, Void, String> {
@@ -437,33 +514,54 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
         @Override
         protected String doInBackground(Void... voids) {
-            HttpClient httpclient = new DefaultHttpClient();
-            String jsonResult = null;
-
-            HttpGet request = new HttpGet();
+            StringBuilder response  = new StringBuilder();
             try {
-                String url = "get-events.php?start="+startIndex
-                        +"&limit="+offset+"&city="+city;
-                url = getRefactorUrl(url);
-                URI website = new URI(Utility.getServerUrl()+url);
-                request.setURI(website);
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
-            try {
-                HttpResponse response = httpclient.execute(request);
-                jsonResult = Utility.inputStreamToString(
-                        response.getEntity().getContent()).toString();
-            }
+                String url = "get-events.php";
+                URL url1 = new URL(Utility.getServerUrl()+url);
+                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
+                httpconn.setReadTimeout(100000);
+                httpconn.setConnectTimeout(150000);
+                httpconn.setRequestMethod("GET");
+                httpconn.setDoInput(true);
+                httpconn.setDoOutput(true);
 
-            catch (ClientProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+                List<NameValuePair> params = new ArrayList<NameValuePair>();
+                params.add(new BasicNameValuePair("start", String.valueOf(startIndex)));
+                params.add(new BasicNameValuePair("limit", String.valueOf(offset)));
+                params.add(new BasicNameValuePair("city", city));
+
+                if (activityTypeId != null) {
+                    int activityType = Integer.parseInt(activityTypeId);
+                    if (activityType != 0) {
+                        activityType = activityType - 1;
+                        params.add(new BasicNameValuePair("type", String.valueOf(activityType)));
+                    }
+                }
+
+                OutputStream os = httpconn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(getQuery(params));
+                writer.flush();
+                writer.close();
+                os.close();
+
+                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                {
+                    // if response code = 200 ok
+                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()));
+                    String strLine = null;
+                    while ((strLine = input.readLine()) != null)
+                    {
+                        response.append(strLine);
+                    }
+                    input.close();
+                }
+            }
+            catch (IOException e){
                 e.printStackTrace();
             }
-
-            return jsonResult;
+            return response.toString();
         }
 
         @Override
@@ -512,18 +610,10 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                         String state = jsonChildNode.optString("state");
                         String country = jsonChildNode.optString("country");
                         String activityImage = jsonChildNode.optString("image_name");
+                        String activityThumbImage = jsonChildNode.optString("image_thumb");
                         String eventCreator = jsonChildNode.optString("event_creator");
 
-                        if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
-                            String imageUrl = Utility.getServerUrl() + "imgupload/" + activityImage;
-                            bitmap = Utility.getBitmapFromURL(imageUrl);
-                            //bitmap=Bitmap.createScaledBitmap(bitmap, 100,100, true);
-                        } else {
-                            bitmap = null;
-                        }
-
-                        item.setBitmap(bitmap);
-                        item.setActivityImage(activityImage);
+                        item.setActivityImage(activityThumbImage);
                         item.setAddress(address);
                         item.setActivityType(type);
                         item.setCity(city);
@@ -570,13 +660,28 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                 list.removeFooterView(footer);
 
             }
-
-
         }
-
-
     }
 
+    private String getQuery(List<NameValuePair> params) throws UnsupportedEncodingException
+    {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+
+        for (NameValuePair pair : params)
+        {
+            if (first)
+                first = false;
+            else
+                result.append("&");
+
+            result.append(URLEncoder.encode(pair.getName(), "UTF-8"));
+            result.append("=");
+            result.append(URLEncoder.encode(pair.getValue(), "UTF-8"));
+        }
+
+        return result.toString();
+    }
 
     private class MatchingNearByLocationTask extends
             AsyncTask<Void, Void, Void>
@@ -586,10 +691,8 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         protected void onPreExecute() {
             super.onPreExecute();
             // Showing progress dialog
-            progressDialog = new ProgressDialog(getActivity());
-            progressDialog.setMessage("Loading...");
-            progressDialog.setCancelable(true);
-            progressDialog.show();
+            progressLoading = new ProgressDialog(getActivity());
+            progressLoading = ProgressDialog.show(getActivity(), "", "寻找你所在城市...");
 
         }
 
@@ -640,17 +743,12 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                             }
 
                         }
-
                 }
-
                 catch (JSONException e) {
 
                     e.printStackTrace();
                 }
-
             }
-
-
             return null;
         }
 
@@ -662,22 +760,29 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                     Toast.LENGTH_SHORT).show();
             new LoadMoreItemsTask(getActivity()).execute();
             // Dismiss the progress dialog
-            if (progressDialog.isShowing()) {
-                progressDialog.dismiss();
+            try{
+                if(progressLoading.isShowing()){
+                    progressLoading.dismiss();
+                }
             }
-
+            catch(Exception e){
+                e.printStackTrace();
+            }
+            finally
+            {
+                progressLoading.dismiss();
+            }
         }
 
         @Override
         protected void onCancelled() {
 
             super.onCancelled();
-            progressDialog.dismiss();
+            progressLoading.dismiss();
 
         }
 
     }
-
 
     private JSONObject getLocationInfo(double lat, double lng) {
 
@@ -708,47 +813,6 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         }
 
         return jsonObject;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            // When the user clicks START ALARM, set the alarm.
-            case R.id.start_action:
-                return true;
-            // When the user clicks CANCEL ALARM, cancel the alarm.
-            case R.id.cancel_action:
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private void createGridArray(){
-        Bitmap quanbuIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.quanbu);
-        Bitmap zhuoyouIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.zhuoyou);
-        Bitmap jieriIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.jieri);
-        Bitmap dianyingIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.dianying);
-        Bitmap chuangyeIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.chuangye);
-        Bitmap mishiIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.mishi);
-        Bitmap tiyuIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.tiyu);
-        Bitmap jiangzuoIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.jiangzuo);
-        Bitmap zijiayouIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.zijiayou);
-        Bitmap qitaIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.qita);
-
-        //Bitmap userIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.zhuoyou);
-        gridArray = new ArrayList<Item>();
-        gridArray.add(new Item(quanbuIcon, "全部活动"));
-        gridArray.add(new Item(jieriIcon, "节日派对"));
-        gridArray.add(new Item(zhuoyouIcon, "桌游聚会"));
-        gridArray.add(new Item(mishiIcon, "密室逃脱"));
-        gridArray.add(new Item(chuangyeIcon, "创意展览"));
-        gridArray.add(new Item(jiangzuoIcon, "行业讲座"));
-        gridArray.add(new Item(dianyingIcon, "电影鉴赏"));
-        gridArray.add(new Item(tiyuIcon, "体育活动"));
-        gridArray.add(new Item(zijiayouIcon, "旅游同行"));
-        gridArray.add(new Item(qitaIcon, "其他类别"));
     }
 
 }

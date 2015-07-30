@@ -269,9 +269,11 @@ public class MainActivity extends PlusBaseActivity implements LoaderManager.Load
             mAuthTask = null;
 
             if (!user.equals("")) {
+                String[] parts = user.split("&&asb##");
                 SharedPreferences myPrefs = getSharedPreferences("MyPrefsFile", 0);
                 SharedPreferences.Editor editor = myPrefs.edit();
-                editor.putString("KEY_LOGIN_USER", user);
+                editor.putString("KEY_LOGIN_USER", parts[0]);
+                editor.putString("KEY_LOGIN_USER_ID", parts[1]);
                 editor.commit();
 
                 Intent myIntent;

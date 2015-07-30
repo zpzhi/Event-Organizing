@@ -10,7 +10,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.androidquery.AQuery;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 import java.util.List;
 
@@ -19,10 +21,9 @@ import java.util.List;
  */
 public class UserListAdapter extends ArrayAdapter<User> {
 
-    private AQuery aq;
     private Context cont;
-    private ImageViewRounded ir;
     private Uri imageUri;
+    private DisplayImageOptions options;
 
     public UserListAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
@@ -31,8 +32,17 @@ public class UserListAdapter extends ArrayAdapter<User> {
     public UserListAdapter(Context context, int resource, List<User> items) {
         super(context, resource, items);
         cont = context;
-        ir = new ImageViewRounded(cont);
-        aq = new AQuery(cont);
+
+        options = new DisplayImageOptions.Builder()
+                .displayer(new RoundedBitmapDisplayer(60))
+                .showImageOnLoading(R.drawable.default_user)
+                .showImageForEmptyUri(R.drawable.default_user)
+                .showImageOnFail(R.drawable.default_user)
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .considerExifParams(true)
+                .bitmapConfig(Bitmap.Config.RGB_565)
+                .build();
     }
 
     @Override
@@ -57,9 +67,14 @@ public class UserListAdapter extends ArrayAdapter<User> {
             String nameA = user.getName();
             String descriptionA = user.getDescription();
             String uaDescription = user.getUaDescription();
+            String imageName = user.getImageName();
 
-            Bitmap bitmap = user.getBitmap();
-            thumbN.setImageBitmap(bitmap);
+            if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL")) {
+                String imageUrl = Utility.getServerUrl() + "imgupload/user_thumb_image/" + imageName;
+                ImageLoader.getInstance().displayImage(imageUrl, thumbN, options);
+            }else{
+                ImageLoader.getInstance().displayImage("", thumbN, options);
+            }
 
             if (name != null) {
                 name.setText(nameA);

@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -24,8 +23,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.androidquery.AQuery;
-import com.androidquery.callback.ImageOptions;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -42,6 +41,8 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -51,10 +52,7 @@ import java.util.List;
 
 public class EventDetailActivity extends ActionBarActivity{
 
-    private AQuery aq;
-
     private ArrayList<Item> gridArray;
-    private ImageViewRounded ir;
     private String url = Utility.getServerUrl();
 
     private Button joinEventButton;
@@ -64,7 +62,7 @@ public class EventDetailActivity extends ActionBarActivity{
     private String eventTimeText = null;
     private String addressText = null;
     private String eventID = null;
-    private String loginUser = null;
+    private String loginUser = null, loginUserId = null;
     private String type = null;
     private String detail = null;
     private String city = null;
@@ -76,9 +74,7 @@ public class EventDetailActivity extends ActionBarActivity{
     private UserListAdapter uAdapter = null;
     private UserListAdapter uAdapter1 = null;
     private int m_flag = 0;
-
-    private boolean doubleBackToExitPressedOnce;
-    private android.os.Handler mHandler = new android.os.Handler();
+    private DisplayImageOptions options;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,12 +88,11 @@ public class EventDetailActivity extends ActionBarActivity{
 
         SharedPreferences settings = getSharedPreferences("MyPrefsFile", 0);
         loginUser = settings.getString("KEY_LOGIN_USER", null);
+        loginUserId = settings.getString("KEY_LOGIN_USER_ID", null);
 
         Intent iin= getIntent();
         Bundle b = iin.getExtras();
-        aq = new AQuery(this);
         usersList = new ArrayList<User>();
-        ir = new ImageViewRounded(this);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -130,10 +125,18 @@ public class EventDetailActivity extends ActionBarActivity{
                 description.setText(detail);
             }
 
-            if (imageNameText != null && !imageNameText.isEmpty() && !imageNameText.equals("null")){
-                String imageUrl = url + "imgupload/" + imageNameText;
-                ImageOptions options = new ImageOptions();
-                aq.id(R.id.eventImage).image(imageUrl, options);
+            if (!imageNameText.isEmpty() && imageNameText != null && !imageNameText.equals("NULL")) {
+                options = new DisplayImageOptions.Builder()
+                        .showImageOnLoading(R.drawable.ic_launcher)
+                        .showImageForEmptyUri(R.drawable.default_user)
+                        .showImageOnFail(R.drawable.ic_launcher)
+                        .cacheInMemory(true)
+                        .cacheOnDisk(true)
+                        .considerExifParams(true)
+                        .bitmapConfig(Bitmap.Config.RGB_565)
+                        .build();
+                String imageUrl = Utility.getServerUrl() + "imgupload/activity_image/" + imageNameText;
+                ImageLoader.getInstance().displayImage(imageUrl, eventImage, options);
             }
             else{
                 int iType = Integer.parseInt(type);
@@ -188,6 +191,7 @@ public class EventDetailActivity extends ActionBarActivity{
                     i = new Intent(EventDetailActivity.this, OtherUserProfileActivity.class);
                     i.putExtra("userImg", hostList.get(position).getImageName());
                     i.putExtra("userName", hostList.get(position).getName());
+                    i.putExtra("userId", hostList.get(position).getId());
                     startActivity(i);
                 }
             });
@@ -202,6 +206,7 @@ public class EventDetailActivity extends ActionBarActivity{
                     i = new Intent(EventDetailActivity.this, OtherUserProfileActivity.class);
                     i.putExtra("userImg", usersList.get(position).getImageName());
                     i.putExtra("userName", usersList.get(position).getName());
+                    i.putExtra("userId", usersList.get(position).getId());
                     startActivity(i);
                 }
             });
@@ -223,7 +228,7 @@ public class EventDetailActivity extends ActionBarActivity{
                             .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int whichButton) {
                                     String userActivityDescripton = txtPurpose.getText().toString();
-                                    joinEventCall(loginUser, eventID, userActivityDescripton);
+                                    joinEventCall(loginUserId, eventID, userActivityDescripton);
                                 }
                             })
                             .setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -252,7 +257,7 @@ public class EventDetailActivity extends ActionBarActivity{
         @Override
         protected String doInBackground(String... params) {
 
-            HttpClient httpclient = new DefaultHttpClient();
+            /*HttpClient httpclient = new DefaultHttpClient();
             HttpPost httppost = new HttpPost(url + "get-user-detail-by-id.php");
 
             try {
@@ -274,7 +279,31 @@ public class EventDetailActivity extends ActionBarActivity{
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 return e.toString();
+            }*/
+            StringBuilder response  = new StringBuilder();
+            try{
+                URL url1 = new URL(url+"get-user-detail-by-id.php?eventCreatorId="+eventCreatorId);
+                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
+                httpconn.setReadTimeout(10000);
+                httpconn.setConnectTimeout(15000);
+                httpconn.setRequestMethod("GET");
+                httpconn.setDoInput(true);
+                httpconn.setDoOutput(true);
+                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                {
+                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
+                    String strLine = null;
+                    while ((strLine = input.readLine()) != null)
+                    {
+                        response.append(strLine);
+                    }
+                    input.close();
+                }
             }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+            return response.toString();
         }
 
         @Override
@@ -295,33 +324,19 @@ public class EventDetailActivity extends ActionBarActivity{
                         JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
                         String id = jsonChildNode.optString("id_user");
                         String name = jsonChildNode.optString("username");
-                        String image = jsonChildNode.optString("image_name");
+                        String image = jsonChildNode.optString("image_thumb");
                         User user = new User();
                         if (name.equals(loginUser)) {
                             m_flag = 1;
                         }
 
                         String userDescription = jsonChildNode.optString("user_description");
-                        Bitmap bitmap = null;
 
-                        if (!image.isEmpty() && image != null && !image.equals("null")) {
-                            String imageUrl = Utility.getServerUrl() + "imgupload/" + image;
-                            bitmap = Utility.getBitmapFromURL(imageUrl);
-                            if(bitmap!=null) {
-                                bitmap = ir.getCircledBitmap(bitmap);
-                            }
-                        }
-                        else{
-
-                            bitmap = BitmapFactory.decodeResource(getResources(),
-                                    R.drawable.default_user);
-                            bitmap = ir.getCircledBitmap(bitmap);
-                        }
                         user.setId(id);
                         user.setName(name);
                         user.setImageName(image);
                         user.setDescription(userDescription);
-                        user.setBitmap(bitmap);
+
                         hostList.add(user);
                     }
                 } catch (JSONException e) {
@@ -341,7 +356,7 @@ public class EventDetailActivity extends ActionBarActivity{
           @Override
         protected String doInBackground(String... params) {
 
-              HttpClient httpclient = new DefaultHttpClient();
+              /*HttpClient httpclient = new DefaultHttpClient();
               HttpPost httppost = new HttpPost(url + "get-user-images-names.php");
 
               try {
@@ -363,7 +378,32 @@ public class EventDetailActivity extends ActionBarActivity{
               } catch (IOException e) {
                   // TODO Auto-generated catch block
                   return e.toString();
+              }*/
+
+              StringBuilder response  = new StringBuilder();
+              try{
+                  URL url1 = new URL(url+"get-user-images-names.php?id="+eventID);
+                  HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
+                  httpconn.setReadTimeout(10000);
+                  httpconn.setConnectTimeout(15000);
+                  httpconn.setRequestMethod("GET");
+                  httpconn.setDoInput(true);
+                  httpconn.setDoOutput(true);
+                  if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                  {
+                      BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
+                      String strLine = null;
+                      while ((strLine = input.readLine()) != null)
+                      {
+                          response.append(strLine);
+                      }
+                      input.close();
+                  }
               }
+              catch (IOException e){
+                  e.printStackTrace();
+              }
+              return response.toString();
         }
 
         @Override
@@ -393,7 +433,7 @@ public class EventDetailActivity extends ActionBarActivity{
                             User user = new User();
                             String id = jsonChildNode.optString("id_user");
                             String name = jsonChildNode.optString("username");
-                            String image = jsonChildNode.optString("image_name");
+                            String image = jsonChildNode.optString("image_thumb");
                             String uaDescription = jsonChildNode.optString("uaDescription");
 
                             if (name.equals(loginUser)) {
@@ -401,26 +441,11 @@ public class EventDetailActivity extends ActionBarActivity{
                             }
 
                             String userDescription = jsonChildNode.optString("user_description");
-                            Bitmap bitmap = null;
 
-                            if (!image.isEmpty() && image != null && !image.equals("null")) {
-                                String imageUrl = Utility.getServerUrl() + "imgupload/" + image;
-                                bitmap = Utility.getBitmapFromURL(imageUrl);
-                                if(bitmap!=null) {
-                                    bitmap = ir.getCircledBitmap(bitmap);
-                                }
-                            }
-                            else{
-
-                                bitmap = BitmapFactory.decodeResource(getResources(),
-                                        R.drawable.default_user);
-                                bitmap = ir.getCircledBitmap(bitmap);
-                            }
                             user.setId(id);
                             user.setName(name);
                             user.setImageName(image);
                             user.setDescription(userDescription);
-                            user.setBitmap(bitmap);
                             user.setUaDescription(uaDescription);
 
                             usersList.add(user);
@@ -445,8 +470,8 @@ public class EventDetailActivity extends ActionBarActivity{
 
     }
 
-    public boolean joinEventCall(String userName, String eventId, String uaDescription){
-        new MyAsyncTask().execute(userName, eventId, uaDescription);
+    public boolean joinEventCall(String userId, String eventId, String uaDescription){
+        new MyAsyncTask().execute(userId, eventId, uaDescription);
         return true;
     }
 
@@ -458,14 +483,14 @@ public class EventDetailActivity extends ActionBarActivity{
             return result;
         }
 
-        public String postData(String userName, String eventID, String uaDescription) {
+        public String postData(String userId, String eventID, String uaDescription) {
             HttpClient httpclient = new DefaultHttpClient();
             HttpPost httppost = new HttpPost(url + "join-event.php");
 
             try {
                 // Add your data
                 List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-                nameValuePairs.add(new BasicNameValuePair("userName", userName));
+                nameValuePairs.add(new BasicNameValuePair("userId", userId));
                 nameValuePairs.add(new BasicNameValuePair("eventID", eventID));
                 nameValuePairs.add(new BasicNameValuePair("uaDescription", uaDescription));
                 httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
@@ -540,37 +565,9 @@ public class EventDetailActivity extends ActionBarActivity{
         }
         return super.onOptionsItemSelected(item);
     }
-
-    // double click to quit the app, and disable the back button in this activity
-    private final Runnable mRunnable = new Runnable() {
-        @Override
-        public void run() {
-            doubleBackToExitPressedOnce = false;
-        }
-    };
-
     @Override
     protected void onDestroy()
     {
         super.onDestroy();
-
-        if (mHandler != null) { mHandler.removeCallbacks(mRunnable); }
     }
-
-    @Override
-    public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_HOME);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            return;
-        }
-
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-
-        mHandler.postDelayed(mRunnable, 2000);
-    }
-
 }

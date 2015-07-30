@@ -5,11 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,16 +19,10 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.androidquery.AQuery;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,17 +30,17 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserProfileFragment extends Fragment {
     private String loginUser;
+    private String loginUserId;
     private GetUserDetailTask getUserDetailTask;
     private String url = Utility.getServerUrl();
     private User item;
-    private AQuery aq;
-    private ImageViewRounded ir;
     private ImageView userImg;
     private ListView eventList;
     private ListView eventListView1;
@@ -59,21 +51,34 @@ public class UserProfileFragment extends Fragment {
     private UserListAdapter uAdapter = null;
     private ListAdapterS adapter = null, adapter1 = null;
     private Bitmap bt;
+    private View _rootView;
     Long startIndex = 0L;
     Long offset = 5L;
     private User user;
     private Bitmap mIcon;
     private LinearLayout friendsListRoot;
+    private DisplayImageOptions options;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         SharedPreferences settings = this.getActivity().getSharedPreferences("MyPrefsFile", 0);
         loginUser = settings.getString("KEY_LOGIN_USER", null);
-        View V = null;
+        loginUserId = settings.getString("KEY_LOGIN_USER_ID", null);
 
         ImageView pullDownIcon = (ImageView)getActivity().findViewById(R.id.pulldown);
         pullDownIcon.setVisibility(View.GONE);
+
+        options = new DisplayImageOptions.Builder()
+                .displayer(new RoundedBitmapDisplayer(100))
+                .showImageOnLoading(R.drawable.ic_launcher)
+                .showImageForEmptyUri(R.drawable.default_user)
+                .showImageOnFail(R.drawable.ic_launcher)
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .considerExifParams(true)
+                .bitmapConfig(Bitmap.Config.RGB_565)
+                .build();
 
         if (loginUser == null){
             Intent myIntent;
@@ -81,118 +86,120 @@ public class UserProfileFragment extends Fragment {
             startActivity(myIntent);
 
         }else {
-            V = inflater.inflate(R.layout.user_profile_view, container, false);
+            //if (_rootView == null) {
+                _rootView = inflater.inflate(R.layout.user_profile_view, container, false);
 
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-            StrictMode.setThreadPolicy(policy);
+               // StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+               // StrictMode.setThreadPolicy(policy);
+                ((TabHostActivity) getActivity())
+                        .setActionBarTitle(loginUser + "的主页");
+                ((TabHostActivity) getActivity()).setImageViewable(View.VISIBLE);
+                ((TabHostActivity) getActivity()).setSearchCityViewable(View.GONE);
+                userImg = (ImageView) _rootView.findViewById(R.id.userImg);
 
-            aq = new AQuery(V);
-            ir = new ImageViewRounded(getActivity());
-            mIcon = BitmapFactory.decodeResource(getActivity().getResources(),
-                    R.drawable.default_user);
-            mIcon = ir.getCircledBitmap(mIcon);
+                getUserDetailTask = new GetUserDetailTask();
+                getUserDetailTask.execute(loginUser);
 
-            ((TabHostActivity) getActivity())
-                    .setActionBarTitle(loginUser + "的主页");
-            ((TabHostActivity) getActivity()).setImageViewable(View.VISIBLE);
-            ((TabHostActivity) getActivity()).setSearchCityViewable(View.GONE);
-            userImg = (ImageView) V.findViewById(R.id.userImg);
+                eventListView1 = (ListView) _rootView.findViewById(R.id.list2);
+                eventListView1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
-            getUserDetailTask = new GetUserDetailTask();
-            getUserDetailTask.execute(loginUser);
+                    public void onItemClick(AdapterView<?> parent, View view,
+                                            int position, long id) {
 
-            eventListView1 = (ListView) V.findViewById(R.id.list2);
-            eventListView1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-                public void onItemClick(AdapterView<?> parent, View view,
-                                        int position, long id) {
-
-                    Intent i = new Intent(getActivity(), EventDetailActivity.class);
-                    i.putExtra("itemTitle", itemsList1.get(position).getTitle());
-                    i.putExtra("itemImage", itemsList1.get(position).getActivityImage());
-                    i.putExtra("eventTime", itemsList1.get(position).getActivityTime());
-                    i.putExtra("itemAddress", itemsList1.get(position).getAddress());
-                    i.putExtra("itemId", itemsList1.get(position).getId());
-                    i.putExtra("itemType", itemsList1.get(position).getActivityType());
-                    i.putExtra("itemDetail", itemsList1.get(position).getDetail());
-                    i.putExtra("itemCity", itemsList1.get(position).getCity());
-                    i.putExtra("itemState", itemsList1.get(position).getState());
-                    i.putExtra("eventCreator", itemsList1.get(position).getEventCreator());
-                    startActivity(i);
-                }
-            });
-            initAdapter1();
-            new ListHostingEventsTask().execute();
+                        Intent i = new Intent(getActivity(), EventDetailActivity.class);
+                        i.putExtra("itemTitle", itemsList1.get(position).getTitle());
+                        i.putExtra("itemImage", itemsList1.get(position).getActivityImage());
+                        i.putExtra("eventTime", itemsList1.get(position).getActivityTime());
+                        i.putExtra("itemAddress", itemsList1.get(position).getAddress());
+                        i.putExtra("itemId", itemsList1.get(position).getId());
+                        i.putExtra("itemType", itemsList1.get(position).getActivityType());
+                        i.putExtra("itemDetail", itemsList1.get(position).getDetail());
+                        i.putExtra("itemCity", itemsList1.get(position).getCity());
+                        i.putExtra("itemState", itemsList1.get(position).getState());
+                        i.putExtra("eventCreator", itemsList1.get(position).getEventCreator());
+                        startActivity(i);
+                    }
+                });
+                initAdapter1();
+                new ListHostingEventsTask().execute();
 
 
-            eventList = (ListView) V.findViewById(R.id.list);
-            eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                eventList = (ListView) _rootView.findViewById(R.id.list);
+                eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
-                public void onItemClick(AdapterView<?> parent, View view,
-                                        int position, long id) {
+                    public void onItemClick(AdapterView<?> parent, View view,
+                                            int position, long id) {
 
-                    Intent i = new Intent(getActivity(), EventDetailActivity.class);
-                    i.putExtra("itemTitle", itemsList.get(position).getTitle());
-                    i.putExtra("itemImage", itemsList.get(position).getActivityImage());
-                    i.putExtra("eventTime", itemsList.get(position).getActivityTime());
-                    i.putExtra("itemAddress", itemsList.get(position).getAddress());
-                    i.putExtra("itemId", itemsList.get(position).getId());
-                    i.putExtra("itemType", itemsList.get(position).getActivityType());
-                    i.putExtra("itemDetail", itemsList.get(position).getDetail());
-                    i.putExtra("itemCity", itemsList.get(position).getCity());
-                    i.putExtra("itemState", itemsList.get(position).getState());
-                    i.putExtra("eventCreator", itemsList.get(position).getEventCreator());
-                    startActivity(i);
-                }
-            });
-            initAdapter();
-            new LoadItemsTask(getActivity()).execute();
+                        Intent i = new Intent(getActivity(), EventDetailActivity.class);
+                        i.putExtra("itemTitle", itemsList.get(position).getTitle());
+                        i.putExtra("itemImage", itemsList.get(position).getActivityImage());
+                        i.putExtra("eventTime", itemsList.get(position).getActivityTime());
+                        i.putExtra("itemAddress", itemsList.get(position).getAddress());
+                        i.putExtra("itemId", itemsList.get(position).getId());
+                        i.putExtra("itemType", itemsList.get(position).getActivityType());
+                        i.putExtra("itemDetail", itemsList.get(position).getDetail());
+                        i.putExtra("itemCity", itemsList.get(position).getCity());
+                        i.putExtra("itemState", itemsList.get(position).getState());
+                        i.putExtra("eventCreator", itemsList.get(position).getEventCreator());
+                        startActivity(i);
+                    }
+                });
+                initAdapter();
+                new ListJoinEventsTask(getActivity()).execute();
 
-            Button logout = (Button) V.findViewById(R.id.logout);
-            logout.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
-            logout.setOnClickListener(new Button.OnClickListener()  {
-                public void onClick(View v) {
-                    SharedPreferences preferences = getActivity().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.clear();
-                    editor.commit();
-                    getActivity().finish();
+                Button logout = (Button) _rootView.findViewById(R.id.logout);
+                logout.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
+                logout.setOnClickListener(new Button.OnClickListener()  {
+                    public void onClick(View v) {
+                        SharedPreferences preferences = getActivity().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = preferences.edit();
+                        editor.clear();
+                        editor.commit();
+                        getActivity().finish();
 
-                    Intent myIntent;
-                    myIntent = new Intent(getActivity(), MainActivity.class);
-                    startActivity(myIntent);
-                }
-            });
+                        Intent myIntent;
+                        myIntent = new Intent(getActivity(), MainActivity.class);
+                        startActivity(myIntent);
+                    }
+                });
 
-            ImageView edit = (ImageView) getActivity().findViewById(R.id.editInfo);
-            edit.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent myIntent;
-                    myIntent = new Intent(getActivity(), UserProfileEditActivity.class);
-                    myIntent.putExtra("userInformation", user);
-                    startActivity(myIntent);
-                }
-            });
+                initFriendListAdapter();
+                friendsListView = (ListView) _rootView.findViewById(R.id.list1);
+                friendsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
-            initFriendListAdapter();
-            friendsListView = (ListView) V.findViewById(R.id.list1);
-            friendsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    public void onItemClick(AdapterView<?> parent, View view,
+                                            int position, long id) {
+                        Intent i = null;
+                        i = new Intent(getActivity(), OtherUserProfileActivity.class);
+                        i.putExtra("userImg", friendsList.get(position).getImageName());
+                        i.putExtra("userName", friendsList.get(position).getName());
+                        i.putExtra("userId", friendsList.get(position).getId());
+                        startActivity(i);
+                    }
+                });
+                new FetchFriendsList().execute();
 
-                public void onItemClick(AdapterView<?> parent, View view,
-                                        int position, long id) {
-                    Intent i = null;
-                    i = new Intent(getActivity(), OtherUserProfileActivity.class);
-                    i.putExtra("userImg", friendsList.get(position).getImageName());
-                    i.putExtra("userName", friendsList.get(position).getName());
-                    startActivity(i);
-                }
-            });
-
-            new FetchFriendsList().execute();
+                ImageView edit = (ImageView) getActivity().findViewById(R.id.editInfo);
+                edit.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent myIntent;
+                        myIntent = new Intent(getActivity(), UserProfileEditActivity.class);
+                        myIntent.putExtra("userInformation", user);
+                        startActivity(myIntent);
+                    }
+                });
+            //} //else {
+                // Do not inflate the layout again.
+                // The returned View of onCreateView will be added into the fragment.
+                // However it is not allowed to be added twice even if the parent is same.
+                // So we must remove _rootView from the existing parent view group
+                // (it will be added back).
+             //   ((ViewGroup)_rootView.getParent()).removeView(_rootView);
+            //}
 
         }
-        return V;
+        return _rootView;
     }
 
 
@@ -200,8 +207,7 @@ public class UserProfileFragment extends Fragment {
 
         @Override
         protected String doInBackground(String... params) {
-
-                HttpClient httpclient = new DefaultHttpClient();
+               /* HttpClient httpclient = new DefaultHttpClient();
                 HttpPost httppost = new HttpPost(url + "get-user-detail.php");
 
                 try {
@@ -223,7 +229,33 @@ public class UserProfileFragment extends Fragment {
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     return e.toString();
+                }*/
+
+
+            StringBuilder response  = new StringBuilder();
+            try{
+                URL url1 = new URL(url+"get-user-detail.php?userName="+params[0]);
+                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
+                httpconn.setReadTimeout(10000);
+                httpconn.setConnectTimeout(15000);
+                httpconn.setRequestMethod("GET");
+                httpconn.setDoInput(true);
+                httpconn.setDoOutput(true);
+                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                {
+                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
+                    String strLine = null;
+                    while ((strLine = input.readLine()) != null)
+                    {
+                        response.append(strLine);
+                    }
+                    input.close();
                 }
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+            return response.toString();
         }
 
         @Override
@@ -255,22 +287,13 @@ public class UserProfileFragment extends Fragment {
                             user.setDescription(userDescription);
 
                             String imageUrl;
-                            int flag = 1;
-                            if (!image.isEmpty() && image != null) {
-                                imageUrl = Utility.getServerUrl() + "imgupload/" + image;
-
-                                bt = Utility.getBitmapFromURL(imageUrl);
-                                if(bt!=null) {
-                                    bt = ir.getCircledBitmap(bt);
-                                    if (bt!=null){
-                                        flag = 0;
-                                        userImg.setImageBitmap(bt);
-                                    }
-                                }
-
+                            //int flag = 1;
+                            if (!image.isEmpty() && image != null && !image.equals("NULL")) {
+                                imageUrl = Utility.getServerUrl() + "imgupload/user_image/" + image;
+                                ImageLoader.getInstance().displayImage(imageUrl, userImg, options);
                             }
-                            if (flag == 1){
-                                userImg.setImageBitmap(mIcon);
+                            else{
+                                ImageLoader.getInstance().displayImage("", userImg, options);
                             }
                         }
 
@@ -288,12 +311,12 @@ public class UserProfileFragment extends Fragment {
 
         @Override
         protected String doInBackground(Void... params) {
-            HttpClient httpclient = new DefaultHttpClient();
+            /*HttpClient httpclient = new DefaultHttpClient();
             HttpPost httppost = new HttpPost(url+"list-hosting-events-by-user.php");
             String jsonResult = null;
             //add name value pair for the country code
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-            nameValuePairs.add(new BasicNameValuePair("username",String.valueOf(loginUser)));
+            nameValuePairs.add(new BasicNameValuePair("userId",String.valueOf(loginUserId)));
 
             try {
                 httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
@@ -311,9 +334,31 @@ public class UserProfileFragment extends Fragment {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
+            }*/
+            StringBuilder response  = new StringBuilder();
+            try{
+            URL url1 = new URL(url+"list-hosting-events-by-user.php?userId="+loginUserId);
+            HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
+                httpconn.setReadTimeout(10000);
+                httpconn.setConnectTimeout(15000);
+                httpconn.setRequestMethod("GET");
+                httpconn.setDoInput(true);
+                httpconn.setDoOutput(true);
+            if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
+            {
+                BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
+                String strLine = null;
+                while ((strLine = input.readLine()) != null)
+                {
+                    response.append(strLine);
+                }
+                input.close();
             }
-
-            return jsonResult;
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+            return response.toString();
         }
 
         @Override
@@ -346,14 +391,14 @@ public class UserProfileFragment extends Fragment {
                         String activityImage = jsonChildNode.optString("image_name");
                         String eventCreator = jsonChildNode.optString("event_creator");
 
-                        Bitmap bitmap = null;
+                        /*Bitmap bitmap = null;
 
-                        if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
-                            String imageUrl = Utility.getServerUrl() + "imgupload/" + activityImage;
+                        if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("NULL")) {
+                            String imageUrl = Utility.getServerUrl() + "imgupload/activity_thumb_image/" + activityImage;
                             bitmap = Utility.getBitmapFromURL(imageUrl);
                         }
-
-                        item.setBitmap(bitmap);
+*/
+                        //item.setThumbBitmap(bitmap);
                         item.setActivityImage(activityImage);
                         item.setAddress(address);
                         item.setCity(city);
@@ -388,22 +433,20 @@ public class UserProfileFragment extends Fragment {
         adapter1 = new ListAdapterS(getActivity(), R.layout.list_event_row, itemsList1);
     }
 
-    private class LoadItemsTask extends AsyncTask<Void, Void, String> {
+    private class ListJoinEventsTask extends AsyncTask<Void, Void, String> {
         private Activity activity;
-        private LoadItemsTask(Activity activity) {
+        private ListJoinEventsTask(Activity activity) {
             this.activity = activity;
         }
 
         @Override
         protected String doInBackground(Void... params) {
-            HttpClient httpclient = new DefaultHttpClient();
+            /*HttpClient httpclient = new DefaultHttpClient();
             HttpPost httppost = new HttpPost(url+"get-events-by-user.php");
             String jsonResult = null;
             //add name value pair for the country code
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
-            nameValuePairs.add(new BasicNameValuePair("start",String.valueOf(startIndex)));
-            nameValuePairs.add(new BasicNameValuePair("limit",String.valueOf(offset)));
-            nameValuePairs.add(new BasicNameValuePair("username",String.valueOf(loginUser)));
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+            nameValuePairs.add(new BasicNameValuePair("userId",String.valueOf(loginUserId)));
 
             try {
                 httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
@@ -422,8 +465,32 @@ public class UserProfileFragment extends Fragment {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            return jsonResult;*/
 
-            return jsonResult;
+            StringBuilder response  = new StringBuilder();
+            try{
+                URL url1 = new URL(url+"get-events-by-user.php?userId="+loginUserId);
+                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
+                httpconn.setReadTimeout(10000);
+                httpconn.setConnectTimeout(15000);
+                httpconn.setRequestMethod("GET");
+                httpconn.setDoInput(true);
+                httpconn.setDoOutput(true);
+                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                {
+                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
+                    String strLine = null;
+                    while ((strLine = input.readLine()) != null)
+                    {
+                        response.append(strLine);
+                    }
+                    input.close();
+                }
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+            return response.toString();
         }
 
         @Override
@@ -459,14 +526,14 @@ public class UserProfileFragment extends Fragment {
                         String activityImage = jsonChildNode.optString("image_name");
                         String eventCreator = jsonChildNode.optString("event_creator");
 
-                        Bitmap bitmap = null;
+                        /*Bitmap bitmap = null;
 
                         if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
-                            String imageUrl = Utility.getServerUrl() + "imgupload/" + activityImage;
+                            String imageUrl = Utility.getServerUrl() + "imgupload/activity_thumb_image/" + activityImage;
                             bitmap = Utility.getBitmapFromURL(imageUrl);
                         }
 
-                        item.setBitmap(bitmap);
+                        item.setThumbBitmap(bitmap);*/
                         item.setActivityImage(activityImage);
                         item.setAddress(address);
                         item.setCity(city);
@@ -510,7 +577,7 @@ public class UserProfileFragment extends Fragment {
     private class FetchFriendsList extends AsyncTask<Void, Void, String> {
         @Override
         protected String doInBackground(Void... params) {
-            HttpClient httpclient = new DefaultHttpClient();
+            /*HttpClient httpclient = new DefaultHttpClient();
             HttpPost httppost = new HttpPost(url+"get-user-friends.php");
             String jsonResult = null;
             //add name value pair for the country code
@@ -535,7 +602,31 @@ public class UserProfileFragment extends Fragment {
                 e.printStackTrace();
             }
 
-            return jsonResult;
+            return jsonResult;*/
+            StringBuilder response  = new StringBuilder();
+            try{
+                URL url1 = new URL(url+"get-user-friends.php?username="+loginUser);
+                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
+                httpconn.setReadTimeout(10000);
+                httpconn.setConnectTimeout(15000);
+                httpconn.setRequestMethod("GET");
+                httpconn.setDoInput(true);
+                httpconn.setDoOutput(true);
+                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                {
+                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
+                    String strLine = null;
+                    while ((strLine = input.readLine()) != null)
+                    {
+                        response.append(strLine);
+                    }
+                    input.close();
+                }
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+            return response.toString();
         }
 
         @Override
@@ -558,29 +649,28 @@ public class UserProfileFragment extends Fragment {
                         User user = new User();
                         String id = jsonChildNode.optString("id_user");
                         String userName = jsonChildNode.optString("username");
-                        String imageName = jsonChildNode.optString("image_name");
+                        String imageName = jsonChildNode.optString("image_thumb");
                         String userDescription = jsonChildNode.optString("user_description");
-                        Bitmap bitmap = null;
+                        //Bitmap bitmap = null;
 
-                        if (!imageName.isEmpty() && imageName != null && !imageName.equals("null")) {
-                            String imageUrl = Utility.getServerUrl() + "imgupload/" + imageName;
+                        /*if (!imageName.isEmpty() && imageName != null && !imageName.equals("null")) {
+                            String imageUrl = Utility.getServerUrl() + "imgupload/user_thumb_image/" + imageName;
                             bitmap = Utility.getBitmapFromURL(imageUrl);
                             if(bitmap!=null) {
                                 bitmap = ir.getCircledBitmap(bitmap);
                             }
                         }
                         else{
-
                             bitmap = BitmapFactory.decodeResource(getActivity().getResources(),
                                     R.drawable.default_user);
                             bitmap = ir.getCircledBitmap(bitmap);
-                        }
+                        }*/
 
                         user.setId(id);
                         user.setName(userName);
                         user.setImageName(imageName);
                         user.setDescription(userDescription);
-                        user.setBitmap(bitmap);
+                        //user.setThumbImage(bitmap);
 
                         friendsList.add(user);
                     }

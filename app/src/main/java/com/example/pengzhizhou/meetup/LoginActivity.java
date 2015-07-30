@@ -391,9 +391,11 @@ public class LoginActivity extends PlusBaseActivity implements LoaderCallbacks<C
             showProgress(false);
 
             if (!user.equals("")) {
+                String[] parts = user.split("&&asb##");
                 SharedPreferences settings = getSharedPreferences("MyPrefsFile", 0);
                 SharedPreferences.Editor editor = settings.edit();
-                editor.putString("KEY_LOGIN_USER", user);
+                editor.putString("KEY_LOGIN_USER", parts[0]);
+                editor.putString("KEY_LOGIN_USER_ID", parts[1]);
                 editor.commit();
 
                 Intent myIntent = null;

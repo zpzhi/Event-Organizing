@@ -18,13 +18,15 @@ public class CustomGridViewAdapter extends ArrayAdapter<Item> {
     Context context;
     int layoutResourceId;
     ArrayList<Item> data = new ArrayList<Item>();
+    ArrayList<Integer> resource = new ArrayList<Integer>();
 
     public CustomGridViewAdapter(Context context, int layoutResourceId,
-                                 ArrayList<Item> data) {
+                                 ArrayList<Item> data, ArrayList<Integer> res) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.data = data;
+        this.resource = res;
     }
 
     @Override
@@ -46,7 +48,7 @@ public class CustomGridViewAdapter extends ArrayAdapter<Item> {
 
         Item item = data.get(position);
         holder.txtTitle.setText(item.getTitle());
-        holder.imageItem.setImageBitmap(item.getImage());
+        holder.imageItem.setImageResource(resource.get(position));
         return row;
 
     }

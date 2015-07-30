@@ -23,7 +23,7 @@ public abstract class SlideDateTimeListener
      * @param date  The {@code Date} object that contains the date
      *              and time that the user has selected.
      */
-    public abstract void onDateTimeSet(Date date);
+    public abstract void onDateTimeSet(Date date, String duration);
 
     /**
      * Informs the client when the user cancels the

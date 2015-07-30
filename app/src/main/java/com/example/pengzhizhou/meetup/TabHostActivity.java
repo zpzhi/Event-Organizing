@@ -1,8 +1,8 @@
 package com.example.pengzhizhou.meetup;
 
 import android.app.ActionBar;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v7.app.ActionBarActivity;
@@ -13,11 +13,15 @@ import android.widget.TabWidget;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
+
 
 public class TabHostActivity extends ActionBarActivity {
 
     private FragmentTabHost mTabHost;
-    private String loginUser = null;
     private boolean doubleBackToExitPressedOnce;
     private android.os.Handler mHandler = new android.os.Handler();
 
@@ -26,13 +30,9 @@ public class TabHostActivity extends ActionBarActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_afterlogin);
-
-
-        SharedPreferences settings = getSharedPreferences("MyPrefsFile", 0);
-        loginUser = settings.getString("KEY_LOGIN_USER", null);
-
         // in case return from userProfiledEditActivity, when cancel was clicked
         // return back to the profile fragments
+        initImageLoader(getApplicationContext());
         int startTab = getIntent().getIntExtra("tab", 0);
 
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
@@ -55,6 +55,23 @@ public class TabHostActivity extends ActionBarActivity {
         //TabWidget tabWidget = (TabWidget) findViewById(android.R.id.tabs);
         //initTabsAppearance(tabWidget);
         mTabHost.setCurrentTab(startTab);
+    }
+
+    public static void initImageLoader(Context context) {
+        // This configuration tuning is custom. You can tune every option, you may tune some of them,
+        // or you can create default configuration by
+        //  ImageLoaderConfiguration.createDefault(this);
+        // method.
+        ImageLoaderConfiguration.Builder config = new ImageLoaderConfiguration.Builder(context);
+        config.threadPriority(Thread.NORM_PRIORITY - 2);
+        config.denyCacheImageMultipleSizesInMemory();
+        config.diskCacheFileNameGenerator(new Md5FileNameGenerator());
+        config.diskCacheSize(50 * 1024 * 1024); // 50 MiB
+        config.tasksProcessingOrder(QueueProcessingType.LIFO);
+        config.writeDebugLogs(); // Remove for release app
+
+        // Initialize ImageLoader with configuration.
+        ImageLoader.getInstance().init(config.build());
     }
 
     public void setTabIcon(TabHost tabHost, int tabIndex, int iconResource) {
@@ -113,7 +130,7 @@ public class TabHostActivity extends ActionBarActivity {
         }
 
         this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "请再按一次退出键退出程序", Toast.LENGTH_SHORT).show();
 
         mHandler.postDelayed(mRunnable, 2000);
     }

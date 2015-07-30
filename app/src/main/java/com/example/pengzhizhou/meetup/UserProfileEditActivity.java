@@ -30,6 +30,9 @@ import android.widget.Toast;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -39,7 +42,6 @@ import java.util.List;
 
 
 public class UserProfileEditActivity extends ActionBarActivity {
-    private ImageViewRounded ir;
     private ImageView imgV;
     private EditText realN, phone;
     private EditText userD;
@@ -49,14 +51,11 @@ public class UserProfileEditActivity extends ActionBarActivity {
     private String imgPath, imgfileName;
     private String encodedString;
     private ProgressDialog prgDialog;
+    private DisplayImageOptions options;
     private String url = Utility.getServerUrl() + "/update-user.php";
 
     private static int RESULT_LOAD_IMG = 1;
     private static final int CROP_FROM_CAMERA = 2;
-
-    private boolean doubleBackToExitPressedOnce;
-    private android.os.Handler mHandler = new android.os.Handler();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,10 +65,20 @@ public class UserProfileEditActivity extends ActionBarActivity {
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         actionBar.setCustomView(R.layout.activity_user_profile_edit_actionbar);
 
-        ir = new ImageViewRounded(this);
         prgDialog = new ProgressDialog(this);
         // Set Cancelable as False
         prgDialog.setCancelable(false);
+
+        options = new DisplayImageOptions.Builder()
+                .displayer(new RoundedBitmapDisplayer(100))
+                .showImageOnLoading(R.drawable.ic_launcher)
+                .showImageForEmptyUri(R.drawable.default_user)
+                .showImageOnFail(R.drawable.ic_launcher)
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .considerExifParams(true)
+                .bitmapConfig(Bitmap.Config.RGB_565)
+                .build();
 
         User user = (User) getIntent().getSerializableExtra("userInformation");
         if (user != null){
@@ -86,24 +95,12 @@ public class UserProfileEditActivity extends ActionBarActivity {
             phone = (EditText) findViewById(R.id.phoneNumber);
             userD = (EditText) findViewById(R.id.userDescription);
 
-            String imageUrl;
-            if (!imageName.isEmpty() && imageName != null) {
-                imageUrl = Utility.getServerUrl() + "imgupload/" + imageName;
-
-                Bitmap bt = Utility.getBitmapFromURL(imageUrl);
-                if(bt!=null) {
-                    bt = ir.getCircledBitmap(bt);
-
-                }
-                imgV.setImageBitmap(bt);
+            if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL")) {
+                String imageUrl = Utility.getServerUrl() + "imgupload/user_image/" + imageName;
+                ImageLoader.getInstance().displayImage(imageUrl, imgV, options);
             }
             else{
-
-                Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
-                        R.drawable.default_user);
-                icon = ir.getCircledBitmap(icon);
-
-                imgV.setImageBitmap(icon);
+                ImageLoader.getInstance().displayImage("", imgV, options);
             }
 
             if (realName !=null && !realName.equals("null")){
@@ -274,10 +271,6 @@ public class UserProfileEditActivity extends ActionBarActivity {
         params.put("phoneNumber", phone.getText().toString());
         params.put("userDescription", userD.getText().toString());
         params.put("filename", imgfileName);
-        // Show a progress spinner, and kick off a background task to
-        // perform the user login attempt.
-        prgDialog.setMessage("Converting Image to Binary Data");
-        prgDialog.show();
 
         if (imgfileName !=null && !imgfileName.isEmpty()) {
             bm = ThumbnailUtils.extractThumbnail(bm, bm.getWidth() / 2, bm.getHeight() / 2);
@@ -299,7 +292,7 @@ public class UserProfileEditActivity extends ActionBarActivity {
 
     // Make Http call to upload Image to Php server
     public void makeHTTPCall() {
-        prgDialog.setMessage("Invoking Php");
+
         AsyncHttpClient client = new AsyncHttpClient();
         // Don't forget to change the IP address to your LAN address. Port no as well.
         client.post(url, params, new AsyncHttpResponseHandler() {
@@ -368,8 +361,6 @@ public class UserProfileEditActivity extends ActionBarActivity {
         if (prgDialog != null) {
             prgDialog.dismiss();
         }
-
-        if (mHandler != null) { mHandler.removeCallbacks(mRunnable); }
     }
 
     private void doCrop() {
@@ -493,30 +484,6 @@ public class UserProfileEditActivity extends ActionBarActivity {
                 alert.show();
             }
         }
-    }
-
-    // double click to quit the app, and disable the back button in tab host
-    private final Runnable mRunnable = new Runnable() {
-        @Override
-        public void run() {
-            doubleBackToExitPressedOnce = false;
-        }
-    };
-
-    @Override
-    public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_HOME);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            return;
-        }
-
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-
-        mHandler.postDelayed(mRunnable, 2000);
     }
 
 }

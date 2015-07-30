@@ -9,7 +9,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.androidquery.AQuery;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.List;
 
@@ -17,10 +18,8 @@ import java.util.List;
  * Created by pengzhizhou on 4/17/15.
  */
 public class ListAdapterS extends ArrayAdapter<ActivityItem> {
-
-    private AQuery aq;
     private Context cont;
-    private ImageViewRounded ir;
+    private DisplayImageOptions options;
 
     public ListAdapterS(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
@@ -29,7 +28,15 @@ public class ListAdapterS extends ArrayAdapter<ActivityItem> {
     public ListAdapterS(Context context, int resource, List<ActivityItem> items) {
         super(context, resource, items);
         cont = context;
-        ir = new ImageViewRounded(cont);
+        options = new DisplayImageOptions.Builder()
+                .showImageOnLoading(R.drawable.ic_launcher)
+                .showImageForEmptyUri(R.drawable.ic_launcher)
+                .showImageOnFail(R.drawable.ic_launcher)
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .considerExifParams(true)
+                .bitmapConfig(Bitmap.Config.RGB_565)
+                .build();
     }
 
     @Override
@@ -45,7 +52,6 @@ public class ListAdapterS extends ArrayAdapter<ActivityItem> {
 
         }
 
-        aq = new AQuery(v);
         ActivityItem p = getItem(position);
 
         if (p != null) {
@@ -56,12 +62,14 @@ public class ListAdapterS extends ArrayAdapter<ActivityItem> {
 
             String titleA = p.getTitle();
             String timeA = p.getActivityTime();
-            Bitmap bitmap = p.getBitmap();
-
-            if (bitmap != null){
-                thumbN.setImageBitmap(bitmap);
+            String imageName = p.getActivityImage();
+            //Bitmap bitmap = p.getThumbBitmap();
+            if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL")) {
+                String imageUrl = Utility.getServerUrl() + "imgupload/activity_thumb_image/" + imageName;
+                ImageLoader.getInstance().displayImage(imageUrl, thumbN, options);
             }
             else{
+                thumbN.setImageResource(R.drawable.jieri);
                 int iType = Integer.parseInt(p.getActivityType());
 
                 if (iType == 0){

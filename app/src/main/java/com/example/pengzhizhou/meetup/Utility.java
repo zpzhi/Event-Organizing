@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Created by pengzhizhou on 4/30/15.
@@ -21,7 +22,9 @@ import java.net.URL;
  */
 public class Utility {
     //private final static String serverUrl = "http://loquimeetup.w174.mc-test.com/meetup-web/";
-    private final static String serverUrl = "http://meetup.wcpsjshxnna.com/meetup-web/";
+    //private final static String serverUrl = "http://meetup.wcpsjshxnna.com/meetup-web/";
+    private final static String serverUrl = "http://hyu1714700001.my3w.com/";
+    //private final static String serverUrl = "http://192.168.0.12/meetup-web/";
 
     public static String getServerUrl(){
         return serverUrl;
@@ -145,6 +148,34 @@ public class Utility {
         params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
         listView.setLayoutParams(params);
         listView.requestLayout();
+
+    }
+
+    public static void createGridArray(Resources res, ArrayList<Item> gridArray, ArrayList<Integer> resource, int flag){
+        //Bitmap userIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.zhuoyou)
+        if (flag == 1) {
+            gridArray.add(new Item(null, "全部活动"));
+            resource.add(R.drawable.quanbu);
+        }
+        gridArray.add(new Item(null, "节日派对"));
+        gridArray.add(new Item(null, "桌游聚会"));
+        gridArray.add(new Item(null, "密室逃脱"));
+        gridArray.add(new Item(null, "创意展览"));
+        gridArray.add(new Item(null, "行业讲座"));
+        gridArray.add(new Item(null, "电影鉴赏"));
+        gridArray.add(new Item(null, "体育活动"));
+        gridArray.add(new Item(null, "旅游同行"));
+        gridArray.add(new Item(null, "其他类别"));
+
+        resource.add(R.drawable.jieri);
+        resource.add(R.drawable.zhuoyou);
+        resource.add(R.drawable.mishi);
+        resource.add(R.drawable.chuangye);
+        resource.add(R.drawable.jiangzuo);
+        resource.add(R.drawable.dianying);
+        resource.add(R.drawable.tiyu);
+        resource.add(R.drawable.zijiayou);
+        resource.add(R.drawable.qita);
 
     }
 

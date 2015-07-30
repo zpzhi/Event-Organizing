@@ -2,8 +2,6 @@ package com.example.pengzhizhou.meetup;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -20,6 +18,7 @@ public class PostActivityFragment extends Fragment {
 
     GridView gridView;
     ArrayList<Item> gridArray;
+    ArrayList<Integer> resource;
     CustomGridViewAdapter customGridAdapter;
     private String loginUser = null;
     @Override
@@ -51,10 +50,15 @@ public class PostActivityFragment extends Fragment {
             ((TabHostActivity) getActivity()).setImageViewable(View.GONE);
             ((TabHostActivity) getActivity()).setSearchCityViewable(View.GONE);
             //set grid view item
-            createGridArray();
+            gridArray = new ArrayList<Item>();
+            resource = new ArrayList<Integer>();
+
+            if (gridArray == null || gridArray.size() < 1){
+                Utility.createGridArray(this.getResources(), gridArray, resource, 0);
+            }
 
             gridView = (GridView) V.findViewById(R.id.gridView1);
-            customGridAdapter = new CustomGridViewAdapter(getActivity(), R.layout.grid_single, gridArray);
+            customGridAdapter = new CustomGridViewAdapter(getActivity(), R.layout.grid_single, gridArray, resource);
             gridView.setAdapter(customGridAdapter);
 
             gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -71,29 +75,4 @@ public class PostActivityFragment extends Fragment {
         }
         return V;
     }
-
-    private void createGridArray(){
-        Bitmap zhuoyouIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.zhuoyou);
-        Bitmap jieriIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.jieri);
-        Bitmap dianyingIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.dianying);
-        Bitmap chuangyeIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.chuangye);
-        Bitmap mishiIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.mishi);
-        Bitmap tiyuIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.tiyu);
-        Bitmap jiangzuoIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.jiangzuo);
-        Bitmap zijiayouIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.zijiayou);
-        Bitmap qitaIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.qita);
-
-        //Bitmap userIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.zhuoyou);
-        gridArray = new ArrayList<Item>();
-        gridArray.add(new Item(jieriIcon, "节日派对"));
-        gridArray.add(new Item(zhuoyouIcon, "桌游聚会"));
-        gridArray.add(new Item(mishiIcon, "密室逃脱"));
-        gridArray.add(new Item(chuangyeIcon, "创意展览"));
-        gridArray.add(new Item(jiangzuoIcon, "行业讲座"));
-        gridArray.add(new Item(dianyingIcon, "电影鉴赏"));
-        gridArray.add(new Item(tiyuIcon, "体育活动"));
-        gridArray.add(new Item(zijiayouIcon, "旅游同行"));
-        gridArray.add(new Item(qitaIcon, "其他类别"));
-    }
-
 }

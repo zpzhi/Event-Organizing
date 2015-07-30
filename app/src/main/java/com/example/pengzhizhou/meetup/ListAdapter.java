@@ -9,6 +9,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+
 import java.util.List;
 
 /**
@@ -16,6 +19,7 @@ import java.util.List;
  */
 public class ListAdapter extends ArrayAdapter<ActivityItem> {
     private Context cont;
+    private DisplayImageOptions options;
 
     public ListAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
@@ -24,6 +28,15 @@ public class ListAdapter extends ArrayAdapter<ActivityItem> {
     public ListAdapter(Context context, int resource, List<ActivityItem> items) {
         super(context, resource, items);
         cont = context;
+        options = new DisplayImageOptions.Builder()
+                .showImageOnLoading(R.drawable.ic_launcher)
+                .showImageForEmptyUri(R.drawable.ic_launcher)
+                .showImageOnFail(R.drawable.ic_launcher)
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .considerExifParams(true)
+                .bitmapConfig(Bitmap.Config.RGB_565)
+                .build();
     }
 
     @Override
@@ -44,15 +57,17 @@ public class ListAdapter extends ArrayAdapter<ActivityItem> {
 
             TextView title = (TextView)v.findViewById(R.id.activityTitle);
             TextView time = (TextView)v.findViewById(R.id.activityTime);
-            TextView city = (TextView)v.findViewById(R.id.activityCity);
+            TextView detail = (TextView)v.findViewById(R.id.activityDetail);
             ImageView thumbN = (ImageView) v.findViewById(R.id.thumbImage);
 
             String titleA = p.getTitle();
             String timeA = p.getActivityTime().substring(11, 16);
-            String cityA = p.getCity();
-            Bitmap bitmap = p.getBitmap();
-            if (bitmap != null){
-                thumbN.setImageBitmap(bitmap);
+            String detailA = p.getDetail();
+            String imageName = p.getActivityImage();
+            //Bitmap bitmap = p.getThumbBitmap();
+            if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL")) {
+                String imageUrl = Utility.getServerUrl() + "imgupload/activity_thumb_image/" + imageName;
+                ImageLoader.getInstance().displayImage(imageUrl, thumbN, options);
             }
             else{
                 int iType = Integer.parseInt(p.getActivityType());
@@ -93,8 +108,11 @@ public class ListAdapter extends ArrayAdapter<ActivityItem> {
 
                 time.setText(timeA);
             }
-            if (city != null){
-                city.setText(cityA);
+            if (detailA.length() > 50) {
+                detailA = detailA.substring(0, 50) + "...";
+            }
+            if (detail != null){
+                detail.setText(detailA);
             }
 
         }

@@ -6,7 +6,9 @@
      <TextView android:id="@+id/name" android:layout_width="wrap_content"
         android:layout_height="wrap_content" android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true" android:paddingLeft="35sp"
-        android:paddingRight="10dp" android:text="United States Of America"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:paddingRight="10dp"
+        android:paddingTop="2dip"
+        android:paddingBottom="2dip"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
 
 </RelativeLayout>

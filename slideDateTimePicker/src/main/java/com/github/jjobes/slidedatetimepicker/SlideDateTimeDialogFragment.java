@@ -1,9 +1,5 @@
 package com.github.jjobes.slidedatetimepicker;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -20,6 +16,11 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * <p>The {@code DialogFragment} that contains the {@link SlidingTabLayout}
@@ -55,6 +56,7 @@ public class SlideDateTimeDialogFragment extends DialogFragment implements DateF
     private boolean mIsClientSpecified24HourTime;
     private boolean mIs24HourTime;
     private Calendar mCalendar;
+    private EditText mDuration;
     private int mDateFlags =
         DateUtils.FORMAT_SHOW_WEEKDAY |
         DateUtils.FORMAT_SHOW_DATE |
@@ -142,6 +144,8 @@ public class SlideDateTimeDialogFragment extends DialogFragment implements DateF
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.slide_date_time_picker, container);
+
+        mDuration = (EditText)view.findViewById(R.id.actDuration);
 
         setupViews(view);
         customizeViews();
@@ -248,7 +252,7 @@ public class SlideDateTimeDialogFragment extends DialogFragment implements DateF
                             "Listener no longer exists for mOkButton");
                 }
 
-                mListener.onDateTimeSet(new Date(mCalendar.getTimeInMillis()));
+                mListener.onDateTimeSet(new Date(mCalendar.getTimeInMillis()), mDuration.getText().toString());
 
                 dismiss();
             }

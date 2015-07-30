@@ -15,7 +15,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.ExifInterface;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -55,9 +54,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -69,11 +70,13 @@ import java.util.List;
 public class PostActivityDetailActivity extends ActionBarActivity{
 
     private SimpleDateFormat mFormatter = new SimpleDateFormat("MMMM dd yyyy hh:mm aa");
+    private String loginUserId, loginUser;
     private TextView mActDate,mActTime;
-    private EditText mActTitle, mActDuration;
+    private EditText mActTitle;
     private EditText mActAddress;
     private EditText mActPhoneNum;
     private EditText mActDescription;
+    private String mDuration = null;
     private String mSProvince = null;
     private String mSCity = null;
     private Spinner spinner1;
@@ -86,24 +89,27 @@ public class PostActivityDetailActivity extends ActionBarActivity{
     private Uri outputFileUri;
     private ImageView imgView;
     private Bitmap bm = null;
+    private String statePre = null;
+    private String cityPre = null;
+    private String addressPre = null;
+    private String phonePre = null;
     public String url = Utility.getServerUrl();
     private RequestParams paramsA = new RequestParams();
+    private String[] provinceArray;
+    private ArrayAdapter<String> adapter1;
 
     private static final int RESULT_LOAD_IMG = 1;
     private static final int CROP_FROM_CAMERA = 2;
 
-    private boolean doubleBackToExitPressedOnce;
-    private android.os.Handler mHandler = new android.os.Handler();
-
     private SlideDateTimeListener listener = new SlideDateTimeListener() {
         @Override
-        public void onDateTimeSet(Date date)
+        public void onDateTimeSet(Date date, String duration)
         {
             Toast.makeText(PostActivityDetailActivity.this,
                     mFormatter.format(date), Toast.LENGTH_SHORT).show();
             //params.remove("activityTime");
-            DateFormat formatter = new SimpleDateFormat("MMdd");
-            DateFormat formatter1 = new SimpleDateFormat("hh:mm");
+            DateFormat formatter = new SimpleDateFormat("MM-dd");
+            DateFormat formatter1 = new SimpleDateFormat("HH:mm");
 
             mActDate.setText(formatter.format(date));
             mActTime.setText(formatter1.format(date));
@@ -115,6 +121,8 @@ public class PostActivityDetailActivity extends ActionBarActivity{
             paramsA.put("activityTime", timetodb);
 
             Log.i("activityTime", timetodb);
+            mDuration = duration;
+            paramsA.put("duration", duration);
         }
 
         // Optional cancel listener
@@ -151,8 +159,10 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         postTitle.setText(activityTitle);
 
         SharedPreferences settings = getSharedPreferences("MyPrefsFile", 0);
-        String loginUser = settings.getString("KEY_LOGIN_USER", null);
+        loginUser = settings.getString("KEY_LOGIN_USER", null);
+        loginUserId = settings.getString("KEY_LOGIN_USER_ID", null);
         paramsA.put("loginUser", loginUser);
+        paramsA.put("loginUserId", loginUserId);
 
         prgDialog = new ProgressDialog(this);
         // Set Cancelable as False
@@ -176,6 +186,8 @@ public class PostActivityDetailActivity extends ActionBarActivity{
 
         String timetodb = sdf.format(c.getTime());
         paramsA.put("activityTime", timetodb);
+        paramsA.put("postTime", timetodb);
+
         mActDate.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -211,7 +223,6 @@ public class PostActivityDetailActivity extends ActionBarActivity{
             }
         });
 
-        mActDuration = (EditText) findViewById(R.id.actDuration);
         mActAddress = (EditText) findViewById(R.id.locationText);
         mActPhoneNum = (EditText) findViewById(R.id.contactPhoneNumber);
         mActDescription = (EditText) findViewById(R.id.activityDescription);
@@ -220,8 +231,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         imgView = (ImageView) findViewById(R.id.imgView);
 
         spinner1 = (Spinner) findViewById(R.id.spinner1);
-        ArrayAdapter<String> adapter1;
-        final String[] provinceArray = getResources().getStringArray(R.array.province_array);
+        provinceArray = getResources().getStringArray(R.array.province_array);
         adapter1 = new ArrayAdapter<String>(
                 this,
                 R.layout.spinner_item,
@@ -274,7 +284,6 @@ public class PostActivityDetailActivity extends ActionBarActivity{
             }
         });
 
-
         ImageView postActivity = (ImageView) findViewById(R.id.postActivity);
         postActivity.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -294,6 +303,80 @@ public class PostActivityDetailActivity extends ActionBarActivity{
                 startActivity(myIntent);
             }
         });
+
+        getUserPostPreference();
+
+    }
+
+    private void getUserPostPreference(){
+        new GetUserPostPreference().execute();
+    }
+
+    public class GetUserPostPreference extends AsyncTask<String,Void,String>{
+        @Override
+        protected String doInBackground(String... params) {
+
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost(url + "get-user-post-preference.php");
+
+            try {
+                // Add your data
+                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+                nameValuePairs.add(new BasicNameValuePair("userId", loginUserId));
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                // Execute HTTP Post Request
+                HttpResponse response = httpclient.execute(httppost);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
+                String json = reader.readLine();
+
+                return json;
+
+            } catch (ClientProtocolException e) {
+                // TODO Auto-generated catch block
+                return e.toString();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                return e.toString();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(final String response) {
+
+            if (response == null){
+                return;
+            }else if(response.equals("[]")){
+                return;
+            }else {
+                try {
+                    JSONObject jsonResponse = new JSONObject(response);
+                    JSONObject jsonMainNode = jsonResponse.getJSONObject("activity_info");
+
+                    phonePre = jsonMainNode.optString("phone_number");
+                    addressPre = jsonMainNode.optString("activity_address");
+                    cityPre = jsonMainNode.optString("city");
+                    statePre = jsonMainNode.optString("state");
+
+                    if (addressPre != null){
+                        mActAddress.setText(addressPre);
+                    }
+                    if (phonePre != null){
+                        mActPhoneNum.setText(phonePre);
+                    }
+                    if (statePre != null && !statePre.equals("NULL") && adapter1 != null){
+                        int spinnerPosition = adapter1.getPosition(statePre);
+                        spinner1.setSelection(spinnerPosition);
+                    }
+
+                } catch (JSONException e) {
+                    Toast.makeText(getApplicationContext(), "Error" + e.toString(),
+                            Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+        }
 
     }
 
@@ -392,19 +475,6 @@ public class PostActivityDetailActivity extends ActionBarActivity{
 
                     bm = BitmapFactory.decodeFile(filePath);
 
-                    // Set the Image in ImageView
-                    //final BitmapFactory.Options options = new BitmapFactory.Options();
-                    //options.inSampleSize = 6;
-
-                    //bm = BitmapFactory.decodeFile(imgPath,options);
-                    //ExifInterface exif = new ExifInterface(imgPath);
-                    //int rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-                    //int rotationInDegrees = exifToDegrees(rotation);
-                    //Matrix matrix = new Matrix();
-                    //if (rotation != 0f) {
-                    //    matrix.preRotate(rotationInDegrees);
-                    //    bm = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
-                    //}
                     imgView.setImageBitmap(bm);
                     // Get the Image's file name
                     String fileNameSegments[] = imgPath.split("/");
@@ -432,28 +502,17 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         return 0;
     }
 
-    /*
-    private TextView mActDate;
-    private EditText mActTitle,mActTime, mActDuration;
-    private EditText mActAddress;
-    private EditText mActPhoneNum;
-    private EditText mActDescription;
-     */
     public void attemptPostActivity() {
         // Reset errors.
         mActTitle.setError(null);
-        mActDuration.setError(null);
         mActAddress.setError(null);
         mActPhoneNum.setError(null);
         mActDescription.setError(null);
 
-        // Store values at the time of the login attempt.
         String title = mActTitle.getText().toString();
-        String duration = mActDuration.getText().toString();
         String address = mActAddress.getText().toString();
         String phoneNumber =  mActPhoneNum.getText().toString();
         String description =  mActDescription.getText().toString();
-
 
         boolean cancel = false;
         View focusView = null;
@@ -467,17 +526,8 @@ public class PostActivityDetailActivity extends ActionBarActivity{
             paramsA.put("title", title);
         }
 
-        // Check for a valid duration.
-        if (TextUtils.isEmpty(duration)) {
-            mActDuration.setError(getString(R.string.error_field_required));
-            focusView = mActDuration;
-            cancel = true;
-        } else if (Integer.parseInt(duration) <= 0) {
-            mActDuration.setError(getString(R.string.error_invalid_duration));
-            focusView = mActDuration;
-            cancel = true;
-        }else{
-            paramsA.put("duration", duration);
+        if (mDuration == null) {
+            paramsA.put("duration", "2");
         }
 
         if (mSProvince != null){
@@ -517,7 +567,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
 
         if (fileName !=null && !fileName.isEmpty()) {
             //int dimension = Utility.getSquareCropDimensionForBitmap(bm);
-            bm = ThumbnailUtils.extractThumbnail(bm, bm.getWidth()/2, bm.getHeight()/2);
+            //bm = ThumbnailUtils.extractThumbnail(bm, bm.getWidth()/2, bm.getHeight()/2);
 
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             // Must compress the Image to reduce image size to make upload easy
@@ -535,7 +585,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         } else {
                 // Show a progress spinner, and kick off a background task to
                 // perform the post activity attempt.
-                prgDialog.setMessage("Converting Image to Binary Data");
+                prgDialog.setMessage("图片上传中");
                 prgDialog.show();
 
                 postActivity();
@@ -543,14 +593,12 @@ public class PostActivityDetailActivity extends ActionBarActivity{
 
     }
 
-
     public void postActivity() {
         makeHTTPCall();
     }
 
     // Make Http call to upload Image to Php server
     public void makeHTTPCall() {
-        prgDialog.setMessage("Invoking Php");
         AsyncHttpClient client = new AsyncHttpClient();
         // Don't forget to change the IP address to your LAN address. Port no as well.
         client.post(url+"post-event.php", paramsA, new AsyncHttpResponseHandler() {
@@ -625,7 +673,6 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         if (prgDialog != null) {
             prgDialog.dismiss();
         }
-        if (mHandler != null) { mHandler.removeCallbacks(mRunnable); }
     }
 
     private void doCrop() {
@@ -667,7 +714,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
             intent.putExtra("aspectX", 1);
             intent.putExtra("aspectY", 1);
 
-            intent.putExtra("outputX", 900);
+            intent.putExtra("outputX", 600);
             intent.putExtra("outputY", 600);
 
             //intent.putExtra("return-data", true);
@@ -810,34 +857,11 @@ public class PostActivityDetailActivity extends ActionBarActivity{
 
             city_adapter.notifyDataSetChanged();
 
+            int spinnerPosition = city_adapter.getPosition(cityPre);
+            spinner2.setSelection(spinnerPosition);
+
             super.onPostExecute(jsonResult);
 
         }
-
     }
-
-    // double click to quit the app, and disable the back button in this activity
-    private final Runnable mRunnable = new Runnable() {
-        @Override
-        public void run() {
-            doubleBackToExitPressedOnce = false;
-        }
-    };
-
-    @Override
-    public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_HOME);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            return;
-        }
-
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-
-        mHandler.postDelayed(mRunnable, 2000);
-    }
-
 }

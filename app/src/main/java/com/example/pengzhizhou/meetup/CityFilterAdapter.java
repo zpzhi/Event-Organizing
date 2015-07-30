@@ -50,7 +50,6 @@ public class CityFilterAdapter extends BaseExpandableListAdapter {
 
         TextView name = (TextView) view.findViewById(R.id.name);
         name.setText(country.getName().trim());
-        //population.setText(NumberFormat.getNumberInstance(Locale.US).format(country.getPopulation()));
 
         return view;
     }
