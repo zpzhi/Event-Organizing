@@ -4,3 +4,7 @@
 /.idea/libraries
 .DS_Store
 /build
+
+slideDateTimePicker/build/intermediates/classes/debug/com/github/jjobes/slidedatetimepicker/SlideDateTimeDialogFragment$1.class
+
+slideDateTimePicker/build/intermediates/classes/debug/com/github/jjobes/slidedatetimepicker/R$id.class
