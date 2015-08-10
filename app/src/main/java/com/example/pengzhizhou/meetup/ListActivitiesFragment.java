@@ -8,8 +8,8 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -59,7 +59,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
     private ListView list;
     private ListAdapter adapter = null;
     private SimpleSectionAdapter<ActivityItem> sectionAdapter = null;
-    private ProgressDialog progressRefress, progressLoading;
+    private ProgressDialog progressLoading;
     private int myLastVisiblePos;
     private int currentFirstVisibleItem = 0;
     private int currentVisibleItemCount = 0;
@@ -77,12 +77,10 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
     private GridView gridViewFilter;
     private CustomGridViewAdapter customGridAdapter;
     private ImageView closeFilter;
-
+    private SwipeRefreshLayout swipeView;
     private String activityTypeId = null;
     private String activityTitle = null;
-
-
-
+    private View footer;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -119,10 +117,6 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
             }
         });
 
-        // ignore NetworkOnMainThreadException currently, will try to fix it later
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-
         if (_rootView == null) {
                 // Inflate the layout for this fragment
                 _rootView = inflater.inflate(R.layout.list_activities_view, container, false);
@@ -142,14 +136,33 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                 }
 
                 // create filtering pictures
-                gridArray = new ArrayList<Item>();
-                resource = new ArrayList<Integer>();
+                gridArray = new ArrayList<>();
+                resource = new ArrayList<>();
                 if (gridArray == null || gridArray.size() < 1) {
                     Utility.createGridArray(this.getResources(), gridArray, resource, 1);
                 }
 
                 noActivity = (TextView) _rootView.findViewById(R.id.noActivities);
                 noActivity.setVisibility(View.GONE);
+
+                itemsList = new ArrayList<>();
+                initAdapter();
+
+                swipeView = (SwipeRefreshLayout) _rootView.findViewById(R.id.swipe);
+                swipeView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        swipeView.setRefreshing(true);
+                        ( new android.os.Handler()).postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                new RefreshListTask().execute();
+                                swipeView.setRefreshing(false);
+                            }
+                        }, 3000);
+                    }
+                });
+
                 list = (ListView) _rootView.findViewById(R.id.list);
                 list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -168,14 +181,14 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                         i.putExtra("itemCity", ai.getCity());
                         i.putExtra("itemState", ai.getState());
                         i.putExtra("eventCreator", ai.getEventCreator());
+                        i.putExtra("duration", ai.getDuration());
                         startActivity(i);
                     }
                 });
                 myLastVisiblePos = list.getFirstVisiblePosition();
                 list.setOnScrollListener(this);
 
-                itemsList = new ArrayList<ActivityItem>();
-                initAdapter();
+                footer = getActivity().getLayoutInflater().inflate(R.layout.list_footer, null);
 
                 if (city != null){
                     new LoadMoreItemsTask(getActivity()).execute();
@@ -241,13 +254,16 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
             }
         });
 
+        swipeView.setEnabled(false);
         return _rootView;
 
     }
 
     public void initAdapter(){
         adapter = new ListAdapter(getActivity(), R.layout.list_row, itemsList);
-
+        sectionAdapter = new SimpleSectionAdapter<>(getActivity(),
+                adapter, R.layout.section_header, R.id.title,
+                new ActivitySectionizer());
     }
 
     @Override
@@ -261,73 +277,28 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
     @Override
     public void onScrollStateChanged(AbsListView absListView, int scrollState) {
-             if (currentFirstVisibleItem > myLastVisiblePos) {
-                if (this.currentVisibleItemCount > 0 && scrollState == SCROLL_STATE_IDLE && this.totalItemCount == (currentFirstVisibleItem + currentVisibleItemCount)) {
-                    /*** In this way I detect if there's been a scroll which has completed ***/
-                    /*** do the work for load more date! ***/
+
+            if (this.currentVisibleItemCount > 0 && scrollState == SCROLL_STATE_IDLE && this.totalItemCount == (currentFirstVisibleItem + currentVisibleItemCount)) {
                     if (!loadingMore) {
                         loadingMore = true;
                         new LoadMoreItemsTask(getActivity()).execute();
-                        timerDelayRemoveDialog(6000, progressLoading);
                     }
-                }
-            } else if (currentFirstVisibleItem == 0 && currentFirstVisibleItem < myLastVisiblePos) {
-                //scroll up and refresh
-                new RefreshListTask().execute();
-                timerDelayRemoveDialog(6000, progressRefress);
-            }
 
-            myLastVisiblePos = currentFirstVisibleItem;
-    }
-
-    public String getRefactorUrl(String url){
-        if (activityTypeId != null) {
-            int activityType = Integer.parseInt(activityTypeId);
-            if (activityType != 0) {
-                activityType = activityType - 1;
-                //"get-events.php?start="+0+"&limit="+startIndex+"&city="+city;
-                url = url + "&type=" + activityType;
+                swipeView.setEnabled(false);
+            } else if (currentFirstVisibleItem == 0) {
+                 swipeView.setEnabled(true);
+            } else {
+                 swipeView.setEnabled(false);
             }
-        }
-        return url;
     }
 
     private class RefreshListTask extends AsyncTask<Void, Void, String> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            progressRefress = new ProgressDialog(getActivity());
-            progressRefress = ProgressDialog.show(getActivity(), "", "刷新...");
         }
         @Override
         protected String doInBackground(Void... voids) {
-            /*HttpClient httpclient = new DefaultHttpClient();
-            String jsonResult = null;
-
-            HttpGet request = new HttpGet();
-            try {
-                String url = "get-events.php?start="+0
-                        +"&limit="+startIndex+"&city="+city;
-                url = getRefactorUrl(url);
-                URI website = new URI(Utility.getServerUrl()+url);
-                request.setURI(website);
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
-            try {
-                HttpResponse response = httpclient.execute(request);
-                jsonResult = Utility.inputStreamToString(
-                        response.getEntity().getContent()).toString();
-            }
-
-            catch (ClientProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return jsonResult;*/
             StringBuilder response  = new StringBuilder();
             try {
                 String url = "get-events.php";
@@ -383,7 +354,6 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         protected void onPostExecute(String jsonResult) {
             if (jsonResult == null)
             {
-                adapter.notifyDataSetChanged();
             }
             else if (jsonResult.equals("[]") && startIndex != 0){
                 Toast.makeText(getActivity().getApplicationContext(), "没有更多活动了",
@@ -394,9 +364,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                 if (activityTitle != null) {
                     noActivity.setText(city + "暂时没有"+activityTitle);
                 }else{
-                    if (activityTitle != null) {
-                        noActivity.setText(city + "暂时没有活动");
-                    }
+                    noActivity.setText(city + "暂时没有活动");
                 }
             }
             else {
@@ -425,17 +393,6 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                         String activityThumbImage = jsonChildNode.optString("image_thumb");
                         String eventCreator = jsonChildNode.optString("event_creator");
 
-                        /*String imageUrl;
-                        Bitmap bitmap;
-                        if (!activityThumbImage.isEmpty() && activityThumbImage != null && !activityThumbImage.equals("null")) {
-                            imageUrl = Utility.getServerUrl() + "imgupload/activity_thumb_image/" + activityThumbImage;
-                            bitmap = aq.getCachedImage(imageUrl);
-                        }
-                        else{
-                            bitmap = null;
-                        }
-
-                        item.setThumbBitmap(bitmap);*/
                         item.setActivityImage(activityThumbImage);
                         item.setAddress(address);
                         item.setCity(city);
@@ -458,33 +415,25 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                             Toast.LENGTH_SHORT).show();
                 }
 
+                adapter = new ListAdapter(getActivity(), R.layout.list_row, itemsList);
                 adapter.notifyDataSetChanged();
-
+                sectionAdapter = new SimpleSectionAdapter<ActivityItem>(getActivity(),
+                            adapter, R.layout.section_header, R.id.title,
+                            new ActivitySectionizer());
+                list.addFooterView(footer);
+                list.setAdapter(sectionAdapter);
+                sectionAdapter.notifyDataSetChanged();
+                list.removeFooterView(footer);
                 if (itemsList.size() > 0) {
                     startIndex = (long)itemsList.size();
                 }
 
-                try{
-                    if(progressRefress.isShowing()){
-                        progressRefress.dismiss();
-                    }
-                }
-                catch(Exception e){
-                    e.printStackTrace();
-                }
-                finally
-                {
-                    progressRefress.dismiss();
-                }
             }
         }
 
         @Override
         protected void onCancelled() {
-
             super.onCancelled();
-            progressRefress.dismiss();
-
         }
     }
 
@@ -499,11 +448,11 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
     }
 
     private class LoadMoreItemsTask extends AsyncTask<Void, Void, String> {
-        private View footer;
+        private Activity activity;
 
         private LoadMoreItemsTask(Activity activity) {
+            this.activity = activity;
             loadingMore = true;
-            footer = activity.getLayoutInflater().inflate(R.layout.list_footer, null);
         }
 
         @Override
@@ -568,6 +517,8 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         protected void onPostExecute(String jsonResult) {
 
             loadingMore = false;
+            _rootView.findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+
             if (jsonResult == null){
                 // do nothing
             }
@@ -575,17 +526,20 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                 Toast.makeText(getActivity().getApplicationContext(), "No internet available",
                         Toast.LENGTH_SHORT).show();
             }
-            else if (jsonResult.equals("[]") && startIndex != 0){
-                Toast.makeText(getActivity().getApplicationContext(), "没有更多活动了",
-                        Toast.LENGTH_SHORT).show();
-            }
-            else if (jsonResult.equals("[]") && startIndex == 0){
-                noActivity.setVisibility(View.VISIBLE);
-                if (activityTitle != null) {
-                    noActivity.setText(city + "暂时没有"+activityTitle);
-                }else{
+            else if (jsonResult.equals("[]")){
+                if (startIndex != 0) {
+                    Toast.makeText(getActivity().getApplicationContext(), "没有更多活动了",
+                            Toast.LENGTH_SHORT).show();
+                }
+                else if (startIndex == 0) {
+                    list.setVisibility(View.GONE);
+                    noActivity.setVisibility(View.VISIBLE);
                     if (activityTitle != null) {
+                        noActivity.setText(city + "暂时没有" + activityTitle);
+                    } else {
+                        //if (activityTitle != null) {
                         noActivity.setText(city + "暂时没有活动");
+                        //}
                     }
                 }
             }
@@ -635,19 +589,13 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                             Toast.LENGTH_SHORT).show();
                 }
 
-                adapter.notifyDataSetChanged();
-                if (sectionAdapter == null) {
-                    sectionAdapter = new SimpleSectionAdapter<ActivityItem>(getActivity(),
-                            adapter, R.layout.section_header, R.id.title,
-                            new ActivitySectionizer());
-                }
-
-                if (list.getAdapter() == null) {
-                    //list.setAdapter(adapter);
-                    list.setAdapter(sectionAdapter);
-                }
-
+                //adapter.notifyDataSetChanged();
+                int index = list.getFirstVisiblePosition();
+                View v = list.getChildAt(0);
+                int top = (v == null) ? 0 : v.getTop();
                 sectionAdapter.notifyDataSetChanged();
+                list.setAdapter(sectionAdapter);
+                list.setSelectionFromTop(index, top);
 
                 if (itemsList.size() > 0) {
                     //startIndex = startIndex + itemsList.size();

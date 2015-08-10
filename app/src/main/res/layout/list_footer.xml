@@ -23,6 +23,6 @@ android:padding="15dp" >
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Loading more data..." />
+        android:text="加载更多..."/>
 </LinearLayout>
 </RelativeLayout>

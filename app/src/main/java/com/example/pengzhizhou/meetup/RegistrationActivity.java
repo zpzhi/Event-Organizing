@@ -6,13 +6,10 @@ import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.LoaderManager;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
-import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.Loader;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -26,17 +23,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
-import android.provider.ContactsContract;
 import android.provider.MediaStore;
+import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -55,7 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class RegistrationActivity extends PlusBaseActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class RegistrationActivity extends ActionBarActivity{
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -63,51 +57,33 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
-    public String url = Utility.getServerUrl() + "register-meetup.php";
-    RequestParams params = new RequestParams();
-    String imgPath, imgfileName;
-    ProgressDialog prgDialog;
-    String encodedString;
-    Bitmap bm = null;
+    private String url = Utility.getServerUrl() + "register-meetup.php";
+    private RequestParams params = new RequestParams();
+    private String imgPath, imgfileName;
+    private ProgressDialog prgDialog;
+    private String encodedString;
+    private Bitmap bm = null;
     private Uri outputFileUri;
-    ImageView imgView;
+    private ImageView imgView;
+    private int fromPage = 0;
 
     private static int RESULT_LOAD_IMG = 1;
     private static final int CROP_FROM_CAMERA = 2;
-
-    @Override
-    protected void onPlusClientRevokeAccess() {
-
-    }
-
-    @Override
-    protected void onPlusClientSignIn() {
-
-    }
-    @Override
-    protected void onPlusClientSignOut() {
-
-    }
-
-    @Override
-    protected void onPlusClientBlockingUI(boolean show) {
-        showProgress(show);
-    }
-
-    @Override
-    protected void updateConnectButtonState() {
-
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration);
 
-        ActionBar actionBar = getActionBar();
+        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         actionBar.setCustomView(R.layout.activity_registration_actionbar);
-        actionBar.setDisplayHomeAsUpEnabled(true);
+
+        Bundle b = getIntent().getExtras();
+        if (b != null){
+            fromPage = b.getInt("fromPage", 0);
+
+        }
 
         prgDialog = new ProgressDialog(this);
         // Set Cancelable as False
@@ -115,10 +91,7 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
 
         // Set up the Registration form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-        populateAutoComplete();
-
         mUserNameView = (AutoCompleteTextView) findViewById(R.id.username);
-        populateAutoComplete();
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -152,11 +125,24 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
             }
         });
 
-        Button mRegisterButton = (Button) findViewById(R.id.email_register_button);
-        mRegisterButton.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.email_register_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptRegister();
+            }
+        });
+
+        findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent myIntent;
+                if (fromPage == 0) {
+                    myIntent = new Intent(RegistrationActivity.this, MainActivity.class);
+                }
+                else {
+                    myIntent = new Intent(RegistrationActivity.this, LoginActivity.class);
+                }
+                startActivity(myIntent);
             }
         });
 
@@ -285,20 +271,24 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
         makeHTTPCall();
     }
 
-    // Make Http call to upload Image to Php server
     public void makeHTTPCall() {
         AsyncHttpClient client = new AsyncHttpClient();
         // Don't forget to change the IP address to your LAN address. Port no as well.
         client.post(url,  params, new AsyncHttpResponseHandler() {
                     // When the response returned by REST has Http
                     // response code '200'
+                    View focusView = null;
                     @Override
                     public void onSuccess(String response) {
                         // Hide Progress Dialog
                         prgDialog.hide();
                         showProgress(false);
+                        String parts = null;
+                        if (response.contains("&&asb##")) {
+                            parts = response.split("&&asb##")[1];
+                        }
 
-                        if (isInteger(response)) {
+                        if (parts!=null && isInteger(parts)) {
                             Toast.makeText(getApplicationContext(), "成功",
                                     Toast.LENGTH_LONG).show();
 
@@ -312,13 +302,20 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
                             myIntent = new Intent(RegistrationActivity.this, TabHostActivity.class);
                             startActivity(myIntent);
                         } else {
-                            for (int i=0; i < 4; i++)
-                            {
-                                Toast.makeText(getApplicationContext(), response,
-                                        Toast.LENGTH_LONG).show();
+                            if (response.contains("This email is already")){
+                                mEmailView.setError("这个邮箱已被注册");
+                                focusView = mEmailView;
                             }
-                            //Toast.makeText(getApplicationContext(), response,
-                            //        Toast.LENGTH_LONG).show();
+                            else if (response.contains("This UserName is already")){
+                                mUserNameView.setError("这个用户名已被注册");
+                                focusView = mUserNameView;
+                            }
+                            else {
+                                mEmailView.setError(response);
+                                focusView = mEmailView;
+                            }
+
+                            focusView.requestFocus();
                         }
 
                     }
@@ -383,10 +380,6 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
         if (prgDialog != null) {
             prgDialog.dismiss();
         }
-    }
-
-    private void populateAutoComplete() {
-        getLoaderManager().initLoader(0, null, this);
     }
 
     /**
@@ -518,75 +511,6 @@ public class RegistrationActivity extends PlusBaseActivity implements LoaderMana
         return password.length() > 4;
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_registration, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(this,
-                // Retrieve data rows for the device user's 'profile' contact.
-                Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI,
-                        ContactsContract.Contacts.Data.CONTENT_DIRECTORY), ProfileQuery.PROJECTION,
-
-                // Select only email addresses.
-                ContactsContract.Contacts.Data.MIMETYPE +
-                        " = ?", new String[]{ContactsContract.CommonDataKinds.Email
-                .CONTENT_ITEM_TYPE},
-
-                // Show primary email addresses first. Note that there won't be
-                // a primary email address if the user hasn't specified one.
-                ContactsContract.Contacts.Data.IS_PRIMARY + " DESC");
-    }
-
-    private interface ProfileQuery {
-        String[] PROJECTION = {
-                ContactsContract.CommonDataKinds.Email.ADDRESS,
-                ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
-        };
-
-        int ADDRESS = 0;
-        int IS_PRIMARY = 1;
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        List<String> emails = new ArrayList<String>();
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            emails.add(cursor.getString(ProfileQuery.ADDRESS));
-            cursor.moveToNext();
-        }
-
-        addEmailsToAutoComplete(emails);
-    }
-
-    private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
-        //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<String>(RegistrationActivity.this,
-                        android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
-
-        mEmailView.setAdapter(adapter);
-    }
-
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
-    }
 
     private void doCrop() {
         final ArrayList<CropOption> cropOptions = new ArrayList<CropOption>();

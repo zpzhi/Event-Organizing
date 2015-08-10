@@ -30,6 +30,7 @@ public class Utility {
         return serverUrl;
     }
 
+    public static int counterForAdapter = 0;
     public static Bitmap getBitmapFromURL(String src) {
         try {
             URL url = new URL(src);

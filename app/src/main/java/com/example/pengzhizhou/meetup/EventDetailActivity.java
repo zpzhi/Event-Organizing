@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -62,6 +61,7 @@ public class EventDetailActivity extends ActionBarActivity{
     private String eventTimeText = null;
     private String addressText = null;
     private String eventID = null;
+    private String durationText = null;
     private String loginUser = null, loginUserId = null;
     private String type = null;
     private String detail = null;
@@ -94,9 +94,6 @@ public class EventDetailActivity extends ActionBarActivity{
         Bundle b = iin.getExtras();
         usersList = new ArrayList<User>();
 
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-
         TextView title = (TextView) findViewById(R.id.eventTitle);
         //ImageView activityImage = (ImageView) findViewById(R.id.eventImage);
         TextView eventTime = (TextView) findViewById(R.id.eventTime);
@@ -105,6 +102,7 @@ public class EventDetailActivity extends ActionBarActivity{
         ImageView eventImage = (ImageView) findViewById(R.id.eventImage);
         TextView description = (TextView) findViewById(R.id.eventDescription);
         TextView eventAddress = (TextView) findViewById(R.id.eventAddress);
+        TextView duration = (TextView) findViewById(R.id.duration);
 
         if(b!=null)
         {
@@ -120,12 +118,13 @@ public class EventDetailActivity extends ActionBarActivity{
             city = (String) b.get("itemCity");
             state = (String) b.get("itemState");
             eventCreatorId = (String) b.get("eventCreator");
+            durationText = (String) b.get("duration");
 
             if (detail != null){
-                description.setText(detail);
+                description.setText("详情：" + detail);
             }
 
-            if (!imageNameText.isEmpty() && imageNameText != null && !imageNameText.equals("NULL")) {
+            if (!imageNameText.isEmpty() && imageNameText != null && !imageNameText.equals("NULL") & !imageNameText.equals("null")) {
                 options = new DisplayImageOptions.Builder()
                         .showImageOnLoading(R.drawable.ic_launcher)
                         .showImageForEmptyUri(R.drawable.default_user)
@@ -179,6 +178,7 @@ public class EventDetailActivity extends ActionBarActivity{
             }
 
             eventAddress.setText(state+city+addressText);
+            duration.setText(durationText+"小时");
 
             initHostListAdapter();
             new GetEventCreatorInfo().execute();

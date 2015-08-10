@@ -32,7 +32,10 @@ public class TabHostActivity extends ActionBarActivity {
         setContentView(R.layout.activity_afterlogin);
         // in case return from userProfiledEditActivity, when cancel was clicked
         // return back to the profile fragments
-        initImageLoader(getApplicationContext());
+        if (!ImageLoader.getInstance().isInited()) {
+            initImageLoader(getApplicationContext());
+        }
+
         int startTab = getIntent().getIntExtra("tab", 0);
 
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();

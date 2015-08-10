@@ -47,7 +47,7 @@
         <activity
             android:name=".RegistrationActivity"
             android:label="@string/title_activity_registration"
-            android:theme="@android:style/Theme.Holo.Light" >
+            android:theme="@style/Theme.Example" >
         </activity>
         <activity
             android:name=".TabHostActivity"
@@ -74,6 +74,23 @@
         <activity
             android:name=".UserProfileEditActivity"
             android:label="@string/title_activity_user_profile_edit" >
+        </activity>
+        <activity
+            android:name=".ForgetPasswordActivity"
+            android:label="@string/title_activity_forget_password" >
+        </activity>
+        <activity
+            android:name=".UpdatePasswordActivity"
+            android:label="@string/title_activity_update_password" >
+            <intent-filter>
+                <data
+                    android:host="wanju"
+                    android:path="/lanuch"
+                    android:scheme="appscene" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
     </application>
 

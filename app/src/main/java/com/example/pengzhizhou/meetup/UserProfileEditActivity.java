@@ -90,12 +90,12 @@ public class UserProfileEditActivity extends ActionBarActivity {
             String userDescription = user.getDescription();
             params.put("user", userName);
 
-            imgV = (ImageView) findViewById(R.id.userImg);
+            imgV = (ImageView) findViewById(R.id.userImg1);
             realN = (EditText) findViewById(R.id.realName);
             phone = (EditText) findViewById(R.id.phoneNumber);
             userD = (EditText) findViewById(R.id.userDescription);
 
-            if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL")) {
+            if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL") && !imageName.equals("null")) {
                 String imageUrl = Utility.getServerUrl() + "imgupload/user_image/" + imageName;
                 ImageLoader.getInstance().displayImage(imageUrl, imgV, options);
             }

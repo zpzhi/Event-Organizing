@@ -9,11 +9,12 @@
 
 
     <ImageView
-        android:layout_height="wrap_content"
-        android:layout_width="fill_parent"
-        android:id="@+id/userImg"
+        android:layout_height="100dp"
+        android:layout_width="100dp"
+        android:id="@+id/userImg1"
         android:layout_gravity="center"
         android:onClick= "changePic"
+        android:layout_marginBottom="40dp"
         />
     <View
         android:layout_width="fill_parent"

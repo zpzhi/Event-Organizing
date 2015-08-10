@@ -69,7 +69,7 @@ public class UserListAdapter extends ArrayAdapter<User> {
             String uaDescription = user.getUaDescription();
             String imageName = user.getImageName();
 
-            if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL")) {
+            if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL") && !imageName.equals("null")) {
                 String imageUrl = Utility.getServerUrl() + "imgupload/user_thumb_image/" + imageName;
                 ImageLoader.getInstance().displayImage(imageUrl, thumbN, options);
             }else{

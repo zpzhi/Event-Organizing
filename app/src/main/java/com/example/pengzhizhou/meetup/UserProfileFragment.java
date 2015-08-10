@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -89,8 +90,6 @@ public class UserProfileFragment extends Fragment {
             //if (_rootView == null) {
                 _rootView = inflater.inflate(R.layout.user_profile_view, container, false);
 
-               // StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-               // StrictMode.setThreadPolicy(policy);
                 ((TabHostActivity) getActivity())
                         .setActionBarTitle(loginUser + "的主页");
                 ((TabHostActivity) getActivity()).setImageViewable(View.VISIBLE);
@@ -117,6 +116,7 @@ public class UserProfileFragment extends Fragment {
                         i.putExtra("itemCity", itemsList1.get(position).getCity());
                         i.putExtra("itemState", itemsList1.get(position).getState());
                         i.putExtra("eventCreator", itemsList1.get(position).getEventCreator());
+                        i.putExtra("duration", itemsList1.get(position).getDuration());
                         startActivity(i);
                     }
                 });
@@ -141,6 +141,7 @@ public class UserProfileFragment extends Fragment {
                         i.putExtra("itemCity", itemsList.get(position).getCity());
                         i.putExtra("itemState", itemsList.get(position).getState());
                         i.putExtra("eventCreator", itemsList.get(position).getEventCreator());
+                        i.putExtra("duration", itemsList.get(position).getDuration());
                         startActivity(i);
                     }
                 });
@@ -207,31 +208,6 @@ public class UserProfileFragment extends Fragment {
 
         @Override
         protected String doInBackground(String... params) {
-               /* HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(url + "get-user-detail.php");
-
-                try {
-                    // Add your data
-                    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-                    nameValuePairs.add(new BasicNameValuePair("userName", params[0]));
-                    httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
-
-                    // Execute HTTP Post Request
-                    HttpResponse response = httpclient.execute(httppost);
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-                    String json = reader.readLine();
-
-                    return json;
-
-                } catch (ClientProtocolException e) {
-                    // TODO Auto-generated catch block
-                    return e.toString();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    return e.toString();
-                }*/
-
-
             StringBuilder response  = new StringBuilder();
             try{
                 URL url1 = new URL(url+"get-user-detail.php?userName="+params[0]);
@@ -288,7 +264,7 @@ public class UserProfileFragment extends Fragment {
 
                             String imageUrl;
                             //int flag = 1;
-                            if (!image.isEmpty() && image != null && !image.equals("NULL")) {
+                            if (!image.isEmpty() && image != null && !image.equals("NULL") && !image.equals("null")) {
                                 imageUrl = Utility.getServerUrl() + "imgupload/user_image/" + image;
                                 ImageLoader.getInstance().displayImage(imageUrl, userImg, options);
                             }
@@ -311,30 +287,7 @@ public class UserProfileFragment extends Fragment {
 
         @Override
         protected String doInBackground(Void... params) {
-            /*HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(url+"list-hosting-events-by-user.php");
-            String jsonResult = null;
-            //add name value pair for the country code
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-            nameValuePairs.add(new BasicNameValuePair("userId",String.valueOf(loginUserId)));
 
-            try {
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-
-            try {
-                HttpResponse response = httpclient.execute(httppost);
-                jsonResult = Utility.inputStreamToString(
-                        response.getEntity().getContent()).toString();
-            }
-
-            catch (ClientProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
             StringBuilder response  = new StringBuilder();
             try{
             URL url1 = new URL(url+"list-hosting-events-by-user.php?userId="+loginUserId);
@@ -366,12 +319,14 @@ public class UserProfileFragment extends Fragment {
 
             eventListView1.setAdapter(adapter1);
             if (jsonResult == null || jsonResult.equals("[]")){
-
                 return;
             }
             try {
                 JSONObject jsonResponse = new JSONObject(jsonResult);
                 JSONArray jsonMainNode = jsonResponse.optJSONArray("activity_info");
+
+                TextView hostEvents = (TextView)_rootView.findViewById(R.id.hostEventsCount);
+                hostEvents.setText(hostEvents.getText()+" ("+jsonMainNode.length()+")");
 
                 for (int i = 0; i < jsonMainNode.length(); i++) {
                         JSONObject jsonChildNode = jsonMainNode.getJSONObject(i);
@@ -391,14 +346,6 @@ public class UserProfileFragment extends Fragment {
                         String activityImage = jsonChildNode.optString("image_name");
                         String eventCreator = jsonChildNode.optString("event_creator");
 
-                        /*Bitmap bitmap = null;
-
-                        if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("NULL")) {
-                            String imageUrl = Utility.getServerUrl() + "imgupload/activity_thumb_image/" + activityImage;
-                            bitmap = Utility.getBitmapFromURL(imageUrl);
-                        }
-*/
-                        //item.setThumbBitmap(bitmap);
                         item.setActivityImage(activityImage);
                         item.setAddress(address);
                         item.setCity(city);
@@ -441,31 +388,6 @@ public class UserProfileFragment extends Fragment {
 
         @Override
         protected String doInBackground(Void... params) {
-            /*HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(url+"get-events-by-user.php");
-            String jsonResult = null;
-            //add name value pair for the country code
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-            nameValuePairs.add(new BasicNameValuePair("userId",String.valueOf(loginUserId)));
-
-            try {
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-
-            try {
-                HttpResponse response = httpclient.execute(httppost);
-                jsonResult = Utility.inputStreamToString(
-                        response.getEntity().getContent()).toString();
-            }
-
-            catch (ClientProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return jsonResult;*/
 
             StringBuilder response  = new StringBuilder();
             try{
@@ -497,14 +419,15 @@ public class UserProfileFragment extends Fragment {
         protected void onPostExecute(String jsonResult) {
 
             eventList.setAdapter(adapter);
+            TextView joinEvents = (TextView)_rootView.findViewById(R.id.joinEventsCount);
             if (jsonResult == null || jsonResult.equals("[]")){
-
+                joinEvents.setText(joinEvents.getText()+" (0)");
                 return;
             }
             try {
                 JSONObject jsonResponse = new JSONObject(jsonResult);
                 JSONArray jsonMainNode = jsonResponse.optJSONArray("activity_info");
-
+                joinEvents.setText("参加的活动 ("+jsonMainNode.length()+")");
                 for (int i = 0; i < jsonMainNode.length(); i++) {
                     JSONArray innerArray = jsonMainNode.optJSONArray(i);
 
@@ -526,14 +449,6 @@ public class UserProfileFragment extends Fragment {
                         String activityImage = jsonChildNode.optString("image_name");
                         String eventCreator = jsonChildNode.optString("event_creator");
 
-                        /*Bitmap bitmap = null;
-
-                        if (!activityImage.isEmpty() && activityImage != null && !activityImage.equals("null")) {
-                            String imageUrl = Utility.getServerUrl() + "imgupload/activity_thumb_image/" + activityImage;
-                            bitmap = Utility.getBitmapFromURL(imageUrl);
-                        }
-
-                        item.setThumbBitmap(bitmap);*/
                         item.setActivityImage(activityImage);
                         item.setAddress(address);
                         item.setCity(city);
@@ -577,32 +492,7 @@ public class UserProfileFragment extends Fragment {
     private class FetchFriendsList extends AsyncTask<Void, Void, String> {
         @Override
         protected String doInBackground(Void... params) {
-            /*HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(url+"get-user-friends.php");
-            String jsonResult = null;
-            //add name value pair for the country code
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-            nameValuePairs.add(new BasicNameValuePair("username",String.valueOf(loginUser)));
 
-            try {
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-
-            try {
-                HttpResponse response = httpclient.execute(httppost);
-                jsonResult = Utility.inputStreamToString(
-                        response.getEntity().getContent()).toString();
-            }
-
-            catch (ClientProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return jsonResult;*/
             StringBuilder response  = new StringBuilder();
             try{
                 URL url1 = new URL(url+"get-user-friends.php?username="+loginUser);
@@ -633,17 +523,18 @@ public class UserProfileFragment extends Fragment {
         protected void onPostExecute(String jsonResult) {
 
             friendsListView.setAdapter(uAdapter);
+            TextView friendsCount = (TextView)_rootView.findViewById(R.id.friendsCount);
             if (jsonResult == null || jsonResult.equals("[]")){
-
+                friendsCount.setText(friendsCount.getText()+" (0)");
                 return;
             }
             try {
                 JSONObject jsonResponse = new JSONObject(jsonResult);
                 JSONArray jsonMainNode = jsonResponse.optJSONArray("friends_info");
+                friendsCount.setText("关注的好友 ("+jsonMainNode.length()+")");
 
                 for (int i = 0; i < jsonMainNode.length(); i++) {
                     JSONArray innerArray = jsonMainNode.optJSONArray(i);
-
                     for (int j = 0; j < innerArray.length(); j++) {
                         JSONObject jsonChildNode = innerArray.getJSONObject(j);
                         User user = new User();
@@ -651,20 +542,6 @@ public class UserProfileFragment extends Fragment {
                         String userName = jsonChildNode.optString("username");
                         String imageName = jsonChildNode.optString("image_thumb");
                         String userDescription = jsonChildNode.optString("user_description");
-                        //Bitmap bitmap = null;
-
-                        /*if (!imageName.isEmpty() && imageName != null && !imageName.equals("null")) {
-                            String imageUrl = Utility.getServerUrl() + "imgupload/user_thumb_image/" + imageName;
-                            bitmap = Utility.getBitmapFromURL(imageUrl);
-                            if(bitmap!=null) {
-                                bitmap = ir.getCircledBitmap(bitmap);
-                            }
-                        }
-                        else{
-                            bitmap = BitmapFactory.decodeResource(getActivity().getResources(),
-                                    R.drawable.default_user);
-                            bitmap = ir.getCircledBitmap(bitmap);
-                        }*/
 
                         user.setId(id);
                         user.setName(userName);

@@ -94,6 +94,7 @@ public class MainActivity extends PlusBaseActivity implements LoaderManager.Load
     public void onClick1(View v) {
         Intent myIntent;
         myIntent = new Intent(MainActivity.this, RegistrationActivity.class);
+        myIntent.putExtra("fromPage", 0);
         startActivity(myIntent);
     }
 
@@ -131,6 +132,16 @@ public class MainActivity extends PlusBaseActivity implements LoaderManager.Load
             @Override
             public void onClick(View view) {
                 attemptLogin();
+            }
+        });
+
+        findViewById(R.id.forget_password).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent myIntent;
+                myIntent = new Intent(MainActivity.this, ForgetPasswordActivity.class);
+                myIntent.putExtra("fromPage", 0);
+                startActivity(myIntent);
             }
         });
     }

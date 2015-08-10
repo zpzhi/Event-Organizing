@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 import android.view.View;
@@ -67,9 +66,6 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         actionBar.setCustomView(R.layout.activity_other_user_profile_actionbar);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-
         options = new DisplayImageOptions.Builder()
                 .displayer(new RoundedBitmapDisplayer(100))
                 .showImageOnLoading(R.drawable.ic_launcher)
@@ -102,7 +98,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
 
         userImg = (ImageView)findViewById(R.id.userImg);
 
-        if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL")) {
+        if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL") && !imageName.equals("null")) {
             String imageUrl = Utility.getServerUrl() + "imgupload/user_image/" + imageName;
             ImageLoader.getInstance().displayImage(imageUrl, userImg, options);
         }
@@ -127,6 +123,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                 i.putExtra("itemCity", itemsList.get(position).getCity());
                 i.putExtra("itemState", itemsList.get(position).getState());
                 i.putExtra("eventCreator", itemsList.get(position).getEventCreator());
+                i.putExtra("duration", itemsList.get(position).getDuration());
                 startActivity(i);
             }
         });
@@ -216,22 +213,21 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         protected void onPostExecute(String jsonResult) {
 
             eventList.setAdapter(adapter);
+            TextView hostEvents = (TextView)findViewById(R.id.joinEventsCount);
             if (jsonResult == null)
             {
                 return;
             }
             else if (jsonResult.equals("[]")){
-                Toast.makeText(OtherUserProfileActivity.this.getApplicationContext(), "没有数据",
-                        Toast.LENGTH_SHORT).show();
+                hostEvents.setText(hostEvents.getText()+" (0)");
                 return;
             }
             try {
                 JSONObject jsonResponse = new JSONObject(jsonResult);
                 JSONArray jsonMainNode = jsonResponse.optJSONArray("activity_info");
-
+                hostEvents.setText("参加的活动 ("+jsonMainNode.length()+")");
                 for (int i = 0; i < jsonMainNode.length(); i++) {
                     JSONArray innerArray = jsonMainNode.optJSONArray(i);
-
                     for (int j = 0; j < innerArray.length(); j++) {
                         JSONObject jsonChildNode = innerArray.getJSONObject(j);
                         ActivityItem item = new ActivityItem();

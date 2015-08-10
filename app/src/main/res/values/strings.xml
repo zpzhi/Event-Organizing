@@ -13,5 +13,8 @@
     <string name="title_activity_other_user_profile">OtherUserProfileActivity</string>
     <string name="title_activity_search_city">SearchCityActivity</string>
     <string name="title_activity_user_profile_edit">UserProfileEditActivity</string>
+    <string name="title_activity_forget_password">ForgetPasswordActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_update_password">UpdatePasswordActivity</string>
 
 </resources>

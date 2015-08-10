@@ -14,11 +14,6 @@ import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.SearchView;
 import android.widget.Toast;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,6 +21,8 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,7 +94,10 @@ public class SearchCityActivity extends Activity implements
 
     //method to expand all groups
     private void expandAll() {
-        int count = listAdapter.getGroupCount();
+        int count = 0;
+        if (listAdapter != null) {
+            count = listAdapter.getGroupCount();
+        }
         for (int i = 0; i < count; i++){
             myList.expandGroup(i);
         }
@@ -108,7 +108,6 @@ public class SearchCityActivity extends Activity implements
 
         //display the list
         loadSomeData();
-
         //get reference to the ExpandableListView
         myList = (ExpandableListView) findViewById(R.id.expandableList);
         //create the adapter by passing your ArrayList data
@@ -136,26 +135,31 @@ public class SearchCityActivity extends Activity implements
 
         @Override
         protected String doInBackground(String... params) {
-
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(Utility.getServerUrl()+"get-provinces-names.php");
-
-            try {
-                // Execute HTTP Post Request
-                HttpResponse response = httpclient.execute(httppost);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-                String json = reader.readLine();
-
-                return json;
-
-            } catch (ClientProtocolException e) {
-                // TODO Auto-generated catch block
-                return e.toString();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                String errror = e.toString();
-                return e.toString();
+            StringBuilder response  = new StringBuilder();
+            try{
+                URL url1 = new URL(Utility.getServerUrl()+"get-provinces-names.php");
+                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
+                httpconn.setReadTimeout(10000);
+                httpconn.setConnectTimeout(15000);
+                httpconn.setRequestMethod("GET");
+                httpconn.setDoInput(true);
+                httpconn.setDoOutput(true);
+                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                {
+                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream(), "UTF-8"));
+                    String strLine = null;
+                    while ((strLine = input.readLine()) != null)
+                    {
+                        response.append(strLine);
+                    }
+                    input.close();
+                }
             }
+            catch (IOException e){
+                String error = e.toString();
+                return error;
+            }
+            return response.toString();
         }
 
         @Override
@@ -190,25 +194,31 @@ public class SearchCityActivity extends Activity implements
 
         @Override
         protected String doInBackground(String... params) {
-
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(Utility.getServerUrl()+"get-cities-detail.php");
-
-            try {
-                // Execute HTTP Post Request
-                HttpResponse response = httpclient.execute(httppost);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-                String json = reader.readLine();
-
-                return json;
-
-            } catch (ClientProtocolException e) {
-                // TODO Auto-generated catch block
-                return e.toString();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                return e.toString();
+            StringBuilder response  = new StringBuilder();
+            try{
+                URL url1 = new URL(Utility.getServerUrl()+"get-cities-detail.php");
+                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
+                httpconn.setReadTimeout(10000);
+                httpconn.setConnectTimeout(15000);
+                httpconn.setRequestMethod("GET");
+                httpconn.setDoInput(true);
+                httpconn.setDoOutput(true);
+                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                {
+                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream(), "UTF-8"));
+                    String strLine = null;
+                    while ((strLine = input.readLine()) != null)
+                    {
+                        response.append(strLine);
+                    }
+                    input.close();
+                }
             }
+            catch (IOException e){
+                String error = e.toString();
+                return error;
+            }
+            return response.toString();
         }
 
         @Override
@@ -281,14 +291,18 @@ public class SearchCityActivity extends Activity implements
 
     @Override
     public boolean onQueryTextChange(String query) {
-        listAdapter.filterData(query);
+        if (listAdapter != null) {
+            listAdapter.filterData(query);
+        }
         expandAll();
         return false;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        listAdapter.filterData(query);
+        if (listAdapter != null) {
+            listAdapter.filterData(query);
+        }
         expandAll();
         return false;
     }

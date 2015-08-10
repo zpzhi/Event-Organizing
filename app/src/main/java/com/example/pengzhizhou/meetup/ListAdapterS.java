@@ -64,7 +64,7 @@ public class ListAdapterS extends ArrayAdapter<ActivityItem> {
             String timeA = p.getActivityTime();
             String imageName = p.getActivityImage();
             //Bitmap bitmap = p.getThumbBitmap();
-            if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL")) {
+            if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL") && !imageName.equals("null")) {
                 String imageUrl = Utility.getServerUrl() + "imgupload/activity_thumb_image/" + imageName;
                 ImageLoader.getInstance().displayImage(imageUrl, thumbN, options);
             }
