@@ -303,12 +303,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
             try {
                 String url = "get-events.php";
                 URL url1 = new URL(Utility.getServerUrl()+url);
-                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
-                httpconn.setReadTimeout(100000);
-                httpconn.setConnectTimeout(150000);
-                httpconn.setRequestMethod("GET");
-                httpconn.setDoInput(true);
-                httpconn.setDoOutput(true);
+                HttpURLConnection httpconn = Utility.createConnection(url1);
 
                 List<NameValuePair> params = new ArrayList<NameValuePair>();
                 params.add(new BasicNameValuePair("start", "0"));
@@ -467,12 +462,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
             try {
                 String url = "get-events.php";
                 URL url1 = new URL(Utility.getServerUrl()+url);
-                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
-                httpconn.setReadTimeout(100000);
-                httpconn.setConnectTimeout(150000);
-                httpconn.setRequestMethod("GET");
-                httpconn.setDoInput(true);
-                httpconn.setDoOutput(true);
+                HttpURLConnection httpconn = Utility.createConnection(url1);
 
                 List<NameValuePair> params = new ArrayList<NameValuePair>();
                 params.add(new BasicNameValuePair("start", String.valueOf(startIndex)));

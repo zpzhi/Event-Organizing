@@ -273,6 +273,7 @@ public class RegistrationActivity extends ActionBarActivity{
 
     public void makeHTTPCall() {
         AsyncHttpClient client = new AsyncHttpClient();
+        client.setTimeout(30000);
         // Don't forget to change the IP address to your LAN address. Port no as well.
         client.post(url,  params, new AsyncHttpResponseHandler() {
                     // When the response returned by REST has Http
@@ -295,7 +296,7 @@ public class RegistrationActivity extends ActionBarActivity{
                             SharedPreferences settings = getSharedPreferences("MyPrefsFile", 0);
                             SharedPreferences.Editor editor = settings.edit();
                             editor.putString("KEY_LOGIN_USER", getRegisteredUsername());
-                            editor.putString("KEY_LOGIN_USER_ID", response);
+                            editor.putString("KEY_LOGIN_USER_ID", parts);
                             editor.commit();
 
                             Intent myIntent;
@@ -328,6 +329,7 @@ public class RegistrationActivity extends ActionBarActivity{
                                           String content) {
                         // Hide Progress Dialog
                         prgDialog.hide();
+                        showProgress(false);
                         // When Http response code is '404'
                         if (statusCode == 404) {
                             Toast.makeText(getApplicationContext(),

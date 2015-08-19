@@ -40,7 +40,6 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -95,9 +94,7 @@ public class EventDetailActivity extends ActionBarActivity{
         usersList = new ArrayList<User>();
 
         TextView title = (TextView) findViewById(R.id.eventTitle);
-        //ImageView activityImage = (ImageView) findViewById(R.id.eventImage);
         TextView eventTime = (TextView) findViewById(R.id.eventTime);
-        //TextView address = (TextView) findViewById(R.id)
         joinEventButton = (Button) findViewById(R.id.joinActivity);
         ImageView eventImage = (ImageView) findViewById(R.id.eventImage);
         TextView description = (TextView) findViewById(R.id.eventDescription);
@@ -256,54 +253,16 @@ public class EventDetailActivity extends ActionBarActivity{
     public class GetEventCreatorInfo extends AsyncTask<String,Void,String>{
         @Override
         protected String doInBackground(String... params) {
-
-            /*HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(url + "get-user-detail-by-id.php");
-
+            String response = null;
             try {
-                // Add your data
-                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-                nameValuePairs.add(new BasicNameValuePair("eventCreatorId", eventCreatorId));
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-                // Execute HTTP Post Request
-                HttpResponse response = httpclient.execute(httppost);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-                String json = reader.readLine();
-
-                return json;
-
-            } catch (ClientProtocolException e) {
-                // TODO Auto-generated catch block
-                return e.toString();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                return e.toString();
-            }*/
-            StringBuilder response  = new StringBuilder();
-            try{
                 URL url1 = new URL(url+"get-user-detail-by-id.php?eventCreatorId="+eventCreatorId);
-                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
-                httpconn.setReadTimeout(10000);
-                httpconn.setConnectTimeout(15000);
-                httpconn.setRequestMethod("GET");
-                httpconn.setDoInput(true);
-                httpconn.setDoOutput(true);
-                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
-                {
-                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
-                    String strLine = null;
-                    while ((strLine = input.readLine()) != null)
-                    {
-                        response.append(strLine);
-                    }
-                    input.close();
-                }
+                response = Utility.createConnectionAndGetResponse(url1);
             }
             catch (IOException e){
                 e.printStackTrace();
             }
-            return response.toString();
+
+            return response;
         }
 
         @Override
@@ -355,55 +314,15 @@ public class EventDetailActivity extends ActionBarActivity{
     public class GetUserImageNames extends AsyncTask<String,Void,String>{
           @Override
         protected String doInBackground(String... params) {
-
-              /*HttpClient httpclient = new DefaultHttpClient();
-              HttpPost httppost = new HttpPost(url + "get-user-images-names.php");
-
-              try {
-                  // Add your data
-                  List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-                  nameValuePairs.add(new BasicNameValuePair("id", eventID));
-                  httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-                  // Execute HTTP Post Request
-                  HttpResponse response = httpclient.execute(httppost);
-                  BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-                  String json = reader.readLine();
-
-                  return json;
-
-              } catch (ClientProtocolException e) {
-                  // TODO Auto-generated catch block
-                  return e.toString();
-              } catch (IOException e) {
-                  // TODO Auto-generated catch block
-                  return e.toString();
-              }*/
-
-              StringBuilder response  = new StringBuilder();
+              String response  = null;
               try{
                   URL url1 = new URL(url+"get-user-images-names.php?id="+eventID);
-                  HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
-                  httpconn.setReadTimeout(10000);
-                  httpconn.setConnectTimeout(15000);
-                  httpconn.setRequestMethod("GET");
-                  httpconn.setDoInput(true);
-                  httpconn.setDoOutput(true);
-                  if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
-                  {
-                      BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
-                      String strLine = null;
-                      while ((strLine = input.readLine()) != null)
-                      {
-                          response.append(strLine);
-                      }
-                      input.close();
-                  }
+                  response = Utility.createConnectionAndGetResponse(url1);
               }
               catch (IOException e){
                   e.printStackTrace();
               }
-              return response.toString();
+              return response;
         }
 
         @Override
@@ -471,11 +390,11 @@ public class EventDetailActivity extends ActionBarActivity{
     }
 
     public boolean joinEventCall(String userId, String eventId, String uaDescription){
-        new MyAsyncTask().execute(userId, eventId, uaDescription);
+        new JoinEventTask().execute(userId, eventId, uaDescription);
         return true;
     }
 
-    public class MyAsyncTask extends AsyncTask<String,Void,String> {
+    public class JoinEventTask extends AsyncTask<String,Void,String> {
 
         @Override
         protected String doInBackground(String... params) {

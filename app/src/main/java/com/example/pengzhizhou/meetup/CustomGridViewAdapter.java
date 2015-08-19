@@ -14,6 +14,7 @@ import java.util.ArrayList;
 /**
  * Created by pengzhizhou on 3/28/15.
  */
+
 public class CustomGridViewAdapter extends ArrayAdapter<Item> {
     Context context;
     int layoutResourceId;

@@ -3,26 +3,42 @@ package com.example.pengzhizhou.meetup;
 import android.graphics.Bitmap;
 
 /**
+ * Class for user published events.
  * Created by pengzhizhou on 4/17/15.
  */
 
 class ActivityItem {
-
+    // events title
     private String title;
+    // events id from database
     private String id;
+    // events address
     private String address;
+    //events posting time
     private String postTime;
+    // events actually happening time
     private String activityTime;
+    // events duration, default with 2 hours
     private String duration;
+    // events holder contact number
     private String phoneNumber;
+    // events detail
     private String detail;
+    // events holding city
     private String city;
+    // events holding state / province
     private String state;
+    // events holding country
     private String country;
+    // events main image name
     private String activityImage;
+    // events holder's name
     private String eventCreator;
+    // events main image in bitmap format
     private Bitmap bitmap;
+    // events main image thumbnail
     private Bitmap thumbBitmap;
+    // events type, such as travelling, board game etc.
     private String activityType;
 
     public ActivityItem(){}

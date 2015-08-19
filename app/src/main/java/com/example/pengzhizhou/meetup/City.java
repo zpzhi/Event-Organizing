@@ -1,11 +1,13 @@
 package com.example.pengzhizhou.meetup;
 
 /**
+ * Class for city
  * Created by pengzhizhou on 5/16/15.
  */
 public class City {
-
+    // city code in province table
     private String code = "";
+    // city name
     private String name = "";
 
     public City(String code, String name) {

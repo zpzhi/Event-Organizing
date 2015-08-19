@@ -28,10 +28,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -208,30 +205,15 @@ public class UserProfileFragment extends Fragment {
 
         @Override
         protected String doInBackground(String... params) {
-            StringBuilder response  = new StringBuilder();
+            String response  = null;
             try{
                 URL url1 = new URL(url+"get-user-detail.php?userName="+params[0]);
-                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
-                httpconn.setReadTimeout(10000);
-                httpconn.setConnectTimeout(15000);
-                httpconn.setRequestMethod("GET");
-                httpconn.setDoInput(true);
-                httpconn.setDoOutput(true);
-                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
-                {
-                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
-                    String strLine = null;
-                    while ((strLine = input.readLine()) != null)
-                    {
-                        response.append(strLine);
-                    }
-                    input.close();
-                }
+                response = Utility.createConnectionAndGetResponse(url1);
             }
             catch (IOException e){
                 e.printStackTrace();
             }
-            return response.toString();
+            return response;
         }
 
         @Override
@@ -274,8 +256,10 @@ public class UserProfileFragment extends Fragment {
                         }
 
                 } catch (JSONException e) {
-                    Toast.makeText(getActivity().getApplicationContext(), "Error" + e.toString(),
-                            Toast.LENGTH_SHORT).show();
+                    if (getActivity()!=null) {
+                        Toast.makeText(getActivity().getApplicationContext(), "Error" + e.toString(),
+                                Toast.LENGTH_SHORT).show();
+                    }
                 }
 
             }
@@ -288,30 +272,15 @@ public class UserProfileFragment extends Fragment {
         @Override
         protected String doInBackground(Void... params) {
 
-            StringBuilder response  = new StringBuilder();
+            String response  = null;
             try{
-            URL url1 = new URL(url+"list-hosting-events-by-user.php?userId="+loginUserId);
-            HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
-                httpconn.setReadTimeout(10000);
-                httpconn.setConnectTimeout(15000);
-                httpconn.setRequestMethod("GET");
-                httpconn.setDoInput(true);
-                httpconn.setDoOutput(true);
-            if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
-            {
-                BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
-                String strLine = null;
-                while ((strLine = input.readLine()) != null)
-                {
-                    response.append(strLine);
-                }
-                input.close();
-            }
+                URL url1 = new URL(url+"list-hosting-events-by-user.php?userId="+loginUserId);
+                response = Utility.createConnectionAndGetResponse(url1);
             }
             catch (IOException e){
                 e.printStackTrace();
             }
-            return response.toString();
+            return response;
         }
 
         @Override
@@ -389,30 +358,15 @@ public class UserProfileFragment extends Fragment {
         @Override
         protected String doInBackground(Void... params) {
 
-            StringBuilder response  = new StringBuilder();
+            String response  = null;
             try{
                 URL url1 = new URL(url+"get-events-by-user.php?userId="+loginUserId);
-                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
-                httpconn.setReadTimeout(10000);
-                httpconn.setConnectTimeout(15000);
-                httpconn.setRequestMethod("GET");
-                httpconn.setDoInput(true);
-                httpconn.setDoOutput(true);
-                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
-                {
-                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
-                    String strLine = null;
-                    while ((strLine = input.readLine()) != null)
-                    {
-                        response.append(strLine);
-                    }
-                    input.close();
-                }
+                response = Utility.createConnectionAndGetResponse(url1);
             }
             catch (IOException e){
                 e.printStackTrace();
             }
-            return response.toString();
+            return response;
         }
 
         @Override
@@ -493,30 +447,15 @@ public class UserProfileFragment extends Fragment {
         @Override
         protected String doInBackground(Void... params) {
 
-            StringBuilder response  = new StringBuilder();
+            String response  = null;
             try{
                 URL url1 = new URL(url+"get-user-friends.php?username="+loginUser);
-                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
-                httpconn.setReadTimeout(10000);
-                httpconn.setConnectTimeout(15000);
-                httpconn.setRequestMethod("GET");
-                httpconn.setDoInput(true);
-                httpconn.setDoOutput(true);
-                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
-                {
-                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
-                    String strLine = null;
-                    while ((strLine = input.readLine()) != null)
-                    {
-                        response.append(strLine);
-                    }
-                    input.close();
-                }
+                response = Utility.createConnectionAndGetResponse(url1);
             }
             catch (IOException e){
                 e.printStackTrace();
             }
-            return response.toString();
+            return response;
         }
 
         @Override

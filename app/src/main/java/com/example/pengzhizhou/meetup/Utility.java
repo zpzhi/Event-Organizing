@@ -23,7 +23,7 @@ import java.util.ArrayList;
 public class Utility {
     //private final static String serverUrl = "http://loquimeetup.w174.mc-test.com/meetup-web/";
     //private final static String serverUrl = "http://meetup.wcpsjshxnna.com/meetup-web/";
-    private final static String serverUrl = "http://hyu1714700001.my3w.com/";
+    private final static String serverUrl = "http://www.luoke-xy.cn/";
     //private final static String serverUrl = "http://192.168.0.12/meetup-web/";
 
     public static String getServerUrl(){
@@ -179,5 +179,49 @@ public class Utility {
         resource.add(R.drawable.qita);
 
     }
+
+    public static HttpURLConnection createConnection(URL url){
+        HttpURLConnection httpConnection = null;
+        try{
+            httpConnection = (HttpURLConnection)url.openConnection();
+            httpConnection.setReadTimeout(100000);
+            httpConnection.setConnectTimeout(150000);
+            httpConnection.setRequestMethod("GET");
+            httpConnection.setDoInput(true);
+            httpConnection.setDoOutput(true);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        return httpConnection;
+    }
+
+
+    public static String createConnectionAndGetResponse(URL url){
+        StringBuilder response  = new StringBuilder();
+
+        try {
+            HttpURLConnection httpconn = (HttpURLConnection) url.openConnection();
+            httpconn.setReadTimeout(10000);
+            httpconn.setConnectTimeout(30000);
+            httpconn.setRequestMethod("GET");
+            httpconn.setDoInput(true);
+            httpconn.setDoOutput(true);
+            if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream(), "UTF-8"), 8192);
+                String strLine = null;
+                while ((strLine = input.readLine()) != null) {
+                    response.append(strLine);
+                }
+                input.close();
+            }
+        }
+        catch (IOException e){
+                e.printStackTrace();
+        }
+
+        return response.toString();
+    }
+
 
 }

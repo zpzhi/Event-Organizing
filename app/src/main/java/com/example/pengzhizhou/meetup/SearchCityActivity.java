@@ -18,10 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -135,31 +132,16 @@ public class SearchCityActivity extends Activity implements
 
         @Override
         protected String doInBackground(String... params) {
-            StringBuilder response  = new StringBuilder();
+            String response  = null;
             try{
                 URL url1 = new URL(Utility.getServerUrl()+"get-provinces-names.php");
-                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
-                httpconn.setReadTimeout(10000);
-                httpconn.setConnectTimeout(15000);
-                httpconn.setRequestMethod("GET");
-                httpconn.setDoInput(true);
-                httpconn.setDoOutput(true);
-                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
-                {
-                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream(), "UTF-8"));
-                    String strLine = null;
-                    while ((strLine = input.readLine()) != null)
-                    {
-                        response.append(strLine);
-                    }
-                    input.close();
-                }
+                response = Utility.createConnectionAndGetResponse(url1);
             }
             catch (IOException e){
                 String error = e.toString();
                 return error;
             }
-            return response.toString();
+            return response;
         }
 
         @Override
@@ -194,31 +176,16 @@ public class SearchCityActivity extends Activity implements
 
         @Override
         protected String doInBackground(String... params) {
-            StringBuilder response  = new StringBuilder();
+            String response  = null;
             try{
                 URL url1 = new URL(Utility.getServerUrl()+"get-cities-detail.php");
-                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
-                httpconn.setReadTimeout(10000);
-                httpconn.setConnectTimeout(15000);
-                httpconn.setRequestMethod("GET");
-                httpconn.setDoInput(true);
-                httpconn.setDoOutput(true);
-                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
-                {
-                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream(), "UTF-8"));
-                    String strLine = null;
-                    while ((strLine = input.readLine()) != null)
-                    {
-                        response.append(strLine);
-                    }
-                    input.close();
-                }
+                response = Utility.createConnectionAndGetResponse(url1);
             }
             catch (IOException e){
                 String error = e.toString();
                 return error;
             }
-            return response.toString();
+            return response;
         }
 
         @Override

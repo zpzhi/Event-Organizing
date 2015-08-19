@@ -33,11 +33,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -154,59 +151,16 @@ public class OtherUserProfileActivity extends ActionBarActivity {
     private class ListJoinEventsTask extends AsyncTask<Void, Void, String> {
         @Override
         protected String doInBackground(Void... params) {
-            /*HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(url+"get-events-by-user.php");
-            String jsonResult = null;
-            //add name value pair for the country code
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
-            nameValuePairs.add(new BasicNameValuePair("start",String.valueOf(startIndex)));
-            nameValuePairs.add(new BasicNameValuePair("limit",String.valueOf(offset)));
-            nameValuePairs.add(new BasicNameValuePair("userId",String.valueOf(userId)));
 
-            try {
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-
-            try {
-                HttpResponse response = httpclient.execute(httppost);
-                jsonResult = Utility.inputStreamToString(
-                        response.getEntity().getContent()).toString();
-            }
-
-            catch (ClientProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return jsonResult;*/
-
-            StringBuilder response  = new StringBuilder();
+            String response  = null;
             try{
                 URL url1 = new URL(url+"get-events-by-user.php?userId="+userId);
-                HttpURLConnection httpconn = (HttpURLConnection)url1.openConnection();
-                httpconn.setReadTimeout(10000);
-                httpconn.setConnectTimeout(15000);
-                httpconn.setRequestMethod("GET");
-                httpconn.setDoInput(true);
-                httpconn.setDoOutput(true);
-                if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK)
-                {
-                    BufferedReader input = new BufferedReader(new InputStreamReader(httpconn.getInputStream()),8192);
-                    String strLine = null;
-                    while ((strLine = input.readLine()) != null)
-                    {
-                        response.append(strLine);
-                    }
-                    input.close();
-                }
+                response = Utility.createConnectionAndGetResponse(url1);
             }
             catch (IOException e){
                 e.printStackTrace();
             }
-            return response.toString();
+            return response;
         }
 
         @Override
@@ -289,11 +243,11 @@ public class OtherUserProfileActivity extends ActionBarActivity {
 
 
     public boolean addFriendCall(){
-        new MyAsyncTask().execute();
+        new AddFriendTask().execute();
         return true;
     }
 
-    public class MyAsyncTask extends AsyncTask<String,Void,String> {
+    public class AddFriendTask extends AsyncTask<String,Void,String> {
 
         @Override
         protected String doInBackground(String... params) {
@@ -410,12 +364,12 @@ public class OtherUserProfileActivity extends ActionBarActivity {
     }
 
     public boolean removeFriendCall(){
-        new MyAsyncTask1().execute();
+        new RemoveFriendTask().execute();
         return true;
     }
 
 
-    public class MyAsyncTask1 extends AsyncTask<String,Void,String> {
+    public class RemoveFriendTask extends AsyncTask<String,Void,String> {
 
         @Override
         protected String doInBackground(String... params) {
