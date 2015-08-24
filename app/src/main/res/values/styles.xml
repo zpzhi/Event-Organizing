@@ -18,4 +18,9 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="spinner_style">
+        <item name="android:background">@drawable/custom_spinner</item>
+        <item name="android:popupBackground">#DFFFFFFF</item>
+    </style>
+
 </resources>

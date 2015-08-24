@@ -30,6 +30,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -72,9 +73,9 @@ public class PostActivityDetailActivity extends ActionBarActivity{
     private SimpleDateFormat mFormatter = new SimpleDateFormat("MMMM dd yyyy hh:mm aa");
     private String loginUserId, loginUser;
     private TextView mActDate,mActTime;
-    private EditText mActTitle;
-    private EditText mActAddress;
-    private EditText mActPhoneNum;
+    private AutoCompleteTextView mActTitle;
+    private AutoCompleteTextView mActAddress;
+    private AutoCompleteTextView mActPhoneNum;
     private EditText mActDescription;
     private String mDuration = null;
     private String mSProvince = null;
@@ -168,7 +169,7 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         // Set Cancelable as False
         prgDialog.setCancelable(false);
 
-        mActTitle = (EditText) findViewById(R.id.postTitle);
+        mActTitle = (AutoCompleteTextView) findViewById(R.id.postTitle);
 
         Calendar c = Calendar.getInstance();
         int minutes = c.get(Calendar.MINUTE);
@@ -223,8 +224,8 @@ public class PostActivityDetailActivity extends ActionBarActivity{
             }
         });
 
-        mActAddress = (EditText) findViewById(R.id.locationText);
-        mActPhoneNum = (EditText) findViewById(R.id.contactPhoneNumber);
+        mActAddress = (AutoCompleteTextView) findViewById(R.id.locationText);
+        mActPhoneNum = (AutoCompleteTextView) findViewById(R.id.contactPhoneNumber);
         mActDescription = (EditText) findViewById(R.id.activityDescription);
         mActDescription.setFilters(new InputFilter[] { new InputFilter.LengthFilter(200) });
 
@@ -276,6 +277,16 @@ public class PostActivityDetailActivity extends ActionBarActivity{
 
         TextView uploadImg = (TextView) findViewById(R.id.insertImage);
         uploadImg.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                openImageIntent();
+            }
+        });
+
+        ImageView uploadImgButton = (ImageView) findViewById(R.id.insertImageButton);
+        uploadImgButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)

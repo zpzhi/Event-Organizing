@@ -2,7 +2,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@android:id/tabhost"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F7F7F7">
 
     <RelativeLayout
         android:orientation="vertical"
@@ -23,13 +24,11 @@
 
         <TabWidget
             android:id="@android:id/tabs"
-
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="0"
             android:layout_alignParentBottom="true"
-            android:background="#F4EDE5"/>
-
+            android:background="#ffffff"/>
     </RelativeLayout>>
 </android.support.v4.app.FragmentTabHost>

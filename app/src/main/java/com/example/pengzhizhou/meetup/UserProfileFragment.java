@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.PorterDuff;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -63,9 +63,6 @@ public class UserProfileFragment extends Fragment {
         SharedPreferences settings = this.getActivity().getSharedPreferences("MyPrefsFile", 0);
         loginUser = settings.getString("KEY_LOGIN_USER", null);
         loginUserId = settings.getString("KEY_LOGIN_USER_ID", null);
-
-        ImageView pullDownIcon = (ImageView)getActivity().findViewById(R.id.pulldown);
-        pullDownIcon.setVisibility(View.GONE);
 
         options = new DisplayImageOptions.Builder()
                 .displayer(new RoundedBitmapDisplayer(100))
@@ -146,7 +143,8 @@ public class UserProfileFragment extends Fragment {
                 new ListJoinEventsTask(getActivity()).execute();
 
                 Button logout = (Button) _rootView.findViewById(R.id.logout);
-                logout.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
+                //logout.getBackground().setColorFilter(Color.parseColor("#E35050"), PorterDuff.Mode.MULTIPLY);
+                logout.setBackgroundColor(Color.parseColor("#FF7373"));
                 logout.setOnClickListener(new Button.OnClickListener()  {
                     public void onClick(View v) {
                         SharedPreferences preferences = getActivity().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE);
@@ -333,8 +331,11 @@ public class UserProfileFragment extends Fragment {
                         itemsList1.add(item);
                 }
             } catch (JSONException e) {
-                Toast.makeText(getActivity().getApplicationContext(), "Error" + e.toString(),
-                        Toast.LENGTH_SHORT).show();
+                if (getActivity()!=null){
+                    Toast.makeText(getActivity().getApplicationContext(), "Error" + e.toString(),
+                            Toast.LENGTH_SHORT).show();
+                }
+
             }
 
             adapter1.notifyDataSetChanged();

@@ -34,7 +34,7 @@ public class UserListAdapter extends ArrayAdapter<User> {
         cont = context;
 
         options = new DisplayImageOptions.Builder()
-                .displayer(new RoundedBitmapDisplayer(60))
+                .displayer(new RoundedBitmapDisplayer(50))
                 .showImageOnLoading(R.drawable.default_user)
                 .showImageForEmptyUri(R.drawable.default_user)
                 .showImageOnFail(R.drawable.default_user)

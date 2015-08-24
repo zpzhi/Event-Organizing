@@ -6,7 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.PorterDuff;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -88,6 +88,9 @@ public class EventDetailActivity extends ActionBarActivity{
         SharedPreferences settings = getSharedPreferences("MyPrefsFile", 0);
         loginUser = settings.getString("KEY_LOGIN_USER", null);
         loginUserId = settings.getString("KEY_LOGIN_USER_ID", null);
+
+        TextView actionBarTitle = (TextView) findViewById(R.id.actionBarTitle);
+        Utility.setActionBarTitleByLeftMargin(actionBarTitle, this, 0);
 
         Intent iin= getIntent();
         Bundle b = iin.getExtras();
@@ -209,7 +212,8 @@ public class EventDetailActivity extends ActionBarActivity{
             });
         }
 
-        joinEventButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
+        //joinEventButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
+        joinEventButton.setBackgroundColor(Color.parseColor("#04AAF8"));
         joinEventButton.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 if (loginUser != null){

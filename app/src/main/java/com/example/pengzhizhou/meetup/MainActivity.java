@@ -9,16 +9,10 @@ import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.apache.http.HttpResponse;
@@ -83,6 +77,12 @@ public class MainActivity extends PlusBaseActivity implements LoaderManager.Load
         }else {
             setContentView(R.layout.activity_main);
 
+            int displayWidth = getWindowManager().getDefaultDisplay().getHeight();
+
+            ImageView imageView = (ImageView)findViewById(R.id.indexImage);
+
+            imageView.getLayoutParams().height = displayWidth * 6 / 10;
+
             TextView displayLoginForm = (TextView) findViewById(R.id.loginTrigger);
             displayLoginForm.setPaintFlags(displayLoginForm.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
 
@@ -100,13 +100,13 @@ public class MainActivity extends PlusBaseActivity implements LoaderManager.Load
 
 
     public void onClick(View v) {
-        LinearLayout space = (LinearLayout) findViewById(R.id.spaceTaken);
+        /*LinearLayout space = (LinearLayout) findViewById(R.id.spaceTaken);
         LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
                 LayoutParams.MATCH_PARENT,
                 LayoutParams.WRAP_CONTENT, 4.0f);
-        space.setLayoutParams(param);
+        space.setLayoutParams(param);*/
 
-        LinearLayout loginLayout = (LinearLayout) findViewById(R.id.login_f);
+        /*LinearLayout loginLayout = (LinearLayout) findViewById(R.id.login_f);
         Animation slideUp = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_up);
         loginLayout.setVisibility(View.VISIBLE);
         loginLayout.startAnimation(slideUp);
@@ -143,7 +143,13 @@ public class MainActivity extends PlusBaseActivity implements LoaderManager.Load
                 myIntent.putExtra("fromPage", 0);
                 startActivity(myIntent);
             }
-        });
+        });*/
+
+        Intent myIntent;
+        myIntent = new Intent(this, LoginActivity.class);
+        myIntent.putExtra("fromPage", 1);
+        startActivity(myIntent);
+
     }
 
     /**

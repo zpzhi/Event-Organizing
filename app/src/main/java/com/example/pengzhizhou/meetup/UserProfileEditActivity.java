@@ -12,6 +12,7 @@ import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.ExifInterface;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
@@ -23,8 +24,10 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -103,6 +106,10 @@ public class UserProfileEditActivity extends ActionBarActivity {
                 ImageLoader.getInstance().displayImage("", imgV, options);
             }
 
+            if (userName != null){
+                TextView title = (TextView)findViewById(R.id.actionbarTitle);
+                title.setText(userName+"的主页");
+            }
             if (realName !=null && !realName.equals("null")){
                 realN.setText(realName);
             }
@@ -129,6 +136,15 @@ public class UserProfileEditActivity extends ActionBarActivity {
         });
 
         save.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                attemptUpdate();
+            }
+        });
+
+        Button confirmChangeButton = (Button)findViewById(R.id.confirmChange);
+        confirmChangeButton.setBackgroundColor(Color.parseColor("#04AAF8"));
+        confirmChangeButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 attemptUpdate();

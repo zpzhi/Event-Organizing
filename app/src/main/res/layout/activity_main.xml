@@ -2,85 +2,93 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity"
     android:orientation="vertical"
-    android:weightSum="8"
+    android:weightSum="2"
     android:background="#30ADE6">
 
-    <LinearLayout
-        android:id="@+id/spaceTaken"
+    <LinearLayout android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_width="fill_parent"
-        android:orientation="vertical"
-        android:layout_weight="7"/>
+        android:layout_weight="1">
+        <ImageView
+            android:id="@+id/indexImage"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:scaleType="fitCenter"
+            android:src="@drawable/index"/>
+    </LinearLayout>
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/locateActivitySpace"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_weight="1"
         android:layout_marginBottom="20dp"
         >
         <ImageView
             android:id="@+id/locationIcon"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/locate_32_1"
+            android:layout_height="70dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/location_icon"
             android:layout_centerHorizontal="true" />
 
-        <Button
+        <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="寻找活动"
+            android:layout_height="40dp"
+            android:scaleType="fitCenter"
             android:id="@+id/findActivity"
+            android:layout_marginTop="10dp"
             android:layout_centerHorizontal="true"
-            android:layout_below="@id/locationIcon"
             android:onClick="listActivity"
+            android:src="@drawable/find_activity"
             android:layout_marginBottom="10dp"/>
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="已有账号？"
-            android:id="@+id/textView"
-            android:layout_below="@id/findActivity"
-            android:layout_alignRight="@id/findActivity"/>
+            android:orientation="horizontal"
+            android:gravity="center"
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="登入"
-            android:textColor="#1A4732"
-            android:id="@+id/loginTrigger"
-            android:layout_toRightOf="@+id/textView"
-            android:layout_toEndOf="@+id/textView"
-            android:layout_alignTop="@+id/textView"
-            android:onClick="onClick"
-            android:clickable="true"/>
+            >
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="    |    "
-            android:id="@+id/textView1"
-            android:layout_toRightOf="@+id/loginTrigger"
-            android:layout_toEndOf="@+id/loginTrigger"
-            android:layout_alignTop="@+id/loginTrigger"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#EFFAFF"
+                android:text="已有账号？"
+                android:id="@+id/textView"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="新账号"
-            android:textColor="#1A4732"
-            android:id="@+id/registerTrigger"
-            android:layout_toRightOf="@+id/textView1"
-            android:layout_toEndOf="@+id/textView1"
-            android:layout_alignTop="@+id/textView1"
-            android:onClick="onClick1"
-            android:clickable="true"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="登入"
+                android:textColor="#EFFAFF"
+                android:id="@+id/loginTrigger"
+                android:onClick="onClick"
+                android:clickable="true"/>
 
-    </RelativeLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="    |    "
+                android:textColor="#EFFAFF"
+                android:id="@+id/textView1"/>
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="新账号"
+                android:textColor="#EFFAFF"
+                android:id="@+id/registerTrigger"
+                android:onClick="onClick1"
+                android:clickable="true"/>
+        </LinearLayout>
+
+    </LinearLayout>
+    <!--
     <LinearLayout android:id="@+id/login_f" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:orientation="vertical"
         android:visibility="gone">
@@ -98,8 +106,7 @@
             android:maxLines="1" android:singleLine="true" />
 
         <Button android:id="@+id/email_sign_in_button" style="?android:textAppearanceSmall"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="16dp" android:text="@string/action_sign_in_short"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/action_sign_in_short"
             android:textStyle="bold" />
 
         <TextView
@@ -111,5 +118,6 @@
             android:layout_gravity="center"
             android:layout_marginTop="10dp"/>
     </LinearLayout>
+    -->
 
 </LinearLayout>

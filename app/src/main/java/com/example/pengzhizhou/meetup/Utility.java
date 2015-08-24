@@ -1,5 +1,6 @@
 package com.example.pengzhizhou.meetup;
 
+import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -7,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -142,7 +144,7 @@ public class Utility {
 
             view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
             totalHeight += view.getMeasuredHeight();
-            if (i == 3) break;
+            if (i == 2) break;
         }
 
         ViewGroup.LayoutParams params = listView.getLayoutParams();
@@ -156,7 +158,7 @@ public class Utility {
         //Bitmap userIcon = BitmapFactory.decodeResource(this.getResources(), R.drawable.zhuoyou)
         if (flag == 1) {
             gridArray.add(new Item(null, "全部活动"));
-            resource.add(R.drawable.quanbu);
+            resource.add(R.drawable.quanbu_1);
         }
         gridArray.add(new Item(null, "节日派对"));
         gridArray.add(new Item(null, "桌游聚会"));
@@ -168,15 +170,15 @@ public class Utility {
         gridArray.add(new Item(null, "旅游同行"));
         gridArray.add(new Item(null, "其他类别"));
 
-        resource.add(R.drawable.jieri);
-        resource.add(R.drawable.zhuoyou);
-        resource.add(R.drawable.mishi);
-        resource.add(R.drawable.chuangye);
-        resource.add(R.drawable.jiangzuo);
-        resource.add(R.drawable.dianying);
-        resource.add(R.drawable.tiyu);
-        resource.add(R.drawable.zijiayou);
-        resource.add(R.drawable.qita);
+        resource.add(R.drawable.jieri_1);
+        resource.add(R.drawable.zhuoyou_1);
+        resource.add(R.drawable.mishi_1);
+        resource.add(R.drawable.chuangye_1);
+        resource.add(R.drawable.jiangzuo_1);
+        resource.add(R.drawable.dianying_1);
+        resource.add(R.drawable.tiyu_1);
+        resource.add(R.drawable.zijiayou_1);
+        resource.add(R.drawable.qita_1);
 
     }
 
@@ -221,6 +223,19 @@ public class Utility {
         }
 
         return response.toString();
+    }
+
+    public static void setActionBarTitleByLeftMargin(TextView actionBarTitle, Activity act, int adjust){
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) actionBarTitle.getLayoutParams();
+        int displayWidth = act.getWindowManager().getDefaultDisplay().getWidth();
+
+        if (adjust == 0){
+            params.leftMargin = displayWidth/4;
+        }
+        else{
+            params.rightMargin = displayWidth/3;
+        }
+        actionBarTitle.setLayoutParams(params);
     }
 
 

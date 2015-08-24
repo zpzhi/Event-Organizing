@@ -9,37 +9,29 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:text="Meetup"
-        android:textColor="#1a4a71"
+        android:textColor="#ffffff"
         android:id="@+id/actionbarTitle"
-        android:textSize="18sp" />
+        android:textSize="20sp" />
 
     <ImageView
-        android:layout_width="wrap_content"
+        android:layout_width="25dp"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_toRightOf="@id/actionbarTitle"
-        android:id="@+id/pulldown"
-        android:visibility="gone"
-        android:src="@drawable/ic_action_navigation_expand_more" />
-
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:scaleType="fitCenter"
         android:layout_alignParentRight="true"
         android:layout_marginRight="12sp"
         android:layout_alignRight="@id/actionbarTitle"
-        android:src="@drawable/ic_action_action_room"
+        android:src="@drawable/location_icon"
         android:id="@+id/searchCity"
         />
 
     <ImageView
-        android:layout_width="wrap_content"
+        android:layout_width="25dp"
         android:layout_height="wrap_content"
+        android:scaleType="fitCenter"
         android:layout_alignParentRight="true"
         android:layout_marginRight="12sp"
         android:id="@+id/editInfo"
-        android:src="@drawable/ic_action_editor_border_color" >
+        android:src="@drawable/ic_user_profile_edit_icon" >
     </ImageView>
 
 </RelativeLayout>

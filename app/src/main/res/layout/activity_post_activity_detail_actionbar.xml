@@ -8,25 +8,24 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:text="活动内容"
-        android:textColor="#1a4a71"
+        android:textColor="#FFFFFF"
         android:id="@+id/postActivityTitle"
-        android:textSize="18sp" />
+        android:textSize="20sp" />
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="12sp"
-        android:id="@+id/postActivity"
-        android:src="@drawable/ic_action_navigation_check" >
-    </ImageView>
+            android:layout_width="20dp"
+            android:layout_height="30dp"
+            android:scaleType="fitCenter"
+            android:layout_alignParentLeft="true"
+            android:id="@+id/backButton"
+            android:src="@drawable/ic_action_navigate_back" />
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:id="@+id/backButton"
-        android:src="@drawable/ic_action_image_navigate_before" >
-    </ImageView>
+    <ImageView android:id="@+id/postActivity"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:scaleType="fitCenter"
+            android:layout_marginRight="12sp"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/ic_action_confirm" />
 
 </RelativeLayout>

@@ -5,6 +5,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:orientation="vertical"
+    android:background="#F7F7F7"
     tools:context="com.example.pengzhizhou.meetup.UserProfileEditActivity">
 
 
@@ -16,39 +17,73 @@
         android:onClick= "changePic"
         android:layout_marginBottom="40dp"
         />
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/darker_gray"
-        />
 
-    <EditText
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/realName"
-        android:hint="真实姓名" />
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        >
+        <ImageView
+            android:id="@+id/userIcon"
+            android:layout_width="30dp"
+            android:layout_height="40dp"
+            android:src="@drawable/user_nick_icon"
+            />
+        <AutoCompleteTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/realName"
+            android:hint="请输入您的真实姓名"
+            android:textColorHint="#898989"/>
+    </LinearLayout>
 
-    <EditText
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="phone"
-        android:ems="10"
-        android:id="@+id/phoneNumber"
-        android:hint="电话号码" />
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        >
+        <ImageView
+            android:id="@+id/phoneIcon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/phone_icon"
+            />
+        <AutoCompleteTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="phone"
+            android:ems="10"
+            android:id="@+id/phoneNumber"
+            android:hint="请输入您的电话"
+            android:textColorHint="#898989"/>
+    </LinearLayout>
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/descriptionTitle"
-        android:layout_marginTop="20dp"
-        android:textSize="16dp"
-        android:text="添加个人描述"/>
-
-    <View
-        android:layout_width="fill_parent"
-        android:id="@+id/gap"
-        android:layout_height="0.5dp"
-        android:background="#000000"/>
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        >
+        <ImageView
+            android:id="@+id/editIcon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:scaleType="fitCenter"
+            android:layout_marginTop="15dp"
+            android:src="@drawable/edit_icon_1"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/descriptionTitle"
+            android:layout_marginTop="20dp"
+            android:textSize="16dp"
+            android:text="添加个人描述"
+            android:textColor="#555555"/>
+     </LinearLayout>
 
     <EditText
         android:id="@+id/userDescription"
@@ -57,11 +92,20 @@
         android:ems="10"
         android:gravity="left|top"
         android:inputType="textMultiLine"
-        android:text=""
-        android:layout_below="@id/gap"
+        android:layout_marginTop="10dp"
         android:paddingBottom="10dp"
         android:paddingTop="10dp"
         android:layout_marginBottom="10dp"
         android:background="@drawable/post_content_border"/>
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="确定"
+        android:textColor="#FFFFFF"
+        android:id="@+id/confirmChange"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="20dp"
+        />
 
 </LinearLayout>

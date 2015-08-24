@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import org.apache.http.HttpResponse;
@@ -39,7 +38,7 @@ public class LoginActivity extends ActionBarActivity {
 
     private UserLoginTask mAuthTask = null;
     private AutoCompleteTextView mEmailView;
-    private EditText mPasswordView;
+    private AutoCompleteTextView mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
 
@@ -49,6 +48,7 @@ public class LoginActivity extends ActionBarActivity {
     private String addressText = null;
     private String eventID = null;
     private String originalActivity = null;
+    private int fromPage = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,12 +68,13 @@ public class LoginActivity extends ActionBarActivity {
             addressText = (String) b.get("itemAddress");
             eventID = (String) b.get("itemId");
             originalActivity = (String) b.get("originActivity");
+            fromPage = b.getInt("fromPage", 0);
         }
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
 
-        mPasswordView = (EditText) findViewById(R.id.password);
+        mPasswordView = (AutoCompleteTextView) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -112,7 +113,13 @@ public class LoginActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 Intent myIntent;
-                myIntent = new Intent(LoginActivity.this, TabHostActivity.class);
+                if (fromPage == 1){
+                    myIntent = new Intent(LoginActivity.this, MainActivity.class);
+                }
+                else {
+                    myIntent = new Intent(LoginActivity.this, TabHostActivity.class);
+                }
+
                 startActivity(myIntent);
             }
         });

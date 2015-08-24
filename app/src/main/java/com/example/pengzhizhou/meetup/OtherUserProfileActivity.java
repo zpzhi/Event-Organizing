@@ -4,7 +4,7 @@ import android.app.ActionBar;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.PorterDuff;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -90,7 +90,8 @@ public class OtherUserProfileActivity extends ActionBarActivity {
             addFriendButton.setVisibility(View.GONE);
         }
 
-        TextView title = (TextView) findViewById(R.id.actionbarTitle);
+        TextView title = (TextView) findViewById(R.id.actionbartitle);
+        Utility.setActionBarTitleByLeftMargin(title, this, 1);
         title.setText(user+"的主页");
 
         userImg = (ImageView)findViewById(R.id.userImg);
@@ -130,16 +131,25 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         new ListJoinEventsTask().execute();
 
         new CheckIfFriendsTask().execute();
-        addFriendButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
+        //addFriendButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
+        addFriendButton.setBackgroundColor(Color.parseColor("#04AAF8"));
         addFriendButton.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
+                if (loginUser == null){
+                    Intent myIntent;
+                    myIntent = new Intent(OtherUserProfileActivity.this, LoginActivity.class);
+                    myIntent.putExtra("fromPage", 0);
+                    startActivity(myIntent);
 
-                addFriendCall();
+                }else {
+                    addFriendCall();
+                }
             }
         });
 
         removeFriendButton = (Button) findViewById(R.id.removeFriend);
-        removeFriendButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
+        //removeFriendButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
+        removeFriendButton.setBackgroundColor(Color.parseColor("#FF7373"));
         removeFriendButton.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
 
@@ -341,11 +351,11 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(String result) {
             //can
-            if (result.equals("0") && user!=null && loginUser!=null && !user.equals(loginUser)){
+            if (result.equals("0") && user!=null && !user.equals(loginUser)){
                 removeFriendButton.setVisibility(View.GONE);
                 addFriendButton.setVisibility(View.VISIBLE);
             }
-            else if (result.equals("0") && user!=null && loginUser!=null && user.equals(loginUser)){
+            else if (result.equals("0") && user!=null && user.equals(loginUser)){
                 removeFriendButton.setVisibility(View.GONE);
                 addFriendButton.setVisibility(View.GONE);
             }

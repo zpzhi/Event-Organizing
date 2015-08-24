@@ -1,30 +1,32 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/ScrollView01"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="fill_parent"
+    android:background="#F7F7F7">
+<RelativeLayout
+    android:layout_width="match_parent"
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="50dp"
+    android:paddingTop="30dp"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    android:layout_marginLeft="@dimen/abc_text_size_body_1_material"
-    android:layout_marginRight="@dimen/abc_text_size_body_1_material"
     tools:context="com.example.pengzhizhou.meetup.PostActivityDetailActivity">
 
     <ProgressBar android:id="@+id/post_progress" style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content" android:layout_height="wrap_content"
         android:layout_marginBottom="8dp" android:visibility="gone" />
 
-        <EditText
+        <AutoCompleteTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/postTitle"
             android:hint="请输入活动标题（必填）"
+            android:textColorHint="#898989"
+            android:textColor="#00B8F5"
             android:gravity="center"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:paddingBottom="10dp"
+            android:paddingBottom="15dp"
             android:paddingTop="10dp"
             android:layout_marginBottom="10dp"
             android:layout_marginTop="10dp"/>
@@ -39,12 +41,13 @@
             android:gravity="center"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginBottom="10dp" >
+            android:layout_marginBottom="15dp" >
             <TextView
                 android:id="@+id/time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="选择时间:"
+                android:text="选择时间 : "
+                android:textColor="#5D5D5D"
                 android:textSize="18dp"
                 />
 
@@ -64,107 +67,155 @@
                 android:text="Today"
                 android:id="@+id/currentTime"
                 android:textSize="18dp"
-                android:layout_marginLeft="19dp"
+                android:layout_marginLeft="10dp"
                 android:layout_marginStart="19dp"/>
         </LinearLayout>
 
          <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_below="@+id/timeLayout"
                 android:id="@+id/locationLayout"
                 android:gravity="center"
-                android:layout_marginBottom="10dp">
+                android:layout_marginBottom="15dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_weight="1">
+                    <TextView
+                         android:layout_width="wrap_content"
+                         android:layout_height="wrap_content"
+                         android:text="省"
+                         android:layout_weight="1"
+                         android:textColor="#5D5D5D"
+                         android:textSize="18dp"/>
+
+                    <Spinner
+                         android:layout_width="fill_parent"
+                         android:layout_height="wrap_content"
+                         android:layout_marginLeft="5dp"
+                         android:id="@+id/spinner1"
+                         style="@style/spinner_style"
+                         android:layout_weight="5"/>
+                </LinearLayout>
 
                 <TextView
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
-                 android:text="省:"
-                 android:textSize="18dp"
-                 />
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:text="    "
+                    />
 
-                <Spinner
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
-                 android:id="@+id/spinner1"
-                 android:layout_weight="1"
-                 android:textSize="18dp"
-                 />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_weight="1">
+                    <TextView
+                         android:layout_width="wrap_content"
+                         android:layout_height="wrap_content"
+                         android:text="市"
+                         android:textColor="#5D5D5D"
+                         android:textSize="18dp"/>
 
-                <TextView
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
-                 android:text="市:"
-                    android:textSize="18dp"
-                 />
-
-                <Spinner
-                 android:layout_width="wrap_content"
-                 android:layout_height="wrap_content"
-                 android:id="@+id/spinner2"
-                 android:layout_weight="1"
-                    android:textSize="18dp"/>
+                    <Spinner
+                         android:layout_width="match_parent"
+                         android:layout_height="wrap_content"
+                         android:layout_marginLeft="5dp"
+                         android:id="@+id/spinner2"
+                         style="@style/spinner_style"
+                         android:layout_weight="5"/>
+                </LinearLayout>
             </LinearLayout>
 
-        <EditText
+        <AutoCompleteTextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:id="@+id/locationText"
             android:hint="请输入详细地址 (必填)"
+            android:textColor="#00B8F5"
+            android:textColorHint="#898989"
             android:layout_centerHorizontal="true"
             android:gravity="center"
+            android:layout_marginBottom="15dp"
             android:layout_below="@id/locationLayout"/>
 
 
 
-        <EditText
+        <AutoCompleteTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/contactPhoneNumber"
             android:hint="联系电话 （必填）"
+            android:textColorHint="#898989"
             android:inputType="phone"
+            android:textColor="#00B8F5"
             android:gravity="center"
             android:layout_below="@id/locationText"
             android:paddingBottom="10dp"
-            android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
             android:paddingTop="10dp"/>
 
-        <TextView
-            android:id="@+id/insertImage"
-            android:layout_width="match_parent"
+        <LinearLayout android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="添加图片 （选填）"
-            android:textSize="18dp"
-            android:gravity="center"
-            android:layout_below="@id/contactPhoneNumber"
-            android:paddingTop="10dp"/>
+            android:orientation="horizontal"
+            android:id="@+id/insertImageLayout"
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="10dp"
+            android:layout_below="@id/contactPhoneNumber">
+            <ImageView
+                android:id="@+id/insertImageButton"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:scaleType="fitCenter"
+                android:paddingTop="5dp"
+                android:src="@drawable/upload_image"
+                />
+            <TextView
+                android:id="@+id/insertImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="添加图片（选填）"
+                android:textSize="18dp"
+                android:textColor="#5D5D5D"
+                android:layout_marginLeft="4dp"
+                android:paddingTop="10dp"/>
+        </LinearLayout>
 
         <ImageView
             android:id="@+id/imgView"
-            android:layout_below="@id/insertImage"
+            android:layout_below="@id/insertImageLayout"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:paddingTop="10dp">
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp">
         </ImageView>
 
-
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/descriptionTitle"
+            android:orientation="horizontal"
+            android:id="@+id/descriptionTitleLayout"
             android:layout_below="@id/imgView"
-            android:textSize="16dp"
-            android:text="请填写活动描述(不多于200字)"/>
+            android:layout_marginBottom="5dp">
 
-        <View
-            android:layout_width="fill_parent"
-            android:id="@+id/gap"
-            android:layout_below="@id/descriptionTitle"
-            android:layout_height="0.5dp"
-            android:background="#000000"/>
+            <ImageView
+                android:id="@+id/descriptionLabel"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/description_label"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/descriptionTitle"
+                android:textSize="18dp"
+                android:textColor="#5D5D5D"
+                android:text="请填写活动描述 ( 不多于200字)"/>
+        </LinearLayout>
 
         <EditText
             android:id="@+id/activityDescription"
@@ -173,8 +224,10 @@
             android:ems="10"
             android:gravity="left|top"
             android:inputType="textMultiLine"
-            android:text="一起来参加这个超级好玩的活动"
-            android:layout_below="@id/gap"
+            android:textColor="#00B8F5"
+            android:textSize="16dp"
+            android:text=" 一起来参加这个超级好玩的活动"
+            android:layout_below="@id/descriptionTitleLayout"
             android:paddingBottom="10dp"
             android:paddingTop="10dp"
             android:layout_marginBottom="10dp"

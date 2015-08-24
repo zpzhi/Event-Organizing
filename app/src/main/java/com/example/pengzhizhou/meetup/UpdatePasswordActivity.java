@@ -32,11 +32,14 @@ public class UpdatePasswordActivity extends ActionBarActivity {
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         actionBar.setCustomView(R.layout.activity_update_password_actionbar);
-
+        String email = null;
         Uri uri = getIntent().getData();
-        final String email = uri.getQueryParameter("email");
+        if (uri != null){
+            email = uri.getQueryParameter("email");
+        }
+
         trimEmail = email;
-        if (email.contains("<span>")){
+        if (email != null && email.contains("<span>")){
             trimEmail = email.replace("<span>", "");
             trimEmail = trimEmail.replace("</span>", "");
             params.put("email", trimEmail);

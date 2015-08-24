@@ -32,8 +32,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,7 +52,7 @@ public class RegistrationActivity extends ActionBarActivity{
     // UI references.
     private AutoCompleteTextView mEmailView;
     private AutoCompleteTextView mUserNameView;
-    private EditText mPasswordView;
+    private AutoCompleteTextView mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
     private String url = Utility.getServerUrl() + "register-meetup.php";
@@ -93,7 +91,7 @@ public class RegistrationActivity extends ActionBarActivity{
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         mUserNameView = (AutoCompleteTextView) findViewById(R.id.username);
 
-        mPasswordView = (EditText) findViewById(R.id.password);
+        mPasswordView = (AutoCompleteTextView) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -105,9 +103,9 @@ public class RegistrationActivity extends ActionBarActivity{
             }
         });
 
-        Button uploadImg = (Button) findViewById(R.id.uploadImg);
+        //Button uploadImg = (Button) findViewById(R.id.uploadImg);
         imgView = (ImageView) findViewById(R.id.imgView);
-        uploadImg.setOnClickListener(new View.OnClickListener()
+        imgView.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)

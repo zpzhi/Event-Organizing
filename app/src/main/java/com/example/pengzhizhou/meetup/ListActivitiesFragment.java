@@ -81,6 +81,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
     private String activityTypeId = null;
     private String activityTitle = null;
     private View footer;
+    private ImageView pullDownIcon;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -207,25 +208,21 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
                 // (it will be added back).
                 ((ViewGroup)_rootView.getParent()).removeView(_rootView);
             }
-
-        TextView actionbarTitle = (TextView)getActivity().findViewById(R.id.actionbarTitle);
-        ImageView pullDownIcon = (ImageView)getActivity().findViewById(R.id.pulldown);
-        pullDownIcon.setVisibility(View.VISIBLE);
+        pullDownIcon = (ImageView)_rootView.findViewById(R.id.pulldown);
         gridViewFilter = (GridView) _rootView.findViewById(R.id.gridFilter);
         customGridAdapter = new CustomGridViewAdapter(getActivity(), R.layout.grid_single_1, gridArray, resource);
         gridViewFilter.setAdapter(customGridAdapter);
         closeFilter = (ImageView)_rootView.findViewById(R.id.closeFilter);
 
-        actionbarTitle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gridViewFilter.setVisibility(View.VISIBLE);
-                closeFilter.setVisibility(View.VISIBLE);
-            }
-        });
+        pullDownIcon.setVisibility(View.VISIBLE);
+        gridViewFilter.setVisibility(View.GONE);
+        closeFilter.setVisibility(View.GONE);
+
+
         pullDownIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                pullDownIcon.setVisibility(View.GONE);
                 gridViewFilter.setVisibility(View.VISIBLE);
                 closeFilter.setVisibility(View.VISIBLE);
             }
@@ -251,6 +248,7 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
             public void onClick(View v) {
                 gridViewFilter.setVisibility(View.GONE);
                 closeFilter.setVisibility(View.GONE);
+                pullDownIcon.setVisibility(View.VISIBLE);
             }
         });
 

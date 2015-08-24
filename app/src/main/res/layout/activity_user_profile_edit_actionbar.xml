@@ -10,25 +10,25 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:text="主页"
-        android:textColor="#1a4a71"
+        android:textColor="#FFFFFF"
         android:id="@+id/actionbarTitle"
-        android:textSize="18sp" />
+        android:textSize="20sp" />
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="12sp"
-        android:id="@+id/save"
-        android:src="@drawable/ic_action_navigation_check" >
-    </ImageView>
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="20dp"
+        android:layout_height="30dp"
+        android:scaleType="fitCenter"
         android:layout_alignParentLeft="true"
         android:id="@+id/cancel"
-        android:src="@drawable/ic_action_content_backspace" >
+        android:src="@drawable/ic_action_navigate_back" >
     </ImageView>
+
+    <ImageView android:id="@+id/save"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:scaleType="fitCenter"
+        android:layout_marginRight="12sp"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/ic_action_confirm" />
 
 </RelativeLayout>

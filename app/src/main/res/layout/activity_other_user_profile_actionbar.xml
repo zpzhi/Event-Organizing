@@ -9,9 +9,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="个人主页"
-        android:textColor="#1a4a71"
-        android:id="@+id/actionbarTitle"
+        android:text=""
+        android:textColor="#FFFFFF"
+        android:id="@+id/actionbartitle"
         android:textSize="20sp" />
 
 </RelativeLayout>

@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -32,9 +31,6 @@ public class PostActivityFragment extends Fragment {
 
         TextView title = (TextView)getActivity().findViewById(R.id.actionbarTitle);
         title.setOnClickListener(null);
-
-        ImageView pullDownIcon = (ImageView)getActivity().findViewById(R.id.pulldown);
-        pullDownIcon.setVisibility(View.GONE);
 
         if (loginUser == null){
             Intent myIntent;

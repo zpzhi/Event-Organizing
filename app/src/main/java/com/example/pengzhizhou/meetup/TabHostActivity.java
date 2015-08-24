@@ -9,7 +9,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TabHost;
-import android.widget.TabWidget;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +36,7 @@ public class TabHostActivity extends ActionBarActivity {
         }
 
         int startTab = getIntent().getIntExtra("tab", 0);
+        int displayWidth = getWindowManager().getDefaultDisplay().getWidth();
 
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
@@ -44,19 +44,27 @@ public class TabHostActivity extends ActionBarActivity {
 
         mTabHost = (FragmentTabHost)findViewById(android.R.id.tabhost);
         mTabHost.setup(this, getSupportFragmentManager(), R.id.realtabcontent);
+        View tabView1 = getLayoutInflater().inflate(R.layout.custom_post_event_tab_view, mTabHost, false);
+        View tabView2 = getLayoutInflater().inflate(R.layout.custom_list_event_tab_view, mTabHost, false);
+        View tabView3 = getLayoutInflater().inflate(R.layout.custom_user_profile_tab_view, mTabHost, false);
 
-        mTabHost.addTab(mTabHost.newTabSpec("活动列表").setIndicator("活动列表"),
+        mTabHost.addTab(mTabHost.newTabSpec("活动列表").setIndicator(tabView2),
                 ListActivitiesFragment.class, null);
-        mTabHost.addTab(mTabHost.newTabSpec("发布活动").setIndicator("发布活动"),
+        mTabHost.addTab(mTabHost.newTabSpec("发布活动").setIndicator(tabView1),
                 PostActivityFragment.class, null);
-        mTabHost.addTab(mTabHost.newTabSpec("我的主页").setIndicator("我的主页"),
+        mTabHost.addTab(mTabHost.newTabSpec("我的主页").setIndicator(tabView3),
                 UserProfileFragment.class, null);
-        setTabIcon(mTabHost, 0, R.drawable.ic_action_device_home);
-        setTabIcon(mTabHost, 1, R.drawable.ic_action_content_add_circle);
-        setTabIcon(mTabHost, 2, R.drawable.ic_action_social_person_outline);
+
+        mTabHost.getTabWidget().getChildAt(0).getLayoutParams().width = displayWidth/3;
+        mTabHost.getTabWidget().getChildAt(1).getLayoutParams().width = displayWidth/3;
+        mTabHost.getTabWidget().getChildAt(2).getLayoutParams().width = displayWidth/3;
+
+        //setTabIcon(mTabHost, 0, R.drawable.ic_action_device_home);
+        //setTabIcon(mTabHost, 1, R.drawable.ic_action_content_add_circle);
+        //setTabIcon(mTabHost, 2, R.drawable.ic_action_social_person_outline);
 
         //TabWidget tabWidget = (TabWidget) findViewById(android.R.id.tabs);
-        //initTabsAppearance(tabWidget);
+        initTabsAppearance(mTabHost);
         mTabHost.setCurrentTab(startTab);
     }
 
@@ -83,11 +91,10 @@ public class TabHostActivity extends ActionBarActivity {
         tabImageView.setImageResource(iconResource);
     }
 
-    private void initTabsAppearance(TabWidget tabWidget) {
+    private void initTabsAppearance(FragmentTabHost tabhost) {
         // Change background
-        for(int i=0; i < tabWidget.getChildCount(); i++) {
-            tabWidget.getChildAt(i).getLayoutParams().height = 80;
-            tabWidget.getChildAt(i).setBackgroundResource(R.drawable.tab_bg);
+        for(int i=0; i < tabhost.getTabWidget().getChildCount(); i++) {
+            tabhost.getTabWidget().getChildAt(i).getLayoutParams().height = 80;
         }
     }
 

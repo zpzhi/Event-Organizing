@@ -1,12 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/title"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:paddingTop="2dip"
-	android:paddingBottom="2dip"
-	android:paddingLeft="5dip"
-	android:textColor="#ff89baba"
-	android:background="#ffeef2e7"
-	style="?android:attr/listSeparatorTextViewStyle" />
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="wrap_content"
+    android:layout_width="wrap_content"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
+    >
+
+    <ImageView
+        android:id="@+id/circle"
+        android:layout_width="14dp"
+        android:layout_height="16dp"
+        android:scaleType="fitCenter"
+        android:layout_marginLeft="5dp"
+        android:src="@drawable/section_header_circle"
+
+        />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_marginLeft="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12dip"
+        android:textColor="#7E040404"
+        android:layout_toRightOf="@+id/circle"
+         />
+
+
+
+</RelativeLayout>
