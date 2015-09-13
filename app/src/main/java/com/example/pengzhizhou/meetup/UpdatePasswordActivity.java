@@ -1,6 +1,7 @@
 package com.example.pengzhizhou.meetup;
 
 import android.app.ActionBar;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -20,6 +21,7 @@ public class UpdatePasswordActivity extends ActionBarActivity {
 
     private EditText mPasswordView;
     private EditText mPasswordConfirmView;
+    private ProgressDialog progressLoading;
     private String url = Utility.getServerUrl() + "update-password-meetup.php";
     private RequestParams params = new RequestParams();
     private String trimEmail;
@@ -107,6 +109,8 @@ public class UpdatePasswordActivity extends ActionBarActivity {
     }
 
     public void makeHTTPCall() {
+        progressLoading = new ProgressDialog(this);
+        progressLoading = ProgressDialog.show(this, "", "更改密码...");
         AsyncHttpClient client = new AsyncHttpClient();
         // Don't forget to change the IP address to your LAN address. Port no as well.
         client.post(url,  params, new AsyncHttpResponseHandler() {
@@ -115,7 +119,7 @@ public class UpdatePasswordActivity extends ActionBarActivity {
             @Override
             public void onSuccess(String response) {
                 // Hide Progress Dialog
-
+                Utility.dismissProgressDialog(progressLoading);
                 if (!response.equals("")) {
                     Toast.makeText(getApplicationContext(), "更改成功",
                             Toast.LENGTH_LONG).show();
@@ -142,6 +146,7 @@ public class UpdatePasswordActivity extends ActionBarActivity {
             @Override
             public void onFailure(int statusCode, Throwable error,
                                   String content) {
+                Utility.dismissProgressDialog(progressLoading);
                 // When Http response code is '404'
                 if (statusCode == 404) {
                     Toast.makeText(getApplicationContext(),

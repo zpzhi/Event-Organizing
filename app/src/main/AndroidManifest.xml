@@ -62,12 +62,12 @@
         <activity
             android:name=".EventDetailActivity"
             android:label="@string/title_activity_event_detail"
-            android:theme="@style/Theme.Custom_design">
+            android:theme="@style/Theme.Custom_design" >
         </activity>
         <activity
             android:name=".OtherUserProfileActivity"
             android:label="@string/title_activity_other_user_profile"
-            android:theme="@style/Theme.Custom_design">
+            android:theme="@style/Theme.Custom_design" >
         </activity>
         <activity
             android:name=".SearchCityActivity"
@@ -76,26 +76,36 @@
         <activity
             android:name=".UserProfileEditActivity"
             android:label="@string/title_activity_user_profile_edit"
-            android:theme="@style/Theme.Custom_design">
+            android:theme="@style/Theme.Custom_design" >
         </activity>
         <activity
             android:name=".ForgetPasswordActivity"
             android:label="@string/title_activity_forget_password"
-            android:theme="@style/Theme.Custom_design">
+            android:theme="@style/Theme.Custom_design" >
         </activity>
         <activity
             android:name=".UpdatePasswordActivity"
             android:label="@string/title_activity_update_password"
-            android:theme="@style/Theme.Custom_design">
+            android:theme="@style/Theme.Custom_design" >
             <intent-filter>
                 <data
                     android:host="wanju"
                     android:path="/lanuch"
                     android:scheme="appscene" />
+
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.BROWSABLE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".ViewEventsListActivity"
+            android:label="@string/title_activity_view_host_events" >
+        </activity>
+        <activity
+            android:name=".ViewFriendsListActivity"
+            android:label="@string/title_activity_view_friends_list" >
         </activity>
     </application>
 

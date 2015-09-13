@@ -130,8 +130,6 @@ public class PostActivityDetailActivity extends ActionBarActivity{
         @Override
         public void onDateTimeCancel()
         {
-            Toast.makeText(PostActivityDetailActivity.this,
-                    "Canceled", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -496,11 +494,11 @@ public class PostActivityDetailActivity extends ActionBarActivity{
                 }
             }
             else {
-                Toast.makeText(this, "You haven't picked Image",
-                        Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, "",
+                //        Toast.LENGTH_LONG).show();
             }
         } catch (Exception e) {
-            Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG)
+            Toast.makeText(this, "出错了。。", Toast.LENGTH_LONG)
                     .show();
         }
 

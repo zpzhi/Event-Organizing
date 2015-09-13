@@ -103,16 +103,6 @@
         </LinearLayout>
     </ScrollView>
 
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:id="@+id/loginDescription"
-        android:text="By using this app, you agree to our Terms of Service and Privacy Policy"
-        android:textColor="@android:color/darker_gray"
-        android:layout_marginTop="30dip"/>
-
 </LinearLayout>
 
 </ScrollView>

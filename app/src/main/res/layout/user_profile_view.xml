@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.example.pengzhizhou.meetup.VerticalScrollview
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/ScrollView01"
     android:layout_width="fill_parent"
@@ -62,20 +62,32 @@
                 android:layout_height="wrap_content"
                 android:text="发布的活动"
                 android:textColor="#17B1F8"
-                android:id="@+id/hostEventsCount"
+                android:id="@+id/hostEventsLabel"
                 android:layout_marginLeft="5dp"
                 />
         </LinearLayout>
 
-        <ListView
-            android:id="@+id/list2"
+        <LinearLayout
+            android:id="@+id/hostEventsLayout"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:divider="#FFFFFF"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:divider="#FFFFFF"
-            android:listSelector="@drawable/list_selector" />
+            android:orientation="vertical">
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/moreHostEvents"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:text="查看所有发布活动"
+            android:textColor="#17B1F8"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="8dp"
+            android:visibility="gone"/>
+
         <View
             android:layout_width="fill_parent"
             android:layout_height="1.5dp"
@@ -103,19 +115,32 @@
                 android:text="参加的活动"
                 android:textColor="#17B1F8"
                 android:layout_marginLeft="5dp"
-                android:id="@+id/joinEventsCount"
+                android:id="@+id/joinEventsLabel"
                 />
         </LinearLayout>
-        <ListView
-            android:id="@+id/list"
+
+        <LinearLayout
+            android:id="@+id/joinEventsLayout"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:divider="#FFFFFF"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
+            android:orientation="vertical">
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/moreJoinEvents"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:text="查看所有参加活动"
+            android:onClick="viewAllJoinEvents"
+            android:textColor="#17B1F8"
             android:layout_marginBottom="10dp"
-            android:listSelector="@drawable/list_selector"
-            />
+            android:layout_marginRight="8dp"
+            android:visibility="gone"/>
+
     </LinearLayout>
     <View
         android:layout_width="fill_parent"
@@ -155,19 +180,31 @@
                 android:layout_marginTop="5dp"
                 android:textColor="#17B1F8"
                 android:layout_marginLeft="3dp"
-                android:id="@+id/friendsCount"
+                android:id="@+id/friendsListLabel"
                 />
         </LinearLayout>
 
-        <ListView
-            android:id="@+id/list1"
+        <LinearLayout
+            android:id="@+id/friendListLayout"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:divider="#FFFFFF"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:layout_marginBottom="10dip"
-            android:listSelector="@drawable/list_selector" />
+            android:orientation="vertical">
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/moreFriendList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:text="查看所有好友"
+            android:onClick="viewAllFriends"
+            android:textColor="#17B1F8"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="8dp"
+            android:visibility="gone"/>
 
     </LinearLayout>
     <Button
@@ -183,4 +220,4 @@
         />
 </LinearLayout>
 
-</com.example.pengzhizhou.meetup.VerticalScrollview>
+</ScrollView>

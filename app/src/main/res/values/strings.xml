@@ -16,5 +16,7 @@
     <string name="title_activity_forget_password">ForgetPasswordActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_update_password">UpdatePasswordActivity</string>
+    <string name="title_activity_view_host_events">ViewHostEventsActivity</string>
+    <string name="title_activity_view_friends_list">ViewFriendsListActivity</string>
 
 </resources>

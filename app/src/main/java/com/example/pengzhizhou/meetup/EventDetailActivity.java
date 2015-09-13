@@ -1,8 +1,6 @@
 package com.example.pengzhizhou.meetup;
 
 import android.app.ActionBar;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -10,15 +8,11 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.text.InputFilter;
-import android.text.InputType;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 
 public class EventDetailActivity extends ActionBarActivity{
@@ -67,11 +62,8 @@ public class EventDetailActivity extends ActionBarActivity{
     private String city = null;
     private String state = null;
     private String eventCreatorId = null;
-    private ListView hostListView, userListView;
     private List<User> hostList;
     private List<User> usersList;
-    private UserListAdapter uAdapter = null;
-    private UserListAdapter uAdapter1 = null;
     private int m_flag = 0;
     private DisplayImageOptions options;
 
@@ -100,9 +92,9 @@ public class EventDetailActivity extends ActionBarActivity{
         TextView eventTime = (TextView) findViewById(R.id.eventTime);
         joinEventButton = (Button) findViewById(R.id.joinActivity);
         ImageView eventImage = (ImageView) findViewById(R.id.eventImage);
-        TextView description = (TextView) findViewById(R.id.eventDescription);
         TextView eventAddress = (TextView) findViewById(R.id.eventAddress);
         TextView duration = (TextView) findViewById(R.id.duration);
+        TextView description = (TextView)findViewById(R.id.eventDescription);
 
         if(b!=null)
         {
@@ -119,7 +111,6 @@ public class EventDetailActivity extends ActionBarActivity{
             state = (String) b.get("itemState");
             eventCreatorId = (String) b.get("eventCreator");
             durationText = (String) b.get("duration");
-
             if (detail != null){
                 description.setText("详情：" + detail);
             }
@@ -169,10 +160,16 @@ public class EventDetailActivity extends ActionBarActivity{
 
             }
 
-            DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm");
+            DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
             try {
                 Date date = formatter.parse(eventTimeText.substring(0, eventTimeText.length()-3));
-                eventTime.setText(date.toString());
+                //Date date = formatter.parse(eventTimeText);
+                DateFormat formatterToChinese = DateFormat.getDateTimeInstance(
+                        DateFormat.LONG,
+                        DateFormat.SHORT,
+                        Locale.CHINA);
+                String myString = formatterToChinese.format(date);
+                eventTime.setText(myString);
             }
             catch(Exception e){
             }
@@ -180,36 +177,7 @@ public class EventDetailActivity extends ActionBarActivity{
             eventAddress.setText(state+city+addressText);
             duration.setText(durationText+"小时");
 
-            initHostListAdapter();
             new GetEventCreatorInfo().execute();
-            hostListView = (ListView) findViewById(R.id.list);
-            hostListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-                public void onItemClick(AdapterView<?> parent, View view,
-                                        int position, long id) {
-                    Intent i = null;
-                    i = new Intent(EventDetailActivity.this, OtherUserProfileActivity.class);
-                    i.putExtra("userImg", hostList.get(position).getImageName());
-                    i.putExtra("userName", hostList.get(position).getName());
-                    i.putExtra("userId", hostList.get(position).getId());
-                    startActivity(i);
-                }
-            });
-            initUserListAdapter();
-
-            userListView = (ListView) findViewById(R.id.list1);
-            userListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-                public void onItemClick(AdapterView<?> parent, View view,
-                                        int position, long id) {
-                    Intent i = null;
-                    i = new Intent(EventDetailActivity.this, OtherUserProfileActivity.class);
-                    i.putExtra("userImg", usersList.get(position).getImageName());
-                    i.putExtra("userName", usersList.get(position).getName());
-                    i.putExtra("userId", usersList.get(position).getId());
-                    startActivity(i);
-                }
-            });
         }
 
         //joinEventButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
@@ -217,7 +185,11 @@ public class EventDetailActivity extends ActionBarActivity{
         joinEventButton.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 if (loginUser != null){
-                    final EditText txtPurpose = new EditText(EventDetailActivity.this);
+                    CustomDialog cdd=new CustomDialog(EventDetailActivity.this, loginUserId, eventID,
+                            titleText, imageNameText, eventTimeText, addressText);
+                    cdd.show();
+
+                    /*final EditText txtPurpose = new EditText(EventDetailActivity.this);
                     txtPurpose.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
                     txtPurpose.setLines(3);
                     txtPurpose.setFilters(new InputFilter[] { new InputFilter.LengthFilter(100) });
@@ -236,7 +208,7 @@ public class EventDetailActivity extends ActionBarActivity{
                                 public void onClick(DialogInterface dialog, int whichButton) {
                                 }
                             })
-                            .show();
+                            .show();*/
                 }
                 else{
                     Intent myIntent;
@@ -272,13 +244,13 @@ public class EventDetailActivity extends ActionBarActivity{
         @Override
         protected void onPostExecute(final String response) {
 
-            hostListView.setAdapter(uAdapter);
             if (response == null){
                 return;
             }else if(response.equals("[]")){
                 return;
             }else {
                 try {
+                    hostList = new ArrayList<>();
                     JSONObject jsonResponse = new JSONObject(response);
                     JSONArray jsonMainNode = jsonResponse.optJSONArray("user_info");
 
@@ -309,6 +281,10 @@ public class EventDetailActivity extends ActionBarActivity{
 
             }
 
+            LinearLayout layout = (LinearLayout) findViewById(R.id.hostLayout);
+            layout.removeAllViews();
+            Utility.addUserChildViewToLayout(layout, EventDetailActivity.this, hostList, R.layout.list_users_row, 0, 1);
+
             new GetUserImageNames().execute();
 
         }
@@ -331,7 +307,6 @@ public class EventDetailActivity extends ActionBarActivity{
 
         @Override
         protected void onPostExecute(final String response) {
-            userListView.setAdapter(uAdapter1);
             if (response == null){
                 if (m_flag == 0) {
                     joinEventButton.setVisibility(View.VISIBLE);
@@ -345,6 +320,7 @@ public class EventDetailActivity extends ActionBarActivity{
             }else {
 
                 try {
+                    usersList = new ArrayList<>();
                     JSONObject jsonResponse = new JSONObject(response);
                     JSONArray jsonMainNode = jsonResponse.optJSONArray("user_info");
 
@@ -382,13 +358,17 @@ public class EventDetailActivity extends ActionBarActivity{
 
             }
 
+            LinearLayout layout = (LinearLayout) findViewById(R.id.joinUserLayout);
+            layout.removeAllViews();
+            Utility.addUserChildViewToLayout(layout, EventDetailActivity.this, usersList, R.layout.list_users_row, 0, usersList.size());
+
             if (m_flag == 0){
                 joinEventButton.setVisibility(View.VISIBLE);
             }else{
                 joinEventButton.setVisibility(View.GONE);
             }
 
-            Utility.setListViewHeightBasedOnChildren(userListView);
+
         }
 
     }
@@ -466,16 +446,6 @@ public class EventDetailActivity extends ActionBarActivity{
                         Toast.LENGTH_LONG).show();
             }
         }
-    }
-
-    public void initHostListAdapter(){
-        hostList = new ArrayList<User>();
-        uAdapter = new UserListAdapter(this, R.layout.list_users_row, hostList);
-    }
-
-    public void initUserListAdapter(){
-        usersList = new ArrayList<User>();
-        uAdapter1 = new UserListAdapter(this, R.layout.list_users_row, usersList);
     }
 
     @Override

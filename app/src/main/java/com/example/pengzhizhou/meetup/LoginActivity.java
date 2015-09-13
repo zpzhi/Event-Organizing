@@ -276,19 +276,19 @@ public class LoginActivity extends ActionBarActivity {
         }
 
         @Override
-        protected void onPostExecute(final String user) {
+        protected void onPostExecute(final String response) {
             mAuthTask = null;
             showProgress(false);
 
-            if (!user.equals("")) {
-                String[] parts = user.split("&&asb##");
+            if (response.contains("&&asb##")) {
+                String[] parts = response.split("&&asb##");
                 SharedPreferences settings = getSharedPreferences("MyPrefsFile", 0);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("KEY_LOGIN_USER", parts[0]);
                 editor.putString("KEY_LOGIN_USER_ID", parts[1]);
                 editor.commit();
 
-                Intent myIntent = null;
+                Intent myIntent;
                 if (originalActivity != null && originalActivity.equals("EventDetailActivity")){
                     myIntent = new Intent(LoginActivity.this, EventDetailActivity.class);
                     myIntent.putExtra("itemTitle",titleText);
@@ -303,8 +303,16 @@ public class LoginActivity extends ActionBarActivity {
 
                 startActivity(myIntent);
             } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+                if (response.equals("error 1")){
+                    mEmailView.setError("此邮箱不存在于本系统");
+                    mEmailView.requestFocus();
+
+                }
+                else if (response.equals("error 2")){
+                    mPasswordView.setError("用户名和密码不匹配");
+                    mPasswordView.requestFocus();
+                }
+
             }
         }
 

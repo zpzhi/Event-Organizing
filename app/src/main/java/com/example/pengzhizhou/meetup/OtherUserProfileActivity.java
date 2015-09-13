@@ -10,9 +10,9 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -104,30 +104,6 @@ public class OtherUserProfileActivity extends ActionBarActivity {
             ImageLoader.getInstance().displayImage("", userImg, options);
         }
 
-        eventList = (ListView) findViewById(R.id.list);
-        eventList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-
-                Intent i = new Intent(OtherUserProfileActivity.this, EventDetailActivity.class);
-                i.putExtra("itemTitle",itemsList.get(position).getTitle());
-                i.putExtra("itemImage", itemsList.get(position).getActivityImage());
-                i.putExtra("eventTime", itemsList.get(position).getActivityTime());
-                i.putExtra("itemAddress", itemsList.get(position).getAddress());
-                i.putExtra("itemId", itemsList.get(position).getId());
-                i.putExtra("itemType", itemsList.get(position).getActivityType());
-                i.putExtra("itemDetail", itemsList.get(position).getDetail());
-                i.putExtra("itemCity", itemsList.get(position).getCity());
-                i.putExtra("itemState", itemsList.get(position).getState());
-                i.putExtra("eventCreator", itemsList.get(position).getEventCreator());
-                i.putExtra("duration", itemsList.get(position).getDuration());
-                startActivity(i);
-            }
-        });
-
-        initAdapter();
-
         new ListJoinEventsTask().execute();
 
         new CheckIfFriendsTask().execute();
@@ -142,6 +118,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                     startActivity(myIntent);
 
                 }else {
+                    addFriendButton.setEnabled(false);
                     addFriendCall();
                 }
             }
@@ -152,7 +129,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         removeFriendButton.setBackgroundColor(Color.parseColor("#FF7373"));
         removeFriendButton.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-
+                removeFriendButton.setEnabled(false);
                 removeFriendCall();
             }
         });
@@ -176,7 +153,6 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(String jsonResult) {
 
-            eventList.setAdapter(adapter);
             TextView hostEvents = (TextView)findViewById(R.id.joinEventsCount);
             if (jsonResult == null)
             {
@@ -187,9 +163,9 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                 return;
             }
             try {
+                itemsList = new ArrayList<>();
                 JSONObject jsonResponse = new JSONObject(jsonResult);
                 JSONArray jsonMainNode = jsonResponse.optJSONArray("activity_info");
-                hostEvents.setText("参加的活动 ("+jsonMainNode.length()+")");
                 for (int i = 0; i < jsonMainNode.length(); i++) {
                     JSONArray innerArray = jsonMainNode.optJSONArray(i);
                     for (int j = 0; j < innerArray.length(); j++) {
@@ -234,23 +210,35 @@ public class OtherUserProfileActivity extends ActionBarActivity {
                         Toast.LENGTH_SHORT).show();
             }
 
-            adapter.notifyDataSetChanged();
+            // use layout instead of ListView to show at most first 3 items
+            // to solve the scrolling problem of ListView inside ScrollView
+            LinearLayout layout = (LinearLayout)findViewById(R.id.joinEventsLayout);
+            layout.removeAllViews();
+            Utility.addEventChildViewToLayout(layout, OtherUserProfileActivity.this, itemsList, R.layout.list_event_row, 0, 3);
+            if (itemsList.size() > 3){
+                TextView moreJoinEvents = (TextView) findViewById(R.id.moreJoinEvents);
+                if (moreJoinEvents != null) {
+                    moreJoinEvents.setText("查看所有参加活动" + " (" + itemsList.size() + ")");
+                    moreJoinEvents.setVisibility(View.VISIBLE);
 
-            if (itemsList.size() > 0) {
-                startIndex = startIndex + itemsList.size();
+                    moreJoinEvents.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(OtherUserProfileActivity.this, ViewEventsListActivity.class);
+                            intent.putExtra("EventsList", new EventsWrapper((ArrayList) itemsList));
+                            intent.putExtra("Origin", 1);
+                            startActivity(intent);
+                        }
+                    });
+                }
             }
+
             super.onPostExecute(jsonResult);
 
-            Utility.setListViewHeightBasedOnChildren(eventList);
         }
 
 
     }
-    public void initAdapter(){
-        itemsList = new ArrayList<ActivityItem>();
-        adapter = new ListAdapterS(this, R.layout.list_event_row, itemsList);
-    }
-
 
     public boolean addFriendCall(){
         new AddFriendTask().execute();

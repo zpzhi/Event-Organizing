@@ -1,8 +1,6 @@
 package com.example.pengzhizhou.meetup;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,9 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 import java.util.List;
 
@@ -21,28 +17,8 @@ import java.util.List;
  */
 public class UserListAdapter extends ArrayAdapter<User> {
 
-    private Context cont;
-    private Uri imageUri;
-    private DisplayImageOptions options;
-
-    public UserListAdapter(Context context, int textViewResourceId) {
-        super(context, textViewResourceId);
-    }
-
     public UserListAdapter(Context context, int resource, List<User> items) {
         super(context, resource, items);
-        cont = context;
-
-        options = new DisplayImageOptions.Builder()
-                .displayer(new RoundedBitmapDisplayer(50))
-                .showImageOnLoading(R.drawable.default_user)
-                .showImageForEmptyUri(R.drawable.default_user)
-                .showImageOnFail(R.drawable.default_user)
-                .cacheInMemory(true)
-                .cacheOnDisk(true)
-                .considerExifParams(true)
-                .bitmapConfig(Bitmap.Config.RGB_565)
-                .build();
     }
 
     @Override
@@ -71,9 +47,9 @@ public class UserListAdapter extends ArrayAdapter<User> {
 
             if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL") && !imageName.equals("null")) {
                 String imageUrl = Utility.getServerUrl() + "imgupload/user_thumb_image/" + imageName;
-                ImageLoader.getInstance().displayImage(imageUrl, thumbN, options);
+                ImageLoader.getInstance().displayImage(imageUrl, thumbN, Utility.userOptions);
             }else{
-                ImageLoader.getInstance().displayImage("", thumbN, options);
+                ImageLoader.getInstance().displayImage("", thumbN, Utility.userOptions);
             }
 
             if (name != null) {

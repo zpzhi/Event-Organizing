@@ -59,11 +59,6 @@ public class TabHostActivity extends ActionBarActivity {
         mTabHost.getTabWidget().getChildAt(1).getLayoutParams().width = displayWidth/3;
         mTabHost.getTabWidget().getChildAt(2).getLayoutParams().width = displayWidth/3;
 
-        //setTabIcon(mTabHost, 0, R.drawable.ic_action_device_home);
-        //setTabIcon(mTabHost, 1, R.drawable.ic_action_content_add_circle);
-        //setTabIcon(mTabHost, 2, R.drawable.ic_action_social_person_outline);
-
-        //TabWidget tabWidget = (TabWidget) findViewById(android.R.id.tabs);
         initTabsAppearance(mTabHost);
         mTabHost.setCurrentTab(startTab);
     }

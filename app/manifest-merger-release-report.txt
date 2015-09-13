@@ -84,6 +84,7 @@ MERGED from com.android.support:support-v4:21.0.3:16:5
 MERGED from com.google.android.gms:play-services:6.1.71:16:5
 MERGED from com.android.support:support-v4:21.0.3:16:5
 MERGED from com.android.support:support-v4:21.0.3:16:5
+MERGED from com.android.support:support-v4:21.0.3:16:5
 	android:label
 		ADDED from AndroidManifest.xml:26:9
 	android:allowBackup
@@ -203,17 +204,29 @@ ADDED from AndroidManifest.xml:91:17
 	android:scheme
 		ADDED from AndroidManifest.xml:94:21
 action#android.intent.action.VIEW
-ADDED from AndroidManifest.xml:95:17
-	android:name
-		ADDED from AndroidManifest.xml:95:25
-category#android.intent.category.BROWSABLE
 ADDED from AndroidManifest.xml:96:17
 	android:name
-		ADDED from AndroidManifest.xml:96:27
-category#android.intent.category.DEFAULT
-ADDED from AndroidManifest.xml:97:17
+		ADDED from AndroidManifest.xml:96:25
+category#android.intent.category.BROWSABLE
+ADDED from AndroidManifest.xml:98:17
 	android:name
-		ADDED from AndroidManifest.xml:97:27
+		ADDED from AndroidManifest.xml:98:27
+category#android.intent.category.DEFAULT
+ADDED from AndroidManifest.xml:99:17
+	android:name
+		ADDED from AndroidManifest.xml:99:27
+activity#com.example.pengzhizhou.meetup.ViewEventsListActivity
+ADDED from AndroidManifest.xml:102:9
+	android:label
+		ADDED from AndroidManifest.xml:104:13
+	android:name
+		ADDED from AndroidManifest.xml:103:13
+activity#com.example.pengzhizhou.meetup.ViewFriendsListActivity
+ADDED from AndroidManifest.xml:106:9
+	android:label
+		ADDED from AndroidManifest.xml:108:13
+	android:name
+		ADDED from AndroidManifest.xml:107:13
 uses-sdk
 INJECTED from AndroidManifest.xml:0:0 reason: use-sdk injection requested
 MERGED from com.android.support:appcompat-v7:21.0.3:15:5
@@ -221,6 +234,8 @@ MERGED from com.android.support:support-v4:21.0.3:15:5
 MERGED from com.google.android.gms:play-services:6.1.71:15:5
 MERGED from com.android.support:support-v4:21.0.3:15:5
 MERGED from Meetup:slideDateTimePicker:unspecified:5:5
+MERGED from com.android.support:support-v4:21.0.3:15:5
+MERGED from Meetup:library:unspecified:7:5
 MERGED from com.android.support:support-v4:21.0.3:15:5
 	android:targetSdkVersion
 		INJECTED from AndroidManifest.xml:0:0

@@ -88,7 +88,6 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
 
         SharedPreferences settings = this.getActivity().getSharedPreferences("MyPrefsFile", 0);
         city = settings.getString("KEY_CITY", null);
-        city = "襄阳市";
 
         Bundle b = getActivity().getIntent().getExtras();
         if (b != null) {
@@ -691,23 +690,16 @@ public class ListActivitiesFragment extends Fragment implements OnScrollListener
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            city = "襄阳市";
+            if (city == null){
+                Toast.makeText(getActivity().getApplicationContext(), "找不到您所在城市，城市指定为襄阳，如需要请右上角自行更改城市",
+                        Toast.LENGTH_SHORT).show();
+                city = "襄阳市";
+            }
             Toast.makeText(getActivity().getApplicationContext(), "城市: " + city,
                     Toast.LENGTH_SHORT).show();
             new LoadMoreItemsTask(getActivity()).execute();
             // Dismiss the progress dialog
-            try{
-                if(progressLoading.isShowing()){
-                    progressLoading.dismiss();
-                }
-            }
-            catch(Exception e){
-                e.printStackTrace();
-            }
-            finally
-            {
-                progressLoading.dismiss();
-            }
+            Utility.dismissProgressDialog(progressLoading);
         }
 
         @Override

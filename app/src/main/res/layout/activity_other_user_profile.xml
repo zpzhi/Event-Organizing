@@ -60,16 +60,28 @@
                 />
         </LinearLayout>
 
-        <ListView
-            android:id="@+id/list"
+        <LinearLayout
+            android:id="@+id/joinEventsLayout"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:divider="#FFFFFF"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
+            android:orientation="vertical">
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/moreJoinEvents"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:text="查看所有参加活动"
+            android:onClick="viewAllJoinEvents"
+            android:textColor="#17B1F8"
             android:layout_marginBottom="10dp"
-            android:listSelector="@drawable/list_selector"
-            />
+            android:layout_marginRight="8dp"
+            android:visibility="gone"/>
+
     </LinearLayout>
 
     <Button

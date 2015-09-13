@@ -3,6 +3,7 @@ package com.example.pengzhizhou.meetup;
 import android.graphics.Bitmap;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * Created by pengzhizhou on 4/25/15.
@@ -16,7 +17,6 @@ public class User implements Serializable {
     private String description;
     private String uaDescription;
     private Bitmap bitmap;
-    private Bitmap thumbBitmap;
 
     public void setName(String n){ name = n; }
     public String getName() { return name; }
@@ -35,7 +35,20 @@ public class User implements Serializable {
 
     public Bitmap getImage() { return bitmap; }
     public void setImage(Bitmap b) { bitmap = b; }
-    public Bitmap getThumbImage() { return thumbBitmap; }
-    public void setThumbImage(Bitmap b) { thumbBitmap = b; }
 
 }
+
+class UsersWrapper implements Serializable {
+
+    private ArrayList<User> userList;
+
+    public UsersWrapper(ArrayList<User> data) {
+        this.userList = data;
+    }
+
+    public ArrayList<User> getUserList() {
+        return this.userList;
+    }
+
+}
+

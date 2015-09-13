@@ -1,6 +1,7 @@
 package com.example.pengzhizhou.meetup;
 
 import android.app.ActionBar;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -19,6 +20,7 @@ public class ForgetPasswordActivity extends ActionBarActivity {
     private String url = Utility.getServerUrl() + "forget-password-meetup.php";
     private RequestParams params = new RequestParams();
     private View focusView = null;
+    private ProgressDialog progressLoading;
     private int fromPage = 0;
     private String email = null;
 
@@ -97,6 +99,8 @@ public class ForgetPasswordActivity extends ActionBarActivity {
     }
 
     public void makeHTTPCall() {
+        progressLoading = new ProgressDialog(this);
+        progressLoading = ProgressDialog.show(this, "", "修改密码请求上传中...");
         AsyncHttpClient client = new AsyncHttpClient();
         client.setTimeout(30000);
         // Don't forget to change the IP address to your LAN address. Port no as well.
@@ -105,6 +109,8 @@ public class ForgetPasswordActivity extends ActionBarActivity {
             // response code '200'
             @Override
             public void onSuccess(String response) {
+                Utility.dismissProgressDialog(progressLoading);
+
                 String parts = null;
                 if (response.contains("&&asb##")) {
                     parts = response.split("&&asb##")[1];
@@ -118,7 +124,7 @@ public class ForgetPasswordActivity extends ActionBarActivity {
                     }
 
                 } else {
-                    Toast.makeText(getApplicationContext(), "您所输入的邮箱账号不存在，请重新输入",
+                    Toast.makeText(getApplicationContext(), "此邮箱地址不存在于本系统",
                             Toast.LENGTH_LONG).show();
                 }
 
@@ -130,6 +136,7 @@ public class ForgetPasswordActivity extends ActionBarActivity {
             @Override
             public void onFailure(int statusCode, Throwable error,
                                   String content) {
+                Utility.dismissProgressDialog(progressLoading);
                 // When Http response code is '404'
                 if (statusCode == 404) {
                     Toast.makeText(getApplicationContext(),

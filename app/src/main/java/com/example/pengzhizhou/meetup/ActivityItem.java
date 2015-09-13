@@ -2,12 +2,15 @@ package com.example.pengzhizhou.meetup;
 
 import android.graphics.Bitmap;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+
 /**
  * Class for user published events.
  * Created by pengzhizhou on 4/17/15.
  */
 
-class ActivityItem {
+class ActivityItem implements Serializable {
     // events title
     private String title;
     // events id from database
@@ -154,4 +157,20 @@ class ActivityItem {
 
     public String getActivityType() { return activityType; }
     public void setActivityType(String a) { activityType = a; }
+
+}
+
+
+class EventsWrapper implements Serializable {
+
+    private ArrayList<ActivityItem> itemList;
+
+    public EventsWrapper(ArrayList<ActivityItem> data) {
+        this.itemList = data;
+    }
+
+    public ArrayList<ActivityItem> getItemList() {
+        return this.itemList;
+    }
+
 }

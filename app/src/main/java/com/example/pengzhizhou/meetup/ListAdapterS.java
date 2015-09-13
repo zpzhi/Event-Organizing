@@ -1,7 +1,6 @@
 package com.example.pengzhizhou.meetup;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +8,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.List;
@@ -19,24 +17,10 @@ import java.util.List;
  */
 public class ListAdapterS extends ArrayAdapter<ActivityItem> {
     private Context cont;
-    private DisplayImageOptions options;
-
-    public ListAdapterS(Context context, int textViewResourceId) {
-        super(context, textViewResourceId);
-    }
 
     public ListAdapterS(Context context, int resource, List<ActivityItem> items) {
         super(context, resource, items);
         cont = context;
-        options = new DisplayImageOptions.Builder()
-                .showImageOnLoading(R.drawable.ic_launcher)
-                .showImageForEmptyUri(R.drawable.ic_launcher)
-                .showImageOnFail(R.drawable.ic_launcher)
-                .cacheInMemory(true)
-                .cacheOnDisk(true)
-                .considerExifParams(true)
-                .bitmapConfig(Bitmap.Config.RGB_565)
-                .build();
     }
 
     @Override
@@ -66,7 +50,7 @@ public class ListAdapterS extends ArrayAdapter<ActivityItem> {
             //Bitmap bitmap = p.getThumbBitmap();
             if (!imageName.isEmpty() && imageName != null && !imageName.equals("NULL") && !imageName.equals("null")) {
                 String imageUrl = Utility.getServerUrl() + "imgupload/activity_thumb_image/" + imageName;
-                ImageLoader.getInstance().displayImage(imageUrl, thumbN, options);
+                ImageLoader.getInstance().displayImage(imageUrl, thumbN, Utility.eventOptions);
             }
             else{
                 thumbN.setImageResource(R.drawable.jieri);

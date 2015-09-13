@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/Meetup.iml" filepath="$PROJECT_DIR$/Meetup.iml" />
       <module fileurl="file://$PROJECT_DIR$/WoWthering.iml" filepath="$PROJECT_DIR$/WoWthering.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
       <module fileurl="file://$PROJECT_DIR$/slideDateTimePicker/slideDateTimePicker.iml" filepath="$PROJECT_DIR$/slideDateTimePicker/slideDateTimePicker.iml" />
     </modules>
   </component>
