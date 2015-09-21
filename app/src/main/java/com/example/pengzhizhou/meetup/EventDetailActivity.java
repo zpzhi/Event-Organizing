@@ -1,5 +1,8 @@
 package com.example.pengzhizhou.meetup;
-
+/**
+ * Implement the event page
+ * Created by pengzhizhou on Sep/17/15.
+ */
 import android.app.ActionBar;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -44,8 +47,6 @@ import java.util.Locale;
 
 
 public class EventDetailActivity extends ActionBarActivity{
-
-    private ArrayList<Item> gridArray;
     private String url = Utility.getServerUrl();
 
     private Button joinEventButton;
@@ -82,11 +83,11 @@ public class EventDetailActivity extends ActionBarActivity{
         loginUserId = settings.getString("KEY_LOGIN_USER_ID", null);
 
         TextView actionBarTitle = (TextView) findViewById(R.id.actionBarTitle);
-        Utility.setActionBarTitleByLeftMargin(actionBarTitle, this, 0);
+        Utility.setActionBarTitleByMargin(actionBarTitle, this, 0, 4);
 
         Intent iin= getIntent();
         Bundle b = iin.getExtras();
-        usersList = new ArrayList<User>();
+        usersList = new ArrayList<>();
 
         TextView title = (TextView) findViewById(R.id.eventTitle);
         TextView eventTime = (TextView) findViewById(R.id.eventTime);
@@ -114,6 +115,15 @@ public class EventDetailActivity extends ActionBarActivity{
             if (detail != null){
                 description.setText("详情：" + detail);
             }
+
+            findViewById(R.id.commentsLayout).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(EventDetailActivity.this, CommentActivity.class);
+                    i.putExtra("itemId", eventID);
+                    startActivity(i);
+                }
+            });
 
             if (!imageNameText.isEmpty() && imageNameText != null && !imageNameText.equals("NULL") & !imageNameText.equals("null")) {
                 options = new DisplayImageOptions.Builder()
@@ -188,27 +198,6 @@ public class EventDetailActivity extends ActionBarActivity{
                     CustomDialog cdd=new CustomDialog(EventDetailActivity.this, loginUserId, eventID,
                             titleText, imageNameText, eventTimeText, addressText);
                     cdd.show();
-
-                    /*final EditText txtPurpose = new EditText(EventDetailActivity.this);
-                    txtPurpose.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-                    txtPurpose.setLines(3);
-                    txtPurpose.setFilters(new InputFilter[] { new InputFilter.LengthFilter(100) });
-                    txtPurpose.setHint("请简单输入个人信息或者参加目的（选填，不多于100字）");
-
-                    new AlertDialog.Builder(EventDetailActivity.this)
-                            .setTitle("参加目的")
-                            .setView(txtPurpose)
-                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int whichButton) {
-                                    String userActivityDescripton = txtPurpose.getText().toString();
-                                    joinEventCall(loginUserId, eventID, userActivityDescripton);
-                                }
-                            })
-                            .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int whichButton) {
-                                }
-                            })
-                            .show();*/
                 }
                 else{
                     Intent myIntent;

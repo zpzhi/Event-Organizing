@@ -1,5 +1,8 @@
 package com.example.pengzhizhou.meetup;
-
+/**
+ * Page for showing friends list
+ * Created by pengzhizhou on 9/2/15.
+ */
 import android.app.ActionBar;
 import android.content.Intent;
 import android.os.Bundle;
@@ -30,11 +33,11 @@ public class ViewFriendsListActivity extends ActionBarActivity {
 
         TextView actionbarTitle = (TextView)findViewById(R.id.actionBarTitle);
 
-        UsersWrapper uw = (UsersWrapper) getIntent().getSerializableExtra("FriendsList");
+        UsersWrapper uw = (UsersWrapper) getIntent().getSerializableExtra("FollowersList");
         final ArrayList<User> list = uw.getUserList();
 
-        actionbarTitle.setText("关注好友");
-        Utility.setActionBarTitleByLeftMargin(actionbarTitle, this, 0);
+        actionbarTitle.setText("已关注你的用户");
+        Utility.setActionBarTitleByMargin(actionbarTitle, this, 0, 4);
 
         ListView friendsList =  (ListView) findViewById(R.id.list);
         uAdapter = new UserListAdapter(this, R.layout.list_users_row, list);

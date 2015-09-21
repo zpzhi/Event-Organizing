@@ -143,14 +143,47 @@
                 android:layout_marginBottom="20dp"
                 android:visibility="gone"
                 />
-
-            <View
-                android:id="@+id/line"
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray"/>
         </LinearLayout>
 
+        <RelativeLayout
+            android:id="@+id/commentsLayout"
+            android:layout_width="fill_parent"
+            android:layout_height="45dp"
+            android:background="#FFFFFF"
+            android:layout_marginTop="5dp">
+            <ImageView
+                android:id="@+id/commentIcon"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="16dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentLeft="true"
+                android:src="@drawable/edit_icon_1"
+                />
+            <TextView
+                android:id="@+id/commentsLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@id/commentIcon"
+                android:text="Comments"
+                android:textSize="18dp"/>
+            <ImageView
+                android:id="@+id/viewCommentsIcon"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="10dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_action_hardware_keyboard_arrow_right"
+                />
+        </RelativeLayout>
+        <View
+            android:id="@+id/line"
+            android:layout_width="fill_parent"
+            android:layout_height="10dp"
+            android:background="#F7F7F7"/>
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"

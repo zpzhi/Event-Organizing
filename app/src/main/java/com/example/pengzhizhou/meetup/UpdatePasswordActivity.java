@@ -1,5 +1,10 @@
 package com.example.pengzhizhou.meetup;
 
+/**
+ * The update password functionality
+ * Created by pengzhizhou on 8/11/15.
+ */
+
 import android.app.ActionBar;
 import android.app.ProgressDialog;
 import android.content.Intent;

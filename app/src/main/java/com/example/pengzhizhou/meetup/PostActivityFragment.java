@@ -1,5 +1,10 @@
 package com.example.pengzhizhou.meetup;
 
+/**
+ * Implement publishing activity functions
+ * Created by pengzhizhou on Sep/17/15.
+ */
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;

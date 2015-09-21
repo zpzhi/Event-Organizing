@@ -18,5 +18,6 @@
     <string name="title_activity_update_password">UpdatePasswordActivity</string>
     <string name="title_activity_view_host_events">ViewHostEventsActivity</string>
     <string name="title_activity_view_friends_list">ViewFriendsListActivity</string>
+    <string name="title_activity_comment">CommentActivity</string>
 
 </resources>

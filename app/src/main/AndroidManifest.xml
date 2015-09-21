@@ -107,6 +107,10 @@
             android:name=".ViewFriendsListActivity"
             android:label="@string/title_activity_view_friends_list" >
         </activity>
+        <activity
+            android:name=".CommentActivity"
+            android:label="@string/title_activity_comment" >
+        </activity>
     </application>
 
 </manifest>

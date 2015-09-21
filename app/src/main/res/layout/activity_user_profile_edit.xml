@@ -96,7 +96,7 @@
         android:paddingBottom="10dp"
         android:paddingTop="10dp"
         android:layout_marginBottom="10dp"
-        android:background="@drawable/post_content_border"/>
+        android:background="@drawable/post_content_border_1"/>
 
     <Button
         android:layout_width="fill_parent"

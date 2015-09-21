@@ -1,5 +1,10 @@
 package com.example.pengzhizhou.meetup;
 
+/**
+ * The page for showing events list
+ * Created by pengzhizhou on 9/2/15.
+ */
+
 import android.app.ActionBar;
 import android.content.Intent;
 import android.os.Bundle;
@@ -38,7 +43,7 @@ public class ViewEventsListActivity extends ActionBarActivity {
         else if (origin == 1){
             actionbarTitle.setText("参加的活动");
         }
-        Utility.setActionBarTitleByLeftMargin(actionbarTitle, this, 0);
+        Utility.setActionBarTitleByMargin(actionbarTitle, this, 0, 4);
 
         ListView eventList =    (ListView) findViewById(R.id.list);
         adapter = new ListAdapterS(this, R.layout.list_event_row, list);

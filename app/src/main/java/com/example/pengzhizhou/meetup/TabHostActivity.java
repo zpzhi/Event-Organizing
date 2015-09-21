@@ -1,5 +1,8 @@
 package com.example.pengzhizhou.meetup;
-
+/**
+ * The tab host page which would be divided to three fragment
+ * Created by pengzhizhou on 5/11/15.
+ */
 import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;

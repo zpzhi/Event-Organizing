@@ -1,5 +1,9 @@
 package com.example.pengzhizhou.meetup;
 
+/**
+ * Implement listing activities page
+ * Created by pengzhizhou on Sep/17/15.
+ */
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;

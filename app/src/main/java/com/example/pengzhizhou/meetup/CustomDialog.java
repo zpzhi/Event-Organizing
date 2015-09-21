@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Custom dialog to let user input purpose of participating this activity
  * Created by pengzhizhou on 8/29/15.
  */
 public class CustomDialog extends Dialog implements android.view.View.OnClickListener {

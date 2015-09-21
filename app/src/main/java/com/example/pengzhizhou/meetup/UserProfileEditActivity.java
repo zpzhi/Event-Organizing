@@ -1,5 +1,8 @@
 package com.example.pengzhizhou.meetup;
-
+/**
+ * Edit user profile page
+ * Created by pengzhizhou on 7/11/15.
+ */
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;

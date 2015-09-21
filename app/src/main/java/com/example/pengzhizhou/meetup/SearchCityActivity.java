@@ -25,6 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Implement the functions for searching specific city
+ * Created by pengzhizhou on 9/06/15.
+ */
+
 public class SearchCityActivity extends Activity implements
         SearchView.OnQueryTextListener, SearchView.OnCloseListener{
 

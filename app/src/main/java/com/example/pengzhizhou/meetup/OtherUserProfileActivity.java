@@ -1,5 +1,10 @@
 package com.example.pengzhizhou.meetup;
 
+/**
+ * Implement other user profile page
+ * Created by pengzhizhou on Sep/17/15.
+ */
+
 import android.app.ActionBar;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -91,7 +96,7 @@ public class OtherUserProfileActivity extends ActionBarActivity {
         }
 
         TextView title = (TextView) findViewById(R.id.actionbartitle);
-        Utility.setActionBarTitleByLeftMargin(title, this, 1);
+        Utility.setActionBarTitleByMargin(title, this, 1, 3);
         title.setText(user+"的主页");
 
         userImg = (ImageView)findViewById(R.id.userImg);

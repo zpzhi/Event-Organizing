@@ -1,5 +1,8 @@
 package com.example.pengzhizhou.meetup;
-
+/**
+ * Registration implementation
+ * Created by pengzhizhou on Sep/17/15.
+ */
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;

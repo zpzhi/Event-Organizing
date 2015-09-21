@@ -1,9 +1,11 @@
 package com.example.pengzhizhou.meetup;
-
+/**
+ * The user profile fragment
+ * Created by pengzhizhou on 6/11/15.
+ */
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -17,9 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,15 +33,14 @@ import java.util.List;
 public class UserProfileFragment extends Fragment {
     private String loginUser;
     private String loginUserId;
-    private GetUserDetailTask getUserDetailTask;
     private String url = Utility.getServerUrl();
     private ImageView userImg;
     private List<ActivityItem> joinEventsList;
     private List<ActivityItem> hostEventsList;
     private List<User> friendsList;
+    private List<User> followersList;
     private View _rootView;
     private User user;
-    private DisplayImageOptions options;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -49,17 +48,6 @@ public class UserProfileFragment extends Fragment {
         SharedPreferences settings = this.getActivity().getSharedPreferences("MyPrefsFile", 0);
         loginUser = settings.getString("KEY_LOGIN_USER", null);
         loginUserId = settings.getString("KEY_LOGIN_USER_ID", null);
-
-        options = new DisplayImageOptions.Builder()
-                .displayer(new RoundedBitmapDisplayer(100))
-                .showImageOnLoading(R.drawable.ic_launcher)
-                .showImageForEmptyUri(R.drawable.default_user)
-                .showImageOnFail(R.drawable.ic_launcher)
-                .cacheInMemory(true)
-                .cacheOnDisk(true)
-                .considerExifParams(true)
-                .bitmapConfig(Bitmap.Config.RGB_565)
-                .build();
 
         if (loginUser == null){
             Intent myIntent;
@@ -75,12 +63,11 @@ public class UserProfileFragment extends Fragment {
             ((TabHostActivity) getActivity()).setSearchCityViewable(View.GONE);
             userImg = (ImageView) _rootView.findViewById(R.id.userImg);
 
-            getUserDetailTask = new GetUserDetailTask();
-            getUserDetailTask.execute(loginUser);
-
+            new GetUserDetailTask().execute(loginUser);
             new ListHostingEventsTask().execute();
             new ListJoinEventsTask().execute();
             new FetchFriendsList().execute();
+            new FetchFollowersList().execute();
 
 
             Button logout = (Button) _rootView.findViewById(R.id.logout);
@@ -164,10 +151,10 @@ public class UserProfileFragment extends Fragment {
                             //int flag = 1;
                             if (!image.isEmpty() && image != null && !image.equals("NULL") && !image.equals("null")) {
                                 imageUrl = Utility.getServerUrl() + "imgupload/user_image/" + image;
-                                ImageLoader.getInstance().displayImage(imageUrl, userImg, options);
+                                ImageLoader.getInstance().displayImage(imageUrl, userImg, Utility.options_round_100);
                             }
                             else{
-                                ImageLoader.getInstance().displayImage("", userImg, options);
+                                ImageLoader.getInstance().displayImage("", userImg, Utility.options_round_100);
                             }
                         }
 
@@ -456,6 +443,86 @@ public class UserProfileFragment extends Fragment {
                             public void onClick(View v) {
                                 Intent intent = new Intent(getActivity(), ViewFriendsListActivity.class);
                                 intent.putExtra("FriendsList", new UsersWrapper((ArrayList) friendsList));
+                                startActivity(intent);
+                            }
+                        });
+                    }
+                }
+            }
+            super.onPostExecute(jsonResult);
+        }
+
+    }
+
+    private class FetchFollowersList extends AsyncTask<Void, Void, String> {
+        @Override
+        protected String doInBackground(Void... params) {
+
+            String response  = null;
+            try{
+                URL url1 = new URL(url+"get-user-followers.php?username="+loginUser);
+                response = Utility.createConnectionAndGetResponse(url1);
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+            return response;
+        }
+
+        @Override
+        protected void onPostExecute(String jsonResult) {
+
+            TextView followersCount = (TextView)_rootView.findViewById(R.id.friendsListLabel1);
+            if (jsonResult == null || jsonResult.equals("[]")){
+                followersCount.setText(followersCount.getText()+" (0)");
+                return;
+            }
+            try {
+                followersList = new ArrayList<>();
+                JSONObject jsonResponse = new JSONObject(jsonResult);
+                JSONArray jsonMainNode = jsonResponse.optJSONArray("friends_info");
+
+                for (int i = 0; i < jsonMainNode.length(); i++) {
+                    JSONArray innerArray = jsonMainNode.optJSONArray(i);
+                    for (int j = 0; j < innerArray.length(); j++) {
+                        JSONObject jsonChildNode = innerArray.getJSONObject(j);
+                        User user = new User();
+                        String id = jsonChildNode.optString("id_user");
+                        String userName = jsonChildNode.optString("username");
+                        String imageName = jsonChildNode.optString("image_thumb");
+                        String userDescription = jsonChildNode.optString("user_description");
+
+                        user.setId(id);
+                        user.setName(userName);
+                        user.setImageName(imageName);
+                        user.setDescription(userDescription);
+
+                        followersList.add(user);
+                    }
+                }
+            } catch (JSONException e) {
+                Toast.makeText(getActivity().getApplicationContext(), "Error" + e.toString(),
+                        Toast.LENGTH_SHORT).show();
+            }
+            // use layout instead of ListView to show at most first 3 items
+            // to solve the scrolling problem of ListView inside ScrollView
+            if (getActivity() != null) {
+                LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.friendListLayout1);
+                if (layout!=null) {
+                    layout.removeAllViews();
+                    Utility.addUserChildViewToLayout(layout, getActivity(), followersList, R.layout.list_users_row, 0, 3);
+                }
+                if (followersList.size() > 3) {
+                    TextView moreFriendsList = (TextView) getActivity().findViewById(R.id.moreFriendList1);
+                    if (moreFriendsList != null) {
+                        moreFriendsList.setText("查看所有已关注您的用户" + " (" + followersList.size() + ")");
+                        moreFriendsList.setVisibility(View.VISIBLE);
+
+                        moreFriendsList.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(getActivity(), ViewFriendsListActivity.class);
+                                intent.putExtra("FollowersList", new UsersWrapper((ArrayList) followersList));
                                 startActivity(intent);
                             }
                         });

@@ -59,6 +59,30 @@ public class Utility {
             .bitmapConfig(Bitmap.Config.RGB_565)
             .build();
 
+    public final static DisplayImageOptions
+            options_round_100 = new DisplayImageOptions.Builder()
+            .displayer(new RoundedBitmapDisplayer(100))
+            .showImageOnLoading(R.drawable.ic_launcher)
+            .showImageForEmptyUri(R.drawable.default_user)
+            .showImageOnFail(R.drawable.ic_launcher)
+            .cacheInMemory(true)
+            .cacheOnDisk(true)
+            .considerExifParams(true)
+            .bitmapConfig(Bitmap.Config.RGB_565)
+            .build();
+
+    public final static DisplayImageOptions
+            options_round_40 = new DisplayImageOptions.Builder()
+            .displayer(new RoundedBitmapDisplayer(40))
+            .showImageOnLoading(R.drawable.ic_launcher)
+            .showImageForEmptyUri(R.drawable.default_user)
+            .showImageOnFail(R.drawable.ic_launcher)
+            .cacheInMemory(true)
+            .cacheOnDisk(true)
+            .considerExifParams(true)
+            .bitmapConfig(Bitmap.Config.RGB_565)
+            .build();
+
     public static String getServerUrl() {
         return serverUrl;
     }
@@ -242,14 +266,14 @@ public class Utility {
         return response.toString();
     }
 
-    public static void setActionBarTitleByLeftMargin(TextView actionBarTitle, Activity act, int adjust) {
+    public static void setActionBarTitleByMargin(TextView actionBarTitle, Activity act, int direction, int adjust) {
         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) actionBarTitle.getLayoutParams();
         int displayWidth = act.getWindowManager().getDefaultDisplay().getWidth();
 
-        if (adjust == 0) {
-            params.leftMargin = displayWidth / 4;
+        if (direction == 0) {
+            params.leftMargin = displayWidth / adjust;
         } else {
-            params.rightMargin = displayWidth / 3;
+            params.rightMargin = displayWidth / adjust;
         }
         actionBarTitle.setLayoutParams(params);
     }

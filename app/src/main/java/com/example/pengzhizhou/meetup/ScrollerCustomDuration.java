@@ -1,6 +1,7 @@
 package com.example.pengzhizhou.meetup;
 
 /**
+ * Implement the functions for controlling paging speed
  * Created by pengzhizhou on 9/11/15.
  */
 import android.annotation.SuppressLint;

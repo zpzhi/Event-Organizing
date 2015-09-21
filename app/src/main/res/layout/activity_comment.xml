@@ -1,0 +1,73 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="#FFFFFF"
+    android:orientation="vertical"
+    tools:context="com.example.pengzhizhou.meetup.CommentActivity">
+
+
+    <RelativeLayout
+        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:background="#F9F8F6">
+
+        <ImageView
+            android:id="@+id/commentUserIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="fitCenter"
+            android:layout_alignParentLeft="true"/>
+
+        <EditText
+            android:id="@+id/commentInput"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="40dp"
+            android:inputType="textMultiLine"
+            android:background="@drawable/post_content_border_1"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_toLeftOf="@+id/postCommentButton"
+            android:layout_toRightOf="@+id/commentUserIcon"/>
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:id="@+id/postCommentButton"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:clickable="false"
+            android:text="发布"
+            android:textSize="16dp"
+            android:textColor="#989996"
+            android:layout_alignParentRight="true"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            />
+    </RelativeLayout>
+    <View
+        android:layout_height="1dp"
+        android:layout_width="match_parent"
+        android:background="#EBEBEB"
+        />
+
+    <ProgressBar
+        android:indeterminate="true"
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:visibility="gone"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content" />
+
+    <ListView
+        android:id="@+id/list"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="8dp"
+        android:divider="#F9F8F6" />
+
+</LinearLayout>

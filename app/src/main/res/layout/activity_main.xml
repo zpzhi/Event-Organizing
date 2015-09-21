@@ -3,30 +3,82 @@
     android:id="@+id/mainBackground"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    android:orientation="horizontal">
-
-    <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
-
-        <com.example.pengzhizhou.meetup.ViewPagerCustomDuration
-            android:id="@+id/pager"
+    android:orientation="vertical"
+    android:weightSum="2"
+    android:background="@drawable/index">
+        <Space
+            android:id="@+id/spaceTaken"
             android:layout_width="fill_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             />
-        <com.viewpagerindicator.UnderlinePageIndicator
-            android:id="@+id/indicator"
-            android:layout_height="2dp"
-            android:layout_width="fill_parent"
-            android:background="#FFCCCCCC"
-            app:selectedColor="#FFCC0000"
-            app:fadeDelay="1000"
-            app:fadeLength="1000"
-            />
 
-    </LinearLayout>
+        <LinearLayout
+            android:id="@+id/locateActivitySpace"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:layout_marginBottom="20dp"
+            >
+            <ImageView
+                android:id="@+id/locationIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="70dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/location_icon"
+                android:layout_centerHorizontal="true" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:scaleType="fitCenter"
+                android:id="@+id/findActivity"
+                android:layout_marginTop="10dp"
+                android:layout_centerHorizontal="true"
+                android:onClick="listActivity"
+                android:src="@drawable/find_activity"
+                android:layout_marginBottom="10dp"/>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#EFFAFF"
+                    android:text="已有账号？"
+                    android:id="@+id/textView"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="登入"
+                    android:textColor="#EFFAFF"
+                    android:id="@+id/loginTrigger"
+                    android:onClick="onClick"
+                    android:clickable="true"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="    |    "
+                    android:textColor="#EFFAFF"
+                    android:id="@+id/textView1"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="新账号"
+                    android:textColor="#EFFAFF"
+                    android:id="@+id/registerTrigger"
+                    android:onClick="onClick1"
+                    android:clickable="true"/>
+            </LinearLayout>
+
+        </LinearLayout>
 </LinearLayout>

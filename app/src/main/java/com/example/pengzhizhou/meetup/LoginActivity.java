@@ -1,5 +1,10 @@
 package com.example.pengzhizhou.meetup;
 
+/**
+ * Implement the login function
+ * Created by pengzhizhou on Sep/17/15.
+ */
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;

@@ -1,5 +1,10 @@
 package com.example.pengzhizhou.meetup;
 
+/**
+ * Implement the forget password functions
+ * Created by pengzhizhou on Sep/17/15.
+ */
+
 import android.app.ActionBar;
 import android.app.ProgressDialog;
 import android.content.Intent;
